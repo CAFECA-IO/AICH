@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IBlockData } from 'src/common/interfaces/google_vision';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
+import { google } from '@google-cloud/vision/build/protos/protos';
 
 @Injectable()
 export class GoogleVisionService {
-  client: ImageAnnotatorClient;
+  private logger = new Logger(GoogleVisionService.name);
+  private client: ImageAnnotatorClient;
 
   constructor(
     private readonly configService: ConfigService, // Info Murky (20240429): Inject the ConfigService to access the environment variables.
@@ -28,8 +30,16 @@ export class GoogleVisionService {
   }
 
   // Info Murky (20240429): This method returns the text description in the image, separated by lines.
-  public async generateDescription(imagePath: string): Promise<string[]> {
-    const [result] = await this.client.textDetection(imagePath);
+  public async generateDescription(image: Buffer): Promise<string[]> {
+    let result: google.cloud.vision.v1.IAnnotateImageResponse;
+    try {
+      result = (await this.client.textDetection(image))[0];
+    } catch (error) {
+      this.logger.error(
+        `Error in google generating text description: ${error}`,
+      );
+      return [];
+    }
     const detections = result.textAnnotations || [];
 
     if (!detections.length) {
@@ -42,9 +52,9 @@ export class GoogleVisionService {
   // Info Murky (20240429): This method returns full text annotation in the image.
   // it contains the text, and the vertices of the bounding box.
   public async generateFullTextAnnotation(
-    imagePath: string,
+    image: Buffer,
   ): Promise<IBlockData[]> {
-    const [result] = await this.client.textDetection(imagePath);
+    const [result] = await this.client.textDetection(image);
     const { fullTextAnnotation } = result;
 
     const blockData: IBlockData[] = [];

@@ -7,7 +7,7 @@
 // FROM llama3:latest
 
 export const invoice_modelfile = `
-FROM llama3
+FROM llama3:latest
 TEMPLATE """{{ if .System }}<|start_header_id|>system<|end_header_id|>
 
 {{ .System }}<|eot_id|>{{ end }}{{ if .Prompt }}<|start_header_id|>user<|end_header_id|>

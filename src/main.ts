@@ -3,7 +3,11 @@ import { AppModule } from './app.module';
 import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    // Info Murky (20240429): Set the logger level for the application.
+    // Usage: logger.error('Error message');
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
 
   // Info Murky (20240429): Set the global prefix for the API.
   // Url will be accessible at uri/api/...
