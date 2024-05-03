@@ -129,20 +129,35 @@ export const AccountVoucherObjectVersion = {
 };
 
 // Info Murky (20240416): Type Guard
-export function isEventType(data: string): data is EventType {
-  return data === 'income' || data === 'payment' || data === 'transfer';
+// export function isEventType(data: string): data is EventType {
+//   return data === 'income' || data === 'payment' || data === 'transfer';
+// }
+
+// export function isVoucherType(data: string): data is VoucherType {
+//   return data === 'receive' || data === 'expense';
+// }
+
+// export function isPaymentStatusType(data: string): data is PaymentStatusType {
+//   return data === 'paid' || data === 'unpaid' || data === 'partial';
+// }
+
+// export function isPaymentPeriodType(data: string): data is PaymentPeriodType {
+//   return data === 'atOnce' || data === 'installment';
+// }
+export function isEventType(data: any): data is EventType {
+  return Object.values(EventType).includes(data);
 }
 
-export function isVoucherType(data: string): data is VoucherType {
-  return data === 'receive' || data === 'expense';
+export function isVoucherType(data: any): data is VoucherType {
+  return Object.values(VoucherType).includes(data);
 }
 
-export function isPaymentStatusType(data: string): data is PaymentStatusType {
-  return data === 'paid' || data === 'unpaid' || data === 'partial';
+export function isPaymentStatusType(data: any): data is PaymentStatusType {
+  return Object.values(PaymentStatusType).includes(data);
 }
 
-export function isPaymentPeriodType(data: string): data is PaymentPeriodType {
-  return data === 'atOnce' || data === 'installment';
+export function isPaymentPeriodType(data: any): data is PaymentPeriodType {
+  return Object.values(PaymentPeriodType).includes(data);
 }
 
 // Info Murky (20240416): Check if data 本來進來就可能是any形式的data，然後我們chec他他有沒有以下屬性
@@ -317,7 +332,7 @@ export function cleanInvoiceData(rawData: any): AccountInvoiceData {
       start_date: convertDateToTimestamp(date.start_date),
       end_date: convertDateToTimestamp(date.end_date),
     },
-    eventType: isEventType(eventType) ? eventType : 'income',
+    eventType: isEventType(eventType) ? eventType : EventType.Income,
     paymentReason: paymentReason || '',
     description: description || '',
     venderOrSupplyer: venderOrSupplyer || '',
@@ -361,7 +376,7 @@ export function cleanedVoucherMetaData(rawData: any): AccountVoucherMetaData {
 
   const cleanedData: AccountVoucherMetaData = {
     date: convertDateToTimestamp(date),
-    voucherType: isVoucherType(voucherType) ? voucherType : 'receive',
+    voucherType: isVoucherType(voucherType) ? voucherType : VoucherType.Receive,
     venderOrSupplyer: venderOrSupplyer || '',
     description: description || '',
     totalPrice: cleanNumber(totalPrice),
@@ -370,11 +385,11 @@ export function cleanedVoucherMetaData(rawData: any): AccountVoucherMetaData {
     paymentMethod: paymentMethod || '',
     paymentPeriod: isPaymentPeriodType(paymentPeriod)
       ? paymentPeriod
-      : 'atOnce',
+      : PaymentPeriodType.AtOnce,
     installmentPeriod: cleanNumber(installmentPeriod),
     paymentStatus: isPaymentStatusType(paymentStatus)
       ? paymentStatus
-      : 'unpaid',
+      : PaymentStatusType.Unpaid,
     alreadyPaidAmount: cleanNumber(alreadyPaidAmount),
   };
 

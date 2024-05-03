@@ -99,9 +99,10 @@ export class LlamaService<T> {
       return null;
     }
 
+    // Deprecated: Murky(20240429): Debug
+    console.log('llama response', response.message.content);
     const data = this.extractJSONFromText(response.message.content);
 
-    console.log('data', data);
     if (!data) {
       return null;
     }
@@ -117,7 +118,13 @@ export class LlamaService<T> {
   public async genetateResponseLoop(input: string): Promise<T | null> {
     let response: T | null;
 
-    response = await this.generateResponse(input, false);
+    try {
+      response = await this.generateResponse(input, false);
+    } catch (error) {
+      this.logger.error(`Error in llama genetateResponseLoop: ${error}`);
+      return null;
+    }
+
     let retry = 0;
     while (!response && retry++ < this.options.retryLimit) {
       response = await this.generateResponse(input, true);

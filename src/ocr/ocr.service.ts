@@ -83,8 +83,19 @@ export class OcrService {
     // Todo: post to llama
     try {
       const descriptionString = description.join('\n');
-      const invoiceGenerated =
-        await this.llamaService.genetateResponseLoop(descriptionString);
+
+      let invoiceGenerated: AccountInvoiceData;
+
+      try {
+        invoiceGenerated =
+          await this.llamaService.genetateResponseLoop(descriptionString);
+      } catch (error) {
+        this.logger.error(
+          `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
+        );
+        this.cache.put(hashedId, 'error', null);
+        return;
+      }
 
       if (invoiceGenerated) {
         this.cache.put(hashedId, 'success', invoiceGenerated);
