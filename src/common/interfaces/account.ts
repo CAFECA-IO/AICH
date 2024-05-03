@@ -128,6 +128,7 @@ export const AccountVoucherObjectVersion = {
   ],
 };
 
+// Deprecated: Murky(20240429): change to enum
 // Info Murky (20240416): Type Guard
 // export function isEventType(data: string): data is EventType {
 //   return data === 'income' || data === 'payment' || data === 'transfer';
