@@ -31,10 +31,10 @@ export class VouchersController {
   @Version('1')
   uploadInvoice(
     @Body(new ValidationPipe({ transform: true }))
-    invoiceDTOs: AccountInvoiceDataWithPaymentMethodDTO[],
+    invoices: AccountInvoiceDataWithPaymentMethodDTO[],
   ): APIResponseType<AccountResultStatus> {
-    const invoiceWithPaymentMethod = invoiceDTOs.map((invoiceDTO) => {
-      return transformDTOToInvoiceWithPaymentMethod(invoiceDTO);
+    const invoiceWithPaymentMethod = invoices.map((invoice) => {
+      return transformDTOToInvoiceWithPaymentMethod(invoice);
     });
 
     const hashedId = this.vouchersService.generateVoucherFromInvoices(
