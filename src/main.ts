@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { VersioningType } from '@nestjs/common';
-
+import { Logger, VersioningType } from '@nestjs/common';
+import configration from './constants/configs/configration';
 async function bootstrap() {
+  const port = configration().port;
   const app = await NestFactory.create(AppModule, {
     // Info Murky (20240429): Set the logger level for the application.
     // Usage: logger.error('Error message');
@@ -24,6 +25,6 @@ async function bootstrap() {
     defaultVersion: ['1'],
   });
 
-  await app.listen(3001);
+  await app.listen(port);
 }
 bootstrap();
