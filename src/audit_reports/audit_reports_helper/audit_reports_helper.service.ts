@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FinancialStatements } from 'src/common/interfaces/audit_report';
+import { CashFlow } from 'src/common/interfaces/cash_flow';
+import { LifeCycleType } from 'src/common/types/audit_report';
 import { isZero } from 'src/common/utils/common';
 
 @Injectable()
@@ -122,5 +124,77 @@ export class AuditReportsHelperService {
       FCFRatio,
       cashReturnOnAssets,
     };
+  }
+
+  // Overload signatures
+  public static classifyLifeCycleStage(fs: FinancialStatements): LifeCycleType;
+  public static classifyLifeCycleStage(cashFlow: CashFlow): LifeCycleType;
+  public static classifyLifeCycleStage(
+    arg: FinancialStatements | CashFlow,
+  ): LifeCycleType {
+    let operatingCashFlow: number;
+    let investingCashFlow: number;
+    let financingCashFlow: number;
+
+    if ('cashFlow' in arg) {
+      // Info Murky (20240505): FinancialStatement
+      operatingCashFlow = parseFloat(
+        arg.cashFlow.operatingActivities.weightedAverageCost,
+      );
+      investingCashFlow = parseFloat(
+        arg.cashFlow.investingActivities.weightedAverageCost,
+      );
+      financingCashFlow = parseFloat(
+        arg.cashFlow.financingActivities.weightedAverageCost,
+      );
+    } else if ('operatingActivities' in arg) {
+      // Info Murky (20240505): CashFlow
+      operatingCashFlow = parseFloat(
+        arg.operatingActivities.weightedAverageCost,
+      );
+      investingCashFlow = parseFloat(
+        arg.investingActivities.weightedAverageCost,
+      );
+      financingCashFlow = parseFloat(
+        arg.financingActivities.weightedAverageCost,
+      );
+    } else {
+      return LifeCycleType.unknown;
+    }
+
+    // Classify based on cash flow ratios
+    if (
+      operatingCashFlow < 0 &&
+      investingCashFlow < 0 &&
+      financingCashFlow >= 0
+    ) {
+      return LifeCycleType.introduction;
+    } else if (
+      operatingCashFlow > 0 &&
+      investingCashFlow < 0 &&
+      financingCashFlow >= 0
+    ) {
+      return LifeCycleType.growth;
+    } else if (
+      operatingCashFlow > 0 &&
+      investingCashFlow <= 0 &&
+      financingCashFlow < 0
+    ) {
+      return LifeCycleType.maturity;
+    } else if (
+      operatingCashFlow <= 0 &&
+      investingCashFlow >= 0 &&
+      financingCashFlow < 0
+    ) {
+      return LifeCycleType.decline;
+    } else if (
+      operatingCashFlow > 0 &&
+      investingCashFlow < 0 &&
+      financingCashFlow > 0
+    ) {
+      return LifeCycleType.renewal;
+    } else {
+      return LifeCycleType.unknown;
+    }
   }
 }
