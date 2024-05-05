@@ -75,7 +75,7 @@ export class AuditReportsHelperService {
     };
   }
 
-  public static generateCashFlowStatementRatio(fs: FinancialStatements): {
+  public static generateCashFlowRatio(fs: FinancialStatements): {
     [key: string]: number;
   } {
     const { balanceSheet, cashFlow } = fs;
