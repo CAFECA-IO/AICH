@@ -75,3 +75,10 @@ export function cleanBoolean(booleanStr: unknown): boolean {
 
   return false;
 }
+
+export function isZero(number: number | string): boolean {
+  if (typeof number === 'string') {
+    return parseFloat(number) === 0;
+  }
+  return number === 0;
+}
