@@ -5,15 +5,19 @@ import {
   IsEnum,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   ValidateNested,
 } from 'class-validator';
+
 import {
   EventType,
   PaymentStatusType,
   PaymentPeriodType,
 } from '../types/account';
+
 import { AccountInvoiceWithPaymentMethod } from '../interfaces/account';
+
 export class StartAndEndDateDTO {
   @IsNumber()
   start_date: number; // timestamp
@@ -57,9 +61,17 @@ export class PaymentDetailsDTO {
 }
 
 export class AccountInvoiceDataWithPaymentMethodDTO {
-  @ValidateNested()
-  @Type(() => StartAndEndDateDTO)
-  date: StartAndEndDateDTO;
+  @IsPositive()
+  date: number;
+
+  @IsString()
+  invoiceId: string;
+
+  @IsString()
+  projectId: string;
+
+  @IsString()
+  contractId: string;
 
   @IsEnum(EventType)
   eventType: EventType;
@@ -82,10 +94,10 @@ export function transformDTOToInvoiceWithPaymentMethod(
   dto: AccountInvoiceDataWithPaymentMethodDTO,
 ): AccountInvoiceWithPaymentMethod {
   return {
-    date: {
-      start_date: dto.date.start_date,
-      end_date: dto.date.end_date,
-    },
+    date: dto.date,
+    invoiceId: dto.invoiceId,
+    projectId: dto.projectId,
+    contractId: dto.contractId,
     eventType: dto.eventType,
     paymentReason: dto.paymentReason,
     description: dto.description,
