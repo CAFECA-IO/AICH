@@ -112,7 +112,9 @@ export class LlamaService<T> {
         messages: [
           {
             role: 'user',
-            content: !retry ? text : `你的回應不符合格式，請再試一次 ${text}`,
+            content: !retry
+              ? text
+              : `你的回應不符合格式，請再試一次，請務必在你的回答答案前後都加上\`\`\` ${text}`,
           },
         ],
         stream: false,
