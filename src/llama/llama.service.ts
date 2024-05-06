@@ -54,27 +54,6 @@ export class LlamaService<T> {
     }
   }
 
-  // private extractJSONFromText(text: string): string | null {
-  //   // This regular expression matches text between triple backticks
-  //   const regex = /```([^`]+)```/;
-
-  //   // Executing the regex on the input text
-  //   const match = regex.exec(text);
-
-  //   if (match && match[1]) {
-  //     // match[1] contains the first captured group which is the text between the backticks
-  //     let jsonString = match[1].trim();
-
-  //     // remove "json" if it is the first word
-  //     if (jsonString.startsWith('json')) {
-  //       jsonString = jsonString.slice(4);
-  //     }
-
-  //     return jsonString.replace(/\n/g, '');
-  //   }
-  //   return null;
-  // }
-
   private extractJSONFromText(text: string): string | null {
     // Matches text between triple backticks with an optional "json" prefix
     const regex = /```(?:json)?([^`]+)```/g;
@@ -103,8 +82,6 @@ export class LlamaService<T> {
         .replace(/\\t/g, '') // Remove tab escape characters
         .replace(/\t/g, '') // Remove tab escape characters
         .trim();
-
-      console.log('Cleaned JSON String:', jsonString);
 
       try {
         // Validate JSON by parsing
