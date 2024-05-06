@@ -5,6 +5,7 @@ import { ChatResponse, ModelResponse, Ollama } from 'ollama';
 import { LlamaServiceOptions } from 'src/common/interfaces/llama';
 @Injectable()
 export class LlamaService<T> {
+  private typeChecker: T = '' as T;
   private logger = new Logger(LlamaService.name);
   private ollama: Ollama;
   constructor(
@@ -85,7 +86,9 @@ export class LlamaService<T> {
 
       try {
         // Validate JSON by parsing
-        JSON.parse(jsonString);
+        if (this.checkGenaticType() !== 'string') {
+          JSON.parse(jsonString);
+        }
         return jsonString;
       } catch (e) {
         // If parsing fails, return null
@@ -109,7 +112,9 @@ export class LlamaService<T> {
         messages: [
           {
             role: 'user',
-            content: !retry ? text : `你的回應不符合格式，請再試一次 ${text}`,
+            content: !retry
+              ? text
+              : `你的回應不符合格式，請再試一次，請務必在你的回答答案前後都加上\`\`\` ${text}`,
           },
         ],
         stream: false,
@@ -130,7 +135,11 @@ export class LlamaService<T> {
     }
 
     try {
-      return this.options.typeCleaner(JSON.parse(data));
+      const result =
+        this.checkGenaticType() === 'string'
+          ? this.options.typeCleaner(data)
+          : this.options.typeCleaner(JSON.parse(data));
+      return result;
     } catch (error) {
       this.logger.error(`LLAMA Failed to parse JSON data\n ${error}`);
       return null;
@@ -152,5 +161,9 @@ export class LlamaService<T> {
       response = await this.generateResponse(input, true);
     }
     return response;
+  }
+
+  private checkGenaticType(): string {
+    return typeof this.typeChecker;
   }
 }

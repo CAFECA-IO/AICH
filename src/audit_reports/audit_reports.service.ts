@@ -9,6 +9,7 @@ import {
 import { BalanceSheet } from 'src/common/interfaces/balance_sheet';
 import { ComprehensiveIncome } from 'src/common/interfaces/comprehensive_income';
 import { CashFlow } from 'src/common/interfaces/cash_flow';
+import { ProgressStatus } from 'src/common/types/common';
 @Injectable()
 export class AuditReportsService {
   private readonly logger = new Logger(AuditReportsService.name);
@@ -35,7 +36,7 @@ export class AuditReportsService {
     return hashedKey;
   }
 
-  public getAuditReportAnalyzingStatus(resultId: string): string {
+  public getAuditReportAnalyzingStatus(resultId: string): ProgressStatus {
     const result = this.cache.get(resultId);
     if (!result) {
       return 'notFound';
@@ -119,6 +120,8 @@ export class AuditReportsService {
     const summary = await this.llamaService.genetateResponseLoop(
       `請依照你剛才為公司做的分析，幫公司財務狀況做總結, 資料如下\n：${llamaMemory}`,
     );
+
+    console.log('llamaMemory:', llamaMemory);
 
     const report: AuditReport = {
       balanceSheet: {
