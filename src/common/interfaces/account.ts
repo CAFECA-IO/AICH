@@ -18,10 +18,8 @@ export interface AccountResultStatus {
 }
 
 export interface AccountInvoiceData {
-  date: {
-    start_date: number; // timestamp
-    end_date: number; // timestamp
-  };
+  date: number; // timestamp
+  invoiceId: string;
   eventType: EventType;
   paymentReason: string;
   description: string;
@@ -36,6 +34,8 @@ export interface AccountInvoiceData {
 }
 
 export interface AccountInvoiceWithPaymentMethod extends AccountInvoiceData {
+  projectId: string;
+  contractId: string;
   payment: AccountInvoiceData['payment'] & {
     paymentMethod: string;
     paymentPeriod: PaymentPeriodType;
@@ -55,7 +55,11 @@ export interface AccountLineItem {
 
 export interface AccountVoucherMetaData {
   date: number;
+  paymentReason: string;
   voucherType: VoucherType;
+  invoiceId: string;
+  projectId: string;
+  contractId: string;
   venderOrSupplyer: string;
   description: string;
   totalPrice: number;
@@ -82,10 +86,7 @@ export const eventTypeToVoucherType = {
 };
 
 export const AccountInvoiceDataObjectVersion = {
-  date: {
-    start_date: 'use YYYY-MM-DD format',
-    end_date: 'use YYYY-MM-DD format',
-  },
+  date: 'use YYYY-MM-DD format',
   eventType: "'income' | 'payment' | 'transfer'",
   paymentReason: 'string',
   description: 'string',
@@ -128,31 +129,44 @@ export const AccountVoucherObjectVersion = {
   ],
 };
 
+// Deprecated: Murky(20240429): change to enum
 // Info Murky (20240416): Type Guard
-export function isEventType(data: string): data is EventType {
-  return data === 'income' || data === 'payment' || data === 'transfer';
+// export function isEventType(data: string): data is EventType {
+//   return data === 'income' || data === 'payment' || data === 'transfer';
+// }
+
+// export function isVoucherType(data: string): data is VoucherType {
+//   return data === 'receive' || data === 'expense';
+// }
+
+// export function isPaymentStatusType(data: string): data is PaymentStatusType {
+//   return data === 'paid' || data === 'unpaid' || data === 'partial';
+// }
+
+// export function isPaymentPeriodType(data: string): data is PaymentPeriodType {
+//   return data === 'atOnce' || data === 'installment';
+// }
+export function isEventType(data: any): data is EventType {
+  return Object.values(EventType).includes(data);
 }
 
-export function isVoucherType(data: string): data is VoucherType {
-  return data === 'receive' || data === 'expense';
+export function isVoucherType(data: any): data is VoucherType {
+  return Object.values(VoucherType).includes(data);
 }
 
-export function isPaymentStatusType(data: string): data is PaymentStatusType {
-  return data === 'paid' || data === 'unpaid' || data === 'partial';
+export function isPaymentStatusType(data: any): data is PaymentStatusType {
+  return Object.values(PaymentStatusType).includes(data);
 }
 
-export function isPaymentPeriodType(data: string): data is PaymentPeriodType {
-  return data === 'atOnce' || data === 'installment';
+export function isPaymentPeriodType(data: any): data is PaymentPeriodType {
+  return Object.values(PaymentPeriodType).includes(data);
 }
 
 // Info Murky (20240416): Check if data 本來進來就可能是any形式的data，然後我們chec他他有沒有以下屬性
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAccountInvoiceData(data: any): data is AccountInvoiceData {
-  // 檢查date是否存在，且start_date和end_date是否為數字
-  const validDate =
-    data.date &&
-    typeof data.date.start_date === 'number' &&
-    typeof data.date.end_date === 'number';
+  // 檢查date是否存在
+  const validDate = data.date && typeof data.date === 'number';
 
   // 檢查eventType是否符合EventType類型（假設EventType為一個字符串的聯合類型）
   const validEventType = isEventType(data.eventType);
@@ -186,6 +200,8 @@ export function isAccountInvoiceWithPaymentMethod(
   data: any,
 ): data is AccountInvoiceWithPaymentMethod {
   return (
+    typeof data.projectId === 'string' &&
+    typeof data.contractId === 'string' &&
     typeof data.payment?.paymentMethod === 'string' &&
     isPaymentPeriodType(data.payment?.paymentPeriod) &&
     typeof data.payment?.installmentPeriod === 'number' &&
@@ -221,6 +237,10 @@ export function isAccountVoucherMetaData(
   return (
     data &&
     typeof data.date === 'number' &&
+    typeof data.invoiceId === 'string' &&
+    typeof data.projectId === 'string' &&
+    typeof data.contractId === 'string' &&
+    typeof data.paymentReason === 'string' &&
     isVoucherType(data.voucherType) &&
     typeof data.venderOrSupplyer === 'string' &&
     typeof data.description === 'string' &&
@@ -313,11 +333,9 @@ export function cleanInvoiceData(rawData: any): AccountInvoiceData {
 
   // Construct the new object with the cleaned and converted data
   const cleanedData: AccountInvoiceData = {
-    date: {
-      start_date: convertDateToTimestamp(date.start_date),
-      end_date: convertDateToTimestamp(date.end_date),
-    },
-    eventType: isEventType(eventType) ? eventType : 'income',
+    date: convertDateToTimestamp(date),
+    invoiceId: rawData.invoiceId || '',
+    eventType: isEventType(eventType) ? eventType : EventType.Income,
     paymentReason: paymentReason || '',
     description: description || '',
     venderOrSupplyer: venderOrSupplyer || '',
@@ -361,7 +379,11 @@ export function cleanedVoucherMetaData(rawData: any): AccountVoucherMetaData {
 
   const cleanedData: AccountVoucherMetaData = {
     date: convertDateToTimestamp(date),
-    voucherType: isVoucherType(voucherType) ? voucherType : 'receive',
+    invoiceId: rawData.invoiceId || '',
+    projectId: rawData.projectId || '',
+    contractId: rawData.contractId || '',
+    paymentReason: rawData.paymentReason || '',
+    voucherType: isVoucherType(voucherType) ? voucherType : VoucherType.Receive,
     venderOrSupplyer: venderOrSupplyer || '',
     description: description || '',
     totalPrice: cleanNumber(totalPrice),
@@ -370,11 +392,11 @@ export function cleanedVoucherMetaData(rawData: any): AccountVoucherMetaData {
     paymentMethod: paymentMethod || '',
     paymentPeriod: isPaymentPeriodType(paymentPeriod)
       ? paymentPeriod
-      : 'atOnce',
+      : PaymentPeriodType.AtOnce,
     installmentPeriod: cleanNumber(installmentPeriod),
     paymentStatus: isPaymentStatusType(paymentStatus)
       ? paymentStatus
-      : 'unpaid',
+      : PaymentStatusType.Unpaid,
     alreadyPaidAmount: cleanNumber(alreadyPaidAmount),
   };
 

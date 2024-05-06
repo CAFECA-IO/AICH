@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   FileTypeValidator,
   Get,
@@ -16,7 +17,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { APIResponseType } from 'src/common/interfaces/response';
 import { version } from 'src/common/utils/version';
 import { ProgressStatus } from 'src/common/types/common';
-import { AccountInvoiceData } from 'src/common/interfaces/account';
+import {
+  AccountInvoiceData,
+  AccountResultStatus,
+} from 'src/common/interfaces/account';
 
 @Controller('ocr')
 export class OcrController {
@@ -42,15 +46,24 @@ export class OcrController {
       }),
     )
     image: Express.Multer.File,
-  ): Promise<APIResponseType<string[]>> {
+    @Body('imageName') imageName: string,
+  ): Promise<APIResponseType<AccountResultStatus[]>> {
     try {
-      const hasedId = await this.ocrService.extractTextFromImage(image);
+      const hasedId = await this.ocrService.extractTextFromImage(
+        image,
+        imageName,
+      );
       return {
         powerby: `powered by AICH ${version}`,
         success: true,
         code: '200',
         message: 'Image uploaded to OCR successfully',
-        payload: [hasedId],
+        payload: [
+          {
+            resultId: hasedId,
+            status: 'inProgress',
+          },
+        ],
       };
     } catch (error) {
       this.logger.error(`Error in uploading image to OCR: ${error}`);
