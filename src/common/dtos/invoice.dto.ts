@@ -18,14 +18,6 @@ import {
 
 import { AccountInvoiceWithPaymentMethod } from '../interfaces/account';
 
-export class StartAndEndDateDTO {
-  @IsNumber()
-  start_date: number; // timestamp
-
-  @IsNumber()
-  end_date: number; // timestamp
-}
-
 export class PaymentDetailsDTO {
   @IsNumber()
   price: number;

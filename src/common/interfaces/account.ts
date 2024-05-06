@@ -86,10 +86,7 @@ export const eventTypeToVoucherType = {
 };
 
 export const AccountInvoiceDataObjectVersion = {
-  date: {
-    start_date: 'use YYYY-MM-DD format',
-    end_date: 'use YYYY-MM-DD format',
-  },
+  date: 'use YYYY-MM-DD format',
   eventType: "'income' | 'payment' | 'transfer'",
   paymentReason: 'string',
   description: 'string',
@@ -168,11 +165,8 @@ export function isPaymentPeriodType(data: any): data is PaymentPeriodType {
 // Info Murky (20240416): Check if data 本來進來就可能是any形式的data，然後我們chec他他有沒有以下屬性
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAccountInvoiceData(data: any): data is AccountInvoiceData {
-  // 檢查date是否存在，且start_date和end_date是否為數字
-  const validDate =
-    data.date &&
-    typeof data.date.start_date === 'number' &&
-    typeof data.date.end_date === 'number';
+  // 檢查date是否存在
+  const validDate = data.date && typeof data.date === 'number';
 
   // 檢查eventType是否符合EventType類型（假設EventType為一個字符串的聯合類型）
   const validEventType = isEventType(data.eventType);

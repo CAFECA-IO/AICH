@@ -54,24 +54,69 @@ export class LlamaService<T> {
     }
   }
 
+  // private extractJSONFromText(text: string): string | null {
+  //   // This regular expression matches text between triple backticks
+  //   const regex = /```([^`]+)```/;
+
+  //   // Executing the regex on the input text
+  //   const match = regex.exec(text);
+
+  //   if (match && match[1]) {
+  //     // match[1] contains the first captured group which is the text between the backticks
+  //     let jsonString = match[1].trim();
+
+  //     // remove "json" if it is the first word
+  //     if (jsonString.startsWith('json')) {
+  //       jsonString = jsonString.slice(4);
+  //     }
+
+  //     return jsonString.replace(/\n/g, '');
+  //   }
+  //   return null;
+  // }
+
   private extractJSONFromText(text: string): string | null {
-    // This regular expression matches text between triple backticks
-    const regex = /```([^`]+)```/;
+    // Matches text between triple backticks with an optional "json" prefix
+    const regex = /```(?:json)?([^`]+)```/g;
 
-    // Executing the regex on the input text
-    const match = regex.exec(text);
+    let jsonString: string | null = null;
+    let match: RegExpExecArray | null;
 
-    if (match && match[1]) {
-      // match[1] contains the first captured group which is the text between the backticks
-      const jsonString = match[1].trim();
-
-      // remove "json" if it is the first word
-      if (jsonString.startsWith('json')) {
-        return jsonString.slice(4);
+    // Loop to find the first JSON block
+    while ((match = regex.exec(text)) !== null) {
+      if (match[1]) {
+        jsonString = match[1].trim();
+        break; // Stop at the first occurrence
       }
-
-      return jsonString;
     }
+
+    if (jsonString) {
+      // Replace problematic escape characters
+      jsonString = jsonString
+        .replace(/\s+/g, ' ') // Normalize whitespaces
+        .replace(/\\n/g, '') // Remove newline escape characters
+        .replace(/\n/g, '')
+        .replace(/\\_/g, '_') // Replace escaped underscores
+        .replace(/\n/g, '')
+        .replace(/\\-/g, '-')
+        .replace(/\-/g, '-')
+        .replace(/\\t/g, '') // Remove tab escape characters
+        .replace(/\t/g, '') // Remove tab escape characters
+        .trim();
+
+      console.log('Cleaned JSON String:', jsonString);
+
+      try {
+        // Validate JSON by parsing
+        JSON.parse(jsonString);
+        return jsonString;
+      } catch (e) {
+        // If parsing fails, return null
+        console.error('Invalid JSON extracted:', e);
+        return null;
+      }
+    }
+
     return null;
   }
 
