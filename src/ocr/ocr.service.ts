@@ -19,6 +19,7 @@ export class OcrService {
 
   public async extractTextFromImage(
     image: Express.Multer.File,
+    imageName: string,
   ): Promise<string> {
     // Info Murky(20240429): image Buffer is the "Buffer" type of the image file
     let getneratedDescription: string[];
@@ -44,7 +45,7 @@ export class OcrService {
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
-      this.ocrToAccountInvoiceData(hashedKey, getneratedDescription);
+      this.ocrToAccountInvoiceData(hashedKey, imageName, getneratedDescription);
       return hashedKey;
     } catch (error) {
       this.logger.error(
@@ -78,6 +79,7 @@ export class OcrService {
 
   private async ocrToAccountInvoiceData(
     hashedId: string,
+    imageName: string,
     description: string[],
   ): Promise<void> {
     // Todo: post to llama
@@ -89,6 +91,8 @@ export class OcrService {
       try {
         invoiceGenerated =
           await this.llamaService.genetateResponseLoop(descriptionString);
+
+        invoiceGenerated.invoiceId = imageName;
       } catch (error) {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,

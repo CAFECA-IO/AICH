@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   FileTypeValidator,
   Get,
@@ -45,9 +46,13 @@ export class OcrController {
       }),
     )
     image: Express.Multer.File,
+    @Body('imageName') imageName: string,
   ): Promise<APIResponseType<AccountResultStatus[]>> {
     try {
-      const hasedId = await this.ocrService.extractTextFromImage(image);
+      const hasedId = await this.ocrService.extractTextFromImage(
+        image,
+        imageName,
+      );
       return {
         powerby: `powered by AICH ${version}`,
         success: true,

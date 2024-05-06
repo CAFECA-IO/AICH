@@ -18,10 +18,8 @@ export interface AccountResultStatus {
 }
 
 export interface AccountInvoiceData {
-  date: {
-    start_date: number; // timestamp
-    end_date: number; // timestamp
-  };
+  date: number; // timestamp
+  invoiceId: string;
   eventType: EventType;
   paymentReason: string;
   description: string;
@@ -36,6 +34,8 @@ export interface AccountInvoiceData {
 }
 
 export interface AccountInvoiceWithPaymentMethod extends AccountInvoiceData {
+  projectId: string;
+  contractId: string;
   payment: AccountInvoiceData['payment'] & {
     paymentMethod: string;
     paymentPeriod: PaymentPeriodType;
@@ -55,7 +55,11 @@ export interface AccountLineItem {
 
 export interface AccountVoucherMetaData {
   date: number;
+  paymentReason: string;
   voucherType: VoucherType;
+  invoiceId: string;
+  projectId: string;
+  contractId: string;
   venderOrSupplyer: string;
   description: string;
   totalPrice: number;
@@ -202,6 +206,8 @@ export function isAccountInvoiceWithPaymentMethod(
   data: any,
 ): data is AccountInvoiceWithPaymentMethod {
   return (
+    typeof data.projectId === 'string' &&
+    typeof data.contractId === 'string' &&
     typeof data.payment?.paymentMethod === 'string' &&
     isPaymentPeriodType(data.payment?.paymentPeriod) &&
     typeof data.payment?.installmentPeriod === 'number' &&
@@ -237,6 +243,10 @@ export function isAccountVoucherMetaData(
   return (
     data &&
     typeof data.date === 'number' &&
+    typeof data.invoiceId === 'string' &&
+    typeof data.projectId === 'string' &&
+    typeof data.contractId === 'string' &&
+    typeof data.paymentReason === 'string' &&
     isVoucherType(data.voucherType) &&
     typeof data.venderOrSupplyer === 'string' &&
     typeof data.description === 'string' &&
@@ -329,10 +339,8 @@ export function cleanInvoiceData(rawData: any): AccountInvoiceData {
 
   // Construct the new object with the cleaned and converted data
   const cleanedData: AccountInvoiceData = {
-    date: {
-      start_date: convertDateToTimestamp(date.start_date),
-      end_date: convertDateToTimestamp(date.end_date),
-    },
+    date: convertDateToTimestamp(date),
+    invoiceId: rawData.invoiceId || '',
     eventType: isEventType(eventType) ? eventType : EventType.Income,
     paymentReason: paymentReason || '',
     description: description || '',
@@ -377,6 +385,10 @@ export function cleanedVoucherMetaData(rawData: any): AccountVoucherMetaData {
 
   const cleanedData: AccountVoucherMetaData = {
     date: convertDateToTimestamp(date),
+    invoiceId: rawData.invoiceId || '',
+    projectId: rawData.projectId || '',
+    contractId: rawData.contractId || '',
+    paymentReason: rawData.paymentReason || '',
     voucherType: isVoucherType(voucherType) ? voucherType : VoucherType.Receive,
     venderOrSupplyer: venderOrSupplyer || '',
     description: description || '',

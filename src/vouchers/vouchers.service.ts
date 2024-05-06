@@ -67,7 +67,11 @@ export class VouchersService {
       const invoiceString = JSON.stringify(invoices);
       const metadatas: AccountVoucherMetaData[] = invoices.map((invoice) => {
         return {
-          date: invoice.date.start_date,
+          date: invoice.date,
+          paymentReason: invoice.paymentReason,
+          invoiceId: invoice.invoiceId,
+          projectId: invoice.projectId,
+          contractId: invoice.contractId,
           voucherType: eventTypeToVoucherType[invoice.eventType],
           venderOrSupplyer: invoice.venderOrSupplyer,
           description: invoice.description,

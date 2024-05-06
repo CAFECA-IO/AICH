@@ -67,10 +67,8 @@ SYSTEM """你現在是一位專業的審計員，你需要從發票的文字中�
 
 json格式如下：
 {  
-  "date": {
-    "start_date": "use YYYY-MM-DD format",
-    "end_date": "use YYYY-MM-DD format",
-  },
+  "date": "use YYYY-MM-DD format",
+  "invoiceId": "string",
   "eventType": ""income" | "payment" | "transfer"",
   "paymentReason": "string",
   "description": "string",
@@ -90,10 +88,8 @@ MESSAGE user """f eslite 誠品\n電子發票證明聯\n113年03-04月\nYZ-30887
 MESSAGE assistant """
 \`\`\`
 {
-    "date": {
-        "start_date": 1713052800000,
-        "end_date": 1713052800000
-    },
+    "date":  1713052800000,
+    "invoiceId": "YZ-30887276",
     "eventType": "payment",
     "paymentReason": "管理費用",
     "description": "沒有國家的人(第2版): 180, 憂鬱的貓太郎: 297, 紅與黑(精裝版): 720, 誠品小紙提袋:3, 國家的品格:個人自由與公共利益": 395,
@@ -114,17 +110,18 @@ MESSAGE user """中華電信\n台北營運處113年02月繳費通知\n先生\n�
 MESSAGE assistant """
 \`\`\`
 {
-  date: { start_date: 1704067200000, end_date: 1712620800000 },
-  eventType: 'income',
-  paymentReason: '電信費',
-  description: '光世代電路月租費： 593, HiNet企業專案服務費: 1607',
-  venderOrSupplyer: '中華電信',
-  payment: {
-    price: 2310,
-    hasTax: true,
-    taxPercentage: 2200,
-    hasFee: false,
-    fee: 0
+  "date":  1712620800000,
+  "invoiceId": "YZ-30887276",
+  "eventType": "income",
+  ""paymentReason": "電信費",
+  "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
+  "venderOrSupplyer": "中華電信",
+  "payment": {
+    "price": 2310,
+    "hasTax": true,
+    "taxPercentage": 2200,
+    "hasFee": false,
+    "fee": 0
   }
 }
 \`\`\`
@@ -135,10 +132,8 @@ MESSAGE user """"客戶名稱:墨沫有限公司\n聯絡人:張智崴先生\n公
 MESSAGE assistant """
 \`\`\`
 {
-  "date":{
-    "start_date":1713139200000,
-    "end_date":1713139200000
-  },
+  "date": 1713139200000,
+  "invoiceId": "YZ-30887276",
   "eventType":"payment",
   "paymentReason":"購買軟體",
   "description":"WSTP會計師工作輔助幫手: 88725, 文中網路版主機授權費用: 8400, 文中工作站授權費用: 6300",
