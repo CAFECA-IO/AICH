@@ -145,7 +145,7 @@ export class LlamaService<T> {
     try {
       const result =
         this.checkGenaticType() === 'string'
-          ? this.options.typeCleaner(data)
+          ? (data as T) // Info , workaround for type issue
           : this.options.typeCleaner(JSON.parse(data));
       return result;
     } catch (error) {
