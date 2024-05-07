@@ -5,7 +5,7 @@ import { ChatResponse, ModelResponse, Ollama } from 'ollama';
 import { LlamaServiceOptions } from 'src/common/interfaces/llama';
 @Injectable()
 export class LlamaService<T> {
-  private typeChecker: T = '' as T;
+  private typeChecker: T;
   private logger = new Logger(LlamaService.name);
   private ollama: Ollama;
   constructor(
@@ -86,9 +86,12 @@ export class LlamaService<T> {
 
       try {
         // Validate JSON by parsing
+
+        console.log('jsonStringBeforeParse', jsonString);
         if (this.checkGenaticType() !== 'string') {
           JSON.parse(jsonString);
         }
+        console.log('jsonStringAfterParse', jsonString);
         return jsonString;
       } catch (e) {
         // If parsing fails, return null
@@ -127,13 +130,14 @@ export class LlamaService<T> {
     }
 
     // Deprecated: Murky(20240429): Debug
-    // console.log('llama response', response.message.content);
+    console.log('llama response', response.message.content);
 
     const data =
       this.checkGenaticType() === 'string'
         ? response.message.content
         : this.extractJSONFromText(response.message.content);
 
+    console.log('llama data', data);
     if (!data) {
       return null;
     }
