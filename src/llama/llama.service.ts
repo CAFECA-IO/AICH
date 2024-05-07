@@ -131,7 +131,7 @@ export class LlamaService<T> {
     // Deprecated: Murky(20240429): Debug
     console.log('llama response', response.message.content);
 
-    const data = this.options.typeCleaner
+    const data = !this.options.typeCleaner
       ? response.message.content
       : this.extractJSONFromText(response.message.content);
 
@@ -141,7 +141,7 @@ export class LlamaService<T> {
     }
 
     try {
-      const result = this.options.typeCleaner
+      const result = !this.options.typeCleaner
         ? (data as T) // Info , workaround for type issue
         : this.options.typeCleaner(JSON.parse(data));
       return result;
