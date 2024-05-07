@@ -121,8 +121,6 @@ export class AuditReportsService {
       `請依照你剛才為公司做的分析，幫公司財務狀況做總結, 資料如下\n：${llamaMemory}`,
     );
 
-    console.log('llamaMemory:', llamaMemory);
-
     const report: AuditReport = {
       balanceSheet: {
         balanceSheet,
@@ -148,7 +146,7 @@ export class AuditReportsService {
     this.cache.put(hashedKey, 'success', report);
   }
 
-  private generateSingleReportAnalysis<T>(
+  private async generateSingleReportAnalysis<T>(
     report: T,
     ratios: { [key: string]: number },
     prompt: string,
@@ -157,6 +155,7 @@ export class AuditReportsService {
     const ratiosString = JSON.stringify(ratios);
 
     const promptForLLama = `${prompt}\n 報表資訊： ${reportString} \n 報表比率分析： ${ratiosString}`;
-    return this.llamaService.genetateResponseLoop(promptForLLama);
+    const result = this.llamaService.genetateResponseLoop(promptForLLama);
+    return result;
   }
 }

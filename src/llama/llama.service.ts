@@ -113,7 +113,7 @@ export class LlamaService<T> {
           {
             role: 'user',
             content: !retry
-              ? text
+              ? `${text}, 請使用繁體中文回答`
               : `你的回應不符合格式，請再試一次，請務必在你的回答答案前後都加上\`\`\` ${text}`,
           },
         ],
@@ -127,8 +127,12 @@ export class LlamaService<T> {
     }
 
     // Deprecated: Murky(20240429): Debug
-    console.log('llama response', response.message.content);
-    const data = this.extractJSONFromText(response.message.content);
+    // console.log('llama response', response.message.content);
+
+    const data =
+      this.checkGenaticType() === 'string'
+        ? response.message.content
+        : this.extractJSONFromText(response.message.content);
 
     if (!data) {
       return null;
