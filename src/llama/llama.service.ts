@@ -172,6 +172,7 @@ export class LlamaService<T> {
   }
 
   private checkGenaticType(): string {
+    console.log('this.typeChecker', this.typeChecker);
     return typeof this.typeChecker;
   }
 }
