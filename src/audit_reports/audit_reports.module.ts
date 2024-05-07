@@ -5,14 +5,13 @@ import { LruCacheModule } from 'src/lru_cache/lru_cache.module';
 import { AuditReportsHelperModule } from './audit_reports_helper/audit_reports_helper.module';
 import { LlamaModule } from 'src/llama/llama.module';
 import { audit_report_modelfile } from 'src/constants/modelfiles/audit_report_modelfile';
-import { toString } from 'src/common/interfaces/common';
 @Module({
   imports: [
     AuditReportsHelperModule,
     LlamaModule.forRoot({
       modelName: 'llama_audit_report',
       modelfile: audit_report_modelfile,
-      typeCleaner: toString,
+      typeCleaner: null,
       retryLimit: 10,
     }),
     LruCacheModule.forRoot({

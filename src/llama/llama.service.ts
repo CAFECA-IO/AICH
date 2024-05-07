@@ -5,7 +5,6 @@ import { ChatResponse, ModelResponse, Ollama } from 'ollama';
 import { LlamaServiceOptions } from 'src/common/interfaces/llama';
 @Injectable()
 export class LlamaService<T> {
-  private typeChecker: T;
   private logger = new Logger(LlamaService.name);
   private ollama: Ollama;
   constructor(
@@ -88,7 +87,7 @@ export class LlamaService<T> {
         // Validate JSON by parsing
 
         console.log('jsonStringBeforeParse', jsonString);
-        if (this.checkGenaticType() !== 'string') {
+        if (this.options.typeCleaner) {
           JSON.parse(jsonString);
         }
         console.log('jsonStringAfterParse', jsonString);
@@ -132,10 +131,9 @@ export class LlamaService<T> {
     // Deprecated: Murky(20240429): Debug
     console.log('llama response', response.message.content);
 
-    const data =
-      this.checkGenaticType() === 'string'
-        ? response.message.content
-        : this.extractJSONFromText(response.message.content);
+    const data = this.options.typeCleaner
+      ? response.message.content
+      : this.extractJSONFromText(response.message.content);
 
     console.log('llama data', data);
     if (!data) {
@@ -143,10 +141,9 @@ export class LlamaService<T> {
     }
 
     try {
-      const result =
-        this.checkGenaticType() === 'string'
-          ? (data as T) // Info , workaround for type issue
-          : this.options.typeCleaner(JSON.parse(data));
+      const result = this.options.typeCleaner
+        ? (data as T) // Info , workaround for type issue
+        : this.options.typeCleaner(JSON.parse(data));
       return result;
     } catch (error) {
       this.logger.error(`LLAMA Failed to parse JSON data\n ${error}`);
@@ -169,10 +166,5 @@ export class LlamaService<T> {
       response = await this.generateResponse(input, true);
     }
     return response;
-  }
-
-  private checkGenaticType(): string {
-    console.log('this.typeChecker', this.typeChecker);
-    return typeof this.typeChecker;
   }
 }
