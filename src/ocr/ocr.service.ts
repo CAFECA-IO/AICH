@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AccountInvoiceData } from 'src/common/interfaces/account';
 import { ProgressStatus } from 'src/common/types/common';
 import { GoogleVisionService } from 'src/google_vision/google_vision.service';
+import { LangChainService } from 'src/lang-chain/lang-chain.service';
 import { LlamaService } from 'src/llama/llama.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';
 
@@ -13,6 +14,7 @@ export class OcrService {
     private readonly googleVisionService: GoogleVisionService,
     private readonly cache: LruCacheService<AccountInvoiceData>,
     private llamaService: LlamaService<AccountInvoiceData>,
+    private langChainService: LangChainService,
   ) {
     this.logger.log('OcrService initialized');
   }
@@ -45,7 +47,12 @@ export class OcrService {
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
-      this.ocrToAccountInvoiceData(hashedKey, imageName, getneratedDescription);
+      // this.ocrToAccountInvoiceData(hashedKey, imageName, getneratedDescription);
+      this.langChainService.createInvoice(
+        hashedKey,
+        imageName,
+        getneratedDescription,
+      );
       return hashedKey;
     } catch (error) {
       this.logger.error(
