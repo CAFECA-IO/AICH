@@ -26,7 +26,7 @@ export class AuditReportsController {
       powerby: `powered by AICH ${version}`,
       success: true,
       code: '200',
-      message: 'Invoice uploaded successfully',
+      message: 'Audit Report uploaded successfully',
       payload: {
         resultId: hashedId,
         status: 'inProgress',

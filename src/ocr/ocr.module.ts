@@ -9,6 +9,7 @@ import {
 } from 'src/common/interfaces/account';
 import { invoice_modelfile } from 'src/constants/modelfiles/invoice_modelfile';
 import { LruCacheModule } from 'src/lru_cache/lru_cache.module';
+import { LangChainModule } from 'src/lang-chain/lang-chain.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { LruCacheModule } from 'src/lru_cache/lru_cache.module';
       capacity: 10,
       idLength: 10,
     }),
+    LangChainModule,
   ],
   providers: [OcrService],
   controllers: [OcrController],
