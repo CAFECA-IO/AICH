@@ -47,12 +47,13 @@ export class OcrService {
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
-      // this.ocrToAccountInvoiceData(hashedKey, imageName, getneratedDescription);
-      this.langChainService.createInvoice(
-        hashedKey,
-        imageName,
-        getneratedDescription,
-      );
+      this.ocrToAccountInvoiceData(hashedKey, imageName, getneratedDescription);
+      // Info (Jacky 20240510): create invoice in lang-chain
+      // this.langChainService.createInvoice(
+      //   hashedKey,
+      //   imageName,
+      //   getneratedDescription,
+      // );
       return hashedKey;
     } catch (error) {
       this.logger.error(
