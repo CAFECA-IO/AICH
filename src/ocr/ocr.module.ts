@@ -18,51 +18,59 @@ import {
 // contractId: z.string().describe('合約ID'),
 
 const functionName = 'invoice_extraction';
-const schema = z.object({
-  invoice: z.object({
-    date: z.number().describe('timestamp, the date of the invoice'),
-    eventType: z.string().describe("how to, 'income' | 'payment' | 'transfer'"),
-    paymentReason: z.string().describe('The reason for the payment'),
-    description: z
-      .string()
-      .describe(
-        'The items in the invoice, separated by commas, format: "item: price, item: price, ..."',
-      ),
-    verderOrSupplyer: z
-      .string()
-      .describe('The vendor or supplier of the invoice'),
+// 定義事件類型和付款週期類型
+const EventType = z.union([
+  z.literal('income'),
+  z.literal('payment'),
+  z.literal('transfer'),
+]);
+const PaymentPeriodType = z.union([
+  z.literal('atOnce'),
+  z.literal('installment'),
+]);
+const PaymentStatusType = z.union([
+  z.literal('paid'),
+  z.literal('unpaid'),
+  z.literal('partial'),
+]); // 如果有固定的類型，可以類似 EventType 那樣使用 z.union 定義
 
-    payment: z.object({
-      isRevenue: z
-        .boolean()
-        .describe(
-          'Whether the payment will create revenue, true is money will come in, false is money will go out',
-        ),
-      price: z.number().describe('Total amount happen in this invoice'),
-      hasTax: z.boolean().describe('Whether it includes tax'),
-      taxPercentage: z.number().describe('Tax rate 0 or 5, etc.'),
-      hasFee: z.boolean().describe('Whether it includes handling fee'),
-      fee: z.number().describe('Handling fee amount'),
-      paymentMethod: z
-        .string()
-        .describe('The method of payment when money comes in and goes out'),
-      paymentPeriod: z.string().describe('is atOnce or installment'),
-      installmentPeriod: z
-        .number()
-        .describe('How many periods are there in the installment payment'),
-      paymentAlreadyDone: z
-        .number()
-        .describe('How much money has been paid or received'),
-      paymentStatus: z.string().describe('Payment status'),
-      progress: z
-        .number()
-        .describe(
-          'This is for the contract, see how much work has been done in contract, not the payment progress',
-        ),
-    }),
-  }),
+// IPayment 接口的 schema
+const IPaymentSchema = z.object({
+  isRevenue: z
+    .boolean()
+    .describe('是否會創造收入，true是錢會進來，false是錢會出去'),
+  price: z.number().describe('總金額'),
+  hasTax: z.boolean().describe('是否含稅'),
+  taxPercentage: z.number().describe('稅率 0 or 5等金額'),
+  hasFee: z.boolean().describe('是否含手續額'),
+  fee: z.number().describe('手續費 金額'),
+  paymentMethod: z.string().describe('錢收進來會付出去的方法'),
+  paymentPeriod: PaymentPeriodType.describe('是 atOnce 或 installment'),
+  installmentPeriod: z.number().describe('分期付款有幾期'),
+  paymentAlreadyDone: z.number().describe('已經付了多少錢, 或是收取多少錢'),
+  paymentStatus: PaymentStatusType.describe('付款狀態'),
+  progress: z
+    .number()
+    .describe(
+      '這是給contract 使用的，看contract 實際工作完成了多少%, 不是指付款進度',
+    ),
 });
 
+// IInvoiceWithPaymentMethod 接口的 schema
+const IInvoiceWithPaymentMethodSchema = z.object({
+  invoiceId: z.string().describe('發票ID'),
+  date: z.number().describe('timestamp, the date of the invoice'),
+  eventType: EventType.describe('收入, 支付, 或是轉賬'),
+  paymentReason: z.string().min(0).describe('付款原因，請一定要輸入字'),
+  description: z
+    .string()
+    .min(0)
+    .describe(
+      '發票描述，請依照 項目:價格, 項目:價格 的格式填寫，請一定要輸入字',
+    ),
+  venderOrSupplyer: z.string().describe('供應商或銷售商'),
+  payment: IPaymentSchema,
+});
 const EXTRACTION_TEMPLATE = `
 你是一位專業的記帳員，傳入的資料是一張發票的文字辨識內容, Extract and save the relevant entities mentioned in the following passage together with their properties.
 
@@ -78,7 +86,7 @@ const functions: FunctionDefinition[] = [
     description: 'Extract the information from the invoice',
     parameters: {
       type: 'object',
-      properties: zodToJsonSchema(schema),
+      properties: zodToJsonSchema(IInvoiceWithPaymentMethodSchema),
     },
   },
 ];

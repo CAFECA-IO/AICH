@@ -19,7 +19,7 @@ export interface IVoucherMetaData {
 
 export interface IVoucher {
   voucherIndex: string;
-  invoiceIndex: string; // 改在這裡
+  invoiceIndex: string;
   metadatas: IVoucherMetaData[];
   lineItems: ILineItem[];
 }

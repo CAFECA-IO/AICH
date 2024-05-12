@@ -5,21 +5,15 @@ import {
   Logger,
   Param,
   Post,
-  ValidationPipe,
   Version,
 } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
-import {
-  AccountInvoiceDataWithPaymentMethodDTO,
-  transformDTOToInvoiceWithPaymentMethod,
-} from 'src/common/dtos/invoice.dto';
 import { APIResponseType } from 'src/common/interfaces/response';
-import {
-  AccountResultStatus,
-  AccountVoucher,
-} from 'src/common/interfaces/account';
+import { AccountResultStatus } from 'src/common/interfaces/account';
 import { version } from 'src/common/utils/version';
 import { ProgressStatus } from 'src/common/types/common';
+import { IInvoiceWithPaymentMethod } from 'src/common/interfaces/invoice';
+import { IVoucher } from 'src/common/interfaces/voucher';
 
 @Controller('vouchers')
 export class VouchersController {
@@ -30,24 +24,23 @@ export class VouchersController {
   @Post('upload_invoice')
   @Version('1')
   uploadInvoice(
-    @Body(new ValidationPipe({ transform: true }))
-    invoices: AccountInvoiceDataWithPaymentMethodDTO[],
+    @Body()
+    invoices: IInvoiceWithPaymentMethod[],
   ): APIResponseType<AccountResultStatus> {
-    const invoiceWithPaymentMethod = invoices.map((invoice) => {
-      return transformDTOToInvoiceWithPaymentMethod(invoice);
-    });
+    // const invoiceWithPaymentMethod = invoices.map((invoice) => {
+    //   return transformDTOToInvoiceWithPaymentMethod(invoice);
+    // });
 
-    const hashedId = this.vouchersService.generateVoucherFromInvoices(
-      invoiceWithPaymentMethod,
-    );
+    const { id, status } =
+      this.vouchersService.generateVoucherFromInvoices(invoices);
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
       code: '200',
       message: 'Invoice uploaded successfully',
       payload: {
-        resultId: hashedId,
-        status: 'inProgress',
+        resultId: id,
+        status: status,
       },
     };
   }
@@ -71,7 +64,7 @@ export class VouchersController {
   @Version('1')
   getProcessResult(
     @Param('resultId') resultId: string,
-  ): APIResponseType<AccountVoucher | null> {
+  ): APIResponseType<IVoucher | null> {
     const result = this.vouchersService.getVoucherAnalyzingResult(resultId);
     return {
       powerby: `powered by AICH ${version}`,

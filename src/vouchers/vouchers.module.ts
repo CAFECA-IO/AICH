@@ -38,7 +38,7 @@ const prompt = PromptTemplate.fromTemplate(EXTRACTION_TEMPLATE);
 const functions: FunctionDefinition[] = [
   {
     name: functionName,
-    description: 'Extract the information from the invoice',
+    description: 'Extract the information from the invoice json',
     parameters: {
       type: 'object',
       properties: zodToJsonSchema(schema),
@@ -53,7 +53,7 @@ const functionCall: FunctionCallOption = {
 @Module({
   imports: [
     LangChainModule.forRoot({
-      moduleName: 'OcrModule',
+      moduleName: 'VouchersModule',
       functionCallOption: functionCall,
       functions: functions,
       prompt: prompt,

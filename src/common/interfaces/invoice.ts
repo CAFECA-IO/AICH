@@ -18,7 +18,9 @@ export interface IInvoiceWithPaymentMethod {
   description: string;
   venderOrSupplyer: string;
   projectId: string;
+  project: string;
   contractId: string;
+  contract: string;
   payment: IPayment;
 }
 
@@ -30,7 +32,9 @@ export interface IInvoice {
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;
+  project: string;
   projectId: string;
+  contract: string;
   contractId: string;
   payment: IPartialPaymentForInvoiceUpload;
 }
@@ -44,7 +48,9 @@ export function isIInvoice(data: IInvoice): data is IInvoice {
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
+    typeof data.project === 'string' &&
     typeof data.projectId === 'string' &&
+    typeof data.contract === 'string' &&
     typeof data.contractId === 'string' &&
     isIPartialPaymentForInvoiceUpload(data.payment)
   );
@@ -60,28 +66,16 @@ export function isIInvoiceWithPaymentMethod(
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
+    typeof data.project === 'string' &&
     typeof data.projectId === 'string' &&
+    typeof data.contract === 'string' &&
     typeof data.contractId === 'string' &&
     isIPayment(data.payment)
   );
 }
 
-export function cleanIInvoice(data: any): IInvoice {
-  return {
-    invoiceId: data.invoiceId,
-    date: data.date,
-    eventType: data.eventType,
-    paymentReason: data.paymentReason,
-    description: data.description,
-    venderOrSupplyer: data.venderOrSupplyer,
-    projectId: data.projectId,
-    contractId: data.contractId,
-    payment: data.payment,
-  };
-}
-
 // Cleaner
-export function cleanInvoiceData(data: any): IInvoice {
+export function cleanInvoice(data: any): IInvoice {
   if (!data) {
     throw new Error('Invalid invoice data, data is empty');
   }

@@ -1,40 +1,65 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { eventTypeToVoucherType } from 'src/common/interfaces/account';
 import {
-  AccountInvoiceWithPaymentMethod,
-  AccountLineItem,
-  AccountVoucher,
-  AccountVoucherMetaData,
-  cleanVoucherData,
-  eventTypeToVoucherType,
-} from 'src/common/interfaces/account';
+  IInvoiceWithPaymentMethod,
+  isIInvoiceWithPaymentMethod,
+} from 'src/common/interfaces/invoice';
+import { ILineItem } from 'src/common/interfaces/line_item';
+import { IVoucher, IVoucherMetaData } from 'src/common/interfaces/voucher';
 import { ProgressStatus } from 'src/common/types/common';
-import { LlamaService } from 'src/llama/llama.service';
+import { LangChainService } from 'src/lang_chain/lang_chain.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';
 
 @Injectable()
 export class VouchersService {
   private readonly logger = new Logger(VouchersService.name);
+  private today = new Date();
+  private voucherIdxCounter = 1;
 
   constructor(
-    private readonly cache: LruCacheService<AccountVoucher>,
-    private readonly llamaService: LlamaService<AccountLineItem[]>,
+    private readonly cache: LruCacheService<IVoucher>,
+    private readonly langChainService: LangChainService,
   ) {
     this.logger.log('VouchersService initialized');
   }
 
-  public generateVoucherFromInvoices(
-    invoices: AccountInvoiceWithPaymentMethod[],
-  ): string {
+  private returnNotSuccessStatus(errorMessage: ProgressStatus) {
+    const hashedKey = this.cache.put(errorMessage, errorMessage, null);
+    return {
+      id: hashedKey,
+      status: errorMessage,
+    };
+  }
+
+  public generateVoucherFromInvoices(invoices: IInvoiceWithPaymentMethod[]): {
+    id: string;
+    status: ProgressStatus;
+  } {
+    // Info Murky (20240512) if no invoice, return invalid
+    if (
+      !invoices ||
+      invoices.length === 0 ||
+      !invoices.every((invoice) => isIInvoiceWithPaymentMethod(invoice))
+    ) {
+      return this.returnNotSuccessStatus('invalidInput');
+    }
+
     const invoiceString = JSON.stringify(invoices);
     const hashedKey = this.cache.hashId(invoiceString);
     if (this.cache.get(hashedKey).value) {
-      return `Invoices data already uploaded, use resultId: ${hashedKey} to retrieve the result`;
+      return {
+        id: hashedKey,
+        status: 'alreadyUpload',
+      };
     }
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
     this.invoicesToAccountVoucherData(hashedKey, invoices);
-    return hashedKey;
+    return {
+      id: hashedKey,
+      status: 'inProgress',
+    };
   }
 
   public getVoucherAnalyzingStatus(resultId: string): ProgressStatus {
@@ -46,7 +71,7 @@ export class VouchersService {
     return result.status;
   }
 
-  public getVoucherAnalyzingResult(resultId: string): AccountVoucher | null {
+  public getVoucherAnalyzingResult(resultId: string): IVoucher | null {
     const result = this.cache.get(resultId);
     if (!result) {
       return null;
@@ -61,56 +86,68 @@ export class VouchersService {
 
   private async invoicesToAccountVoucherData(
     hashedId: string,
-    invoices: AccountInvoiceWithPaymentMethod[],
+    invoices: IInvoiceWithPaymentMethod[],
   ): Promise<void> {
     try {
       const invoiceString = JSON.stringify(invoices);
-      const metadatas: AccountVoucherMetaData[] = invoices.map((invoice) => {
+      const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
         return {
           date: invoice.date,
-          paymentReason: invoice.paymentReason,
-          invoiceId: invoice.invoiceId,
-          projectId: invoice.projectId,
-          contractId: invoice.contractId,
           voucherType: eventTypeToVoucherType[invoice.eventType],
-          venderOrSupplyer: invoice.venderOrSupplyer,
+          companyId: invoice.venderOrSupplyer,
+          companyName: invoice.venderOrSupplyer,
           description: invoice.description,
-          totalPrice: invoice.payment.price,
-          taxPercentage: invoice.payment.taxPercentage,
-          fee: invoice.payment.fee,
-          paymentMethod: invoice.payment.paymentMethod,
-          paymentPeriod: invoice.payment.paymentPeriod,
-          installmentPeriod: invoice.payment.installmentPeriod,
-          paymentStatus: invoice.payment.paymentStatus,
-          alreadyPaidAmount: invoice.payment.alreadyPaidAmount,
+          reason: invoice.paymentReason,
+          projectId: invoice.projectId,
+          project: invoice.project,
+          contractId: invoice.contractId,
+          contract: invoice.contract,
+          payment: invoice.payment,
         };
       });
 
-      let lineItemsGenetaed: AccountLineItem[];
+      let lineItemsGenetaed: ILineItem[];
 
       try {
-        lineItemsGenetaed =
-          await this.llamaService.genetateResponseLoop(invoiceString);
+        lineItemsGenetaed = await this.langChainService.invoke({
+          input: invoiceString,
+        });
+
+        //Depreciate Murky (20240429): debug
+        console.log(JSON.stringify(lineItemsGenetaed, null, 2));
+
+        if (!lineItemsGenetaed) {
+          const errorMessage = 'line items not generated by LLaMA';
+          this.logger.error(errorMessage);
+          throw new Error(errorMessage);
+        }
       } catch (error) {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR invoicesToAccountVoucherData: ${error}`,
         );
-        this.cache.put(hashedId, 'error', null);
+        this.cache.put(hashedId, 'llmError', null);
         return;
       }
 
-      const voucherGenetaed = cleanVoucherData({
-        lineItems: lineItemsGenetaed,
+      if (this.today.getDate() !== new Date().getDate()) {
+        this.today = new Date();
+      }
+      const voucherGenerated: IVoucher = {
+        // Info Murky (20240512) this is not a good way to generate invoiceIndex
+        // it should return array
+        invoiceIndex: invoices[0].invoiceId,
+        voucherIndex: `${this.today.toISOString().slice(0, 10).replace('-', '')}${this.voucherIdxCounter++}`,
         metadatas,
-      });
+        lineItems: lineItemsGenetaed,
+      };
 
-      if (voucherGenetaed) {
-        this.cache.put(hashedId, 'success', voucherGenetaed);
+      if (voucherGenerated) {
+        this.cache.put(hashedId, 'success', voucherGenerated);
       } else {
         this.cache.put(hashedId, 'notFound', null);
       }
     } catch (error) {
-      this.cache.put(hashedId, 'error', null);
+      this.cache.put(hashedId, 'systemError', null);
     }
   }
 }

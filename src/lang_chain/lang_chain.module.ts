@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [ConfigModule],
-  providers: [LangChainService],
 })
 export class LangChainModule {
   static forRoot(options: LangChainServiceOption): DynamicModule {
@@ -13,7 +12,7 @@ export class LangChainModule {
       module: LangChainModule,
       providers: [
         {
-          provide: 'LANG_CHAIN_SERVICE_OPTIONS',
+          provide: 'LANGCHAIN_OPTIONS',
           useValue: options,
         },
         {

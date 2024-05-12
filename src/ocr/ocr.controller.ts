@@ -17,10 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { APIResponseType } from 'src/common/interfaces/response';
 import { version } from 'src/common/utils/version';
 import { ProgressStatus } from 'src/common/types/common';
-import {
-  AccountInvoiceData,
-  AccountResultStatus,
-} from 'src/common/interfaces/account';
+import { AccountResultStatus } from 'src/common/interfaces/account';
 
 import { IInvoice } from 'src/common/interfaces/invoice';
 
@@ -48,12 +45,21 @@ export class OcrController {
       }),
     )
     image: Express.Multer.File,
+    // 需要主動放入 invoiceName, project, projectId, contract, contractId
     @Body('imageName') imageName: string,
+    @Body('project') project: string,
+    @Body('projectId') projectId: string,
+    @Body('contract') contract: string,
+    @Body('contractId') contractId: string,
   ): Promise<APIResponseType<AccountResultStatus[]>> {
     try {
-      const hasedId = await this.ocrService.extractTextFromImage(
+      const { id, status } = await this.ocrService.extractTextFromImage(
         image,
         imageName,
+        project,
+        projectId,
+        contract,
+        contractId,
       );
       return {
         powerby: `powered by AICH ${version}`,
@@ -62,8 +68,8 @@ export class OcrController {
         message: 'Image uploaded to OCR successfully',
         payload: [
           {
-            resultId: hasedId,
-            status: 'inProgress',
+            resultId: id,
+            status: status,
           },
         ],
       };

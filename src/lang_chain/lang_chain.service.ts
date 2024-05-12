@@ -25,7 +25,7 @@ export class LangChainService {
   >;
   private chain: Runnable<ParamsFromFString<any>, never, RunnableConfig>;
   constructor(
-    @Inject('LANG_CHAIN_SERVICE_OPTIONS')
+    @Inject('LANGCHAIN_OPTIONS')
     private options: LangChainServiceOption,
     private configService: ConfigService,
   ) {
@@ -40,7 +40,9 @@ export class LangChainService {
   }
 
   async onModuleInit() {
-    this.chain = await this.options.prompt
+    // Info Murky (20240512) 官網說要用 await，但typescript說不用，所以this.chain暫時不加await
+    // https://js.langchain.com/docs/integrations/chat/ollama_functions
+    this.chain = this.options.prompt
       .pipe(this.model)
       .pipe(new JsonOutputFunctionsParser());
     this.logger.log(
