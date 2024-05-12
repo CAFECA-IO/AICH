@@ -1,10 +1,9 @@
 //https://js.langchain.com/docs/integrations/chat/ollama_functions
 import { Injectable, Logger } from '@nestjs/common';
-import { AccountInvoiceData } from 'src/common/interfaces/account';
+import { IInvoice } from 'src/common/interfaces/invoice';
 import { ProgressStatus } from 'src/common/types/common';
 import { GoogleVisionService } from 'src/google_vision/google_vision.service';
 import { LangChainService } from 'src/lang-chain/lang-chain.service';
-import { LlamaService } from 'src/llama/llama.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';
 
 @Injectable()
@@ -13,8 +12,7 @@ export class OcrService {
 
   constructor(
     private readonly googleVisionService: GoogleVisionService,
-    private readonly cache: LruCacheService<AccountInvoiceData>,
-    private llamaService: LlamaService<AccountInvoiceData>,
+    private readonly cache: LruCacheService<IInvoice>,
     private langChainService: LangChainService,
   ) {
     this.logger.log('OcrService initialized');

@@ -13,7 +13,7 @@ import {
 export interface IInvoiceWithPaymentMethod {
   invoiceId: string;
   date: number; // timestamp
-  eventType: string; // 'income' | 'payment' | 'transfer';
+  eventType: EventType; // 'income' | 'payment' | 'transfer';
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;

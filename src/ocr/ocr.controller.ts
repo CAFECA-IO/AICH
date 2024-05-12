@@ -22,6 +22,8 @@ import {
   AccountResultStatus,
 } from 'src/common/interfaces/account';
 
+import { IInvoice } from 'src/common/interfaces/invoice';
+
 @Controller('ocr')
 export class OcrController {
   private readonly logger = new Logger(OcrController.name);
@@ -96,7 +98,7 @@ export class OcrController {
   @Version('1')
   getProcessResult(
     @Param('resultId') resultId: string,
-  ): APIResponseType<AccountInvoiceData | null> {
+  ): APIResponseType<IInvoice | null> {
     const result = this.ocrService.getOCRResult(resultId);
     return {
       powerby: `powered by AICH ${version}`,
