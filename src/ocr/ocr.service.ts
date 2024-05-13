@@ -209,7 +209,7 @@ ${descriptionString}
 
         invoiceGenerated = await this.langChainService.invoke(
           {
-            input: '',
+            input: descriptionString,
           },
           { recursionLimit: LANG_CHAIN_SERVICE_OPTIONS.recursiveLimit },
         );

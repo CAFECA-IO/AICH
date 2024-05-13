@@ -54,6 +54,6 @@ export class LangChainService {
     // const response = await this.chain.invoke(input, options);
     const response = await this.chain.invoke(input, options);
     console.log('response', response);
-    return response;
+    return JSON.parse(response?.additional_kwargs?.function_call?.arguments);
   }
 }
