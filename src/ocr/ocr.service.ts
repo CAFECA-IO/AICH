@@ -149,64 +149,6 @@ export class OcrService {
 
         this.logger.log(`OCR id ${hashedId} start to generate invoice`);
 
-        // Info Murky (20240429): invoke langChainService, prompt之後要整理
-        const EXTRACTION_TEMPLATE = `
-請根據下列資料描述生成符合結構的發票JSON格式。每一個發票應該包括發票ID、日期（時間戳記）、事件類型（收入、支付或轉賬）、付款原因、描述、供應商或銷售商、項目ID、項目名稱、合同ID、合同名稱和付款詳情。付款詳情應包括是否創造收入、總金額、是否含稅、稅率、是否含手續費、手續費金額、付款方式、付款周期（一次性或分期）、分期付款期數、已經付款的金額、付款狀態以及合同進度百分比。
-
-描述:
-${descriptionString}
-
-請按照以下格式輸出:
-{
-  "invoiceId": "string",
-  "date": "string, yyyy-mm-dd",
-  "eventType": "income | payment | transfer",
-  "paymentReason": "string",
-  "description": "string",
-  "venderOrSupplyer": "string",
-  "payment": {
-    "isRevenue": "boolean",
-    "price": "number",
-    "hasTax": "boolean",
-    "taxPercentage": "number",
-    "hasFee": "boolean",
-    "fee": "number",
-    "paymentMethod": "string",
-    "paymentPeriod": "atOnce | installment",
-    "installmentPeriod": "number",
-    "paymentAlreadyDone": "number",
-    "paymentStatus": "paid | unpaid | partial",
-    "progress": "number"
-  }
-}
-
-請務必讓json輸出格式正確，key的大小寫也需要正確，要使用camelCase，並且不要包在tool和tool_input，如果格式正確就會世界和平，另外你可以得到餅乾作為回報，這個世界就靠你了
-範例：
-{
-  "invoiceid": "notinportant.jpg",
-  "date": "2024-4-14",
-  "eventType": "income",
-  "paymentReason": "文書用品",
-  "description": "書本:100, 筆記本:200",
-  "venderOrSupplyer": "誠品國際書局",
-  "payment": {
-    "isRevenue": true,
-    "price": 300,
-    "hasTax": false,
-    "taxPercentage": 0,
-    "hasFee": false,
-    "fee": 0,
-    "paymentMethod": "cash",
-    "paymentPeriod": "atOnce",
-    "installmentPeriod": 0,
-    "paymentAlreadyDone": 0,
-    "paymentStatus": "paid",
-    "progress": 0
-  },
-}
-
-`;
-
         invoiceGenerated = await this.langChainService.invoke(
           {
             input: descriptionString,

@@ -65,7 +65,7 @@ export class LruCacheService<T> {
 
     if (!this.cache.has(key)) {
       return {
-        status: 'error',
+        status: 'notFound',
         value: null,
       };
     }
