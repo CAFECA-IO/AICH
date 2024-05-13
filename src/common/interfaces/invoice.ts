@@ -6,7 +6,7 @@ import {
   IPayment,
   isIPayment,
   isIPartialPaymentForInvoiceUpload,
-  cleanPartialPaymentForInvoiceUpload,
+  cleanIPayment,
 } from './payment';
 
 // IInvoiceWithPaymentMethod Interface
@@ -75,7 +75,9 @@ export function isIInvoiceWithPaymentMethod(
 }
 
 // Cleaner
-export function cleanInvoice(data: any): IInvoice {
+export function cleanInvoiceWithPaymentMethod(
+  data: any,
+): IInvoiceWithPaymentMethod {
   if (!data) {
     throw new Error('Invalid invoice data, data is empty');
   }
@@ -83,18 +85,20 @@ export function cleanInvoice(data: any): IInvoice {
   const result: any = {};
 
   result.invoiceId = data.invoiceId || '';
-  (result.date = convertDateToTimestamp(data.date)),
-    (result.eventType = isEventType(data.eventType)
-      ? data.eventType
-      : EventType.Income);
+  result.date = convertDateToTimestamp(data.date);
+  result.eventType = isEventType(data.eventType)
+    ? data.eventType
+    : EventType.Income;
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';
   result.venderOrSupplyer = data.venderOrSupplyer || '';
+  result.project = data.project || '';
+  result.contract = data.contract || '';
   result.projectId = data.projectId || '';
   result.contractId = data.contractId || '';
-  result.payment = cleanPartialPaymentForInvoiceUpload(data.payment);
+  result.payment = cleanIPayment(data.payment);
 
-  if (!isIInvoice(result)) {
+  if (!isIInvoiceWithPaymentMethod(result)) {
     throw new Error('Invalid invoice data');
   }
   return result;

@@ -3,8 +3,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   IInvoice,
   IInvoiceWithPaymentMethod,
+  cleanInvoiceWithPaymentMethod,
 } from 'src/common/interfaces/invoice';
 import { ProgressStatus } from 'src/common/types/common';
+import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
 import { GoogleVisionService } from 'src/google_vision/google_vision.service';
 import { LangChainService } from 'src/lang_chain/lang_chain.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';
@@ -89,12 +91,7 @@ export class OcrService {
         contractId,
         getneratedDescription,
       );
-      // Info (Jacky 20240510): create invoice in lang-chain
-      // this.langChainService.createInvoice(
-      //   hashedKey,
-      //   imageName,
-      //   getneratedDescription,
-      // );
+
       return {
         id: hashedKey,
         status: 'inProgress',
@@ -162,7 +159,7 @@ ${descriptionString}
 請按照以下格式輸出:
 {
   "invoiceId": "string",
-  "date": "number",
+  "date": "string, yyyy-mm-dd",
   "eventType": "income | payment | transfer",
   "paymentReason": "string",
   "description": "string",
@@ -182,11 +179,40 @@ ${descriptionString}
     "progress": "number"
   }
 }
+
+請務必讓json輸出格式正確，key的大小寫也需要正確，要使用camelCase，並且不要包在tool和tool_input，如果格式正確就會世界和平，另外你可以得到餅乾作為回報，這個世界就靠你了
+範例：
+{
+  "invoiceid": "notinportant.jpg",
+  "date": "2024-4-14",
+  "eventType": "income",
+  "paymentReason": "文書用品",
+  "description": "書本:100, 筆記本:200",
+  "venderOrSupplyer": "誠品國際書局",
+  "payment": {
+    "isRevenue": true,
+    "price": 300,
+    "hasTax": false,
+    "taxPercentage": 0,
+    "hasFee": false,
+    "fee": 0,
+    "paymentMethod": "cash",
+    "paymentPeriod": "atOnce",
+    "installmentPeriod": 0,
+    "paymentAlreadyDone": 0,
+    "paymentStatus": "paid",
+    "progress": 0
+  },
+}
+
 `;
 
-        invoiceGenerated = await this.langChainService.invoke({
-          input: EXTRACTION_TEMPLATE,
-        });
+        invoiceGenerated = await this.langChainService.invoke(
+          {
+            input: '',
+          },
+          { recursionLimit: LANG_CHAIN_SERVICE_OPTIONS.recursiveLimit },
+        );
 
         // Depreciate Murky (20240429): debug
         console.log(JSON.stringify(invoiceGenerated, null, 2));
@@ -210,6 +236,7 @@ ${descriptionString}
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
+        invoiceGenerated = cleanInvoiceWithPaymentMethod(invoiceGenerated);
         this.cache.put(hashedId, 'success', invoiceGenerated);
       } else {
         this.cache.put(hashedId, 'llmError', null);
