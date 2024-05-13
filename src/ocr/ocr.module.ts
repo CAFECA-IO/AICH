@@ -96,7 +96,7 @@ Passage:
 const prompt = ChatPromptTemplate.fromMessages([
   [
     'system',
-    '你是一位專業的記帳員，傳入的資料是一張發票的文字辨識內容, Extract and save the relevant entities mentioned in the following passage together with their properties.',
+    '你是一位專業的記帳員，傳入的資料是一張發票的文字辨識內容, Extract and save the relevant entities mentioned in the following passage together with their properties.請務必依照LangChain提供給你的格式回答，如果格式正確就會世界和平，另外你可以得到餅乾作為回報，這個世界就靠你了',
   ],
   ['user', '{input}'],
 ]);
@@ -111,26 +111,29 @@ const functions: FunctionDefinition[] = [
       properties: {
         type: 'object',
         properties: {
-          invoiceId: { type: 'string', description: '發票ID' },
+          invoiceId: { type: 'string', description: '發票ID，ex:YZ-30887276' },
           date: {
             type: 'string',
-            description: 'the date of the invoice, yyyy-mm-dd',
+            description: 'the date of the invoice, yyyy-mm-dd, ex: 2024-04-14',
           },
           eventType: {
             type: 'string',
             enum: ['income', 'payment', 'transfer'],
-            description: '收入, 支付, 或是轉賬',
+            description: '收入, 支付, 或是轉賬, ex: payment',
           },
           paymentReason: {
             type: 'string',
-            description: '付款原因，請一定要輸入字',
+            description: '付款原因，ex: 文書用品',
           },
           description: {
             type: 'string',
             description:
-              '發票描述，請依照 項目:價格, 項目:價格 的格式填寫，請一定要輸入字',
+              '發票描述，請依照 項目:價格, 項目:價格, ex: 書本:100, 筆記本:200',
           },
-          venderOrSupplyer: { type: 'string', description: '供應商或銷售商' },
+          venderOrSupplyer: {
+            type: 'string',
+            description: '供應商或銷售商, ex:誠品股份有限公司中山書街分公司',
+          },
           payment: {
             type: 'object',
             properties: {
@@ -166,7 +169,7 @@ const functions: FunctionDefinition[] = [
               paymentStatus: {
                 type: 'string',
                 enum: ['paid', 'unpaid', 'partial'],
-                description: '付款狀態',
+                description: '付款狀態, ex: paid',
               },
               progress: {
                 type: 'number',
