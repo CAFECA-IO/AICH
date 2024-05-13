@@ -12,7 +12,7 @@ import { BaseMessageChunk } from '@langchain/core/dist/messages';
 import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
 import { ParamsFromFString } from '@langchain/core/prompts';
 import { RunnableConfig } from '@langchain/core/runnables';
-
+import { JsonOutputFunctionsParser } from 'langchain/output_parsers';
 @Injectable()
 export class LangChainService {
   private readonly logger = new Logger(LangChainService.name);
@@ -22,7 +22,7 @@ export class LangChainService {
     BaseMessageChunk,
     ChatOllamaFunctionsCallOptions
   >;
-  private chain: any; //Runnable<ParamsFromFString<any>, never, RunnableConfig>;
+  private chain: Runnable<ParamsFromFString<any>, never, RunnableConfig>;
   constructor(
     @Inject('LANGCHAIN_OPTIONS')
     private options: LangChainServiceOption,
@@ -41,8 +41,9 @@ export class LangChainService {
   async onModuleInit() {
     // Info Murky (20240512) 官網說要用 await，但typescript說不用，所以this.chain暫時不加await
     // https://js.langchain.com/docs/integrations/chat/ollama_functions
-    this.chain = this.options.prompt.pipe(this.model);
-    // .pipe(new JsonOutputFunctionsParser());
+    this.chain = this.options.prompt
+      .pipe(this.model)
+      .pipe(new JsonOutputFunctionsParser());
     this.logger.log(
       `${this.options.moduleName}'s LangChainService initialized`,
     );
@@ -53,7 +54,6 @@ export class LangChainService {
   ) {
     // const response = await this.chain.invoke(input, options);
     const response = await this.chain.invoke(input, options);
-    console.log('response', response);
-    return JSON.parse(response?.additional_kwargs?.function_call?.arguments);
+    return response;
   }
 }

@@ -8,5 +8,5 @@ export interface LangChainServiceOption {
   moduleName: string; // Info Murky(20240510): Just for logger
   functionCallOption: FunctionCallOption;
   functions: FunctionDefinition[];
-  prompt: PromptTemplate<ParamsFromFString<any>, any> | any;
+  prompt: PromptTemplate<ParamsFromFString<any>, any>;
 }
