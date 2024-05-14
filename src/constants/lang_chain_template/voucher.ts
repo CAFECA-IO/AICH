@@ -81,45 +81,43 @@ export const functions: FunctionDefinition[] = [
     description: 'Extract the information from the invoice json',
     parameters: {
       type: 'object',
+
       properties: {
-        type: 'object',
-        properties: {
-          lineItems: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                lineItemIndex: {
-                  type: 'string',
-                  description: ', e.g. 20240426001',
-                },
-                account: {
-                  type: 'string',
-                  description:
-                    'The accounting that the line item belongs to, e.g. 文書費用',
-                },
-                description: {
-                  type: 'string',
-                  description:
-                    'The description of the line item, e.g. 沒有國家的人(第2版), 憂鬱的貓太郎, 紅與黑(精裝版), 誠品小紙提袋, 國家的品格:個人自由與公共利益',
-                },
-                debit: {
-                  type: 'boolean',
-                  description: 'Whether the line item is a debit, e.g. true',
-                },
-                amount: {
-                  type: 'number',
-                  description: 'The amount of the line item, e.g. 1500',
-                },
+        lineItems: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              lineItemIndex: {
+                type: 'string',
+                description: ', e.g. 20240426001',
               },
-              required: [],
-              additionalProperties: true,
+              account: {
+                type: 'string',
+                description:
+                  'The accounting that the line item belongs to, e.g. 文書費用',
+              },
+              description: {
+                type: 'string',
+                description:
+                  'The description of the line item, e.g. 沒有國家的人(第2版), 憂鬱的貓太郎, 紅與黑(精裝版), 誠品小紙提袋, 國家的品格:個人自由與公共利益',
+              },
+              debit: {
+                type: 'boolean',
+                description: 'Whether the line item is a debit, e.g. true',
+              },
+              amount: {
+                type: 'number',
+                description: 'The amount of the line item, e.g. 1500',
+              },
             },
+            required: ['account', 'description', 'debit', 'amount'],
+            additionalProperties: true,
           },
         },
-        required: ['lineItems'],
-        additionalProperties: false,
       },
+      required: ['lineItems'],
+      additionalProperties: false,
     },
   },
 ];
