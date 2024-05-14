@@ -44,21 +44,21 @@ export const EXTRACTION_TEMPLATE = `
 [
   {{
     lineItemIndex: '20240426001',
-    accounting: '電信費',
+    account: '電信費',
     particular: '光世代電路月租費： 593, HiNet企業專案服務費: 1607',
     debit: true,
     amount: 2210
   }},
   {{
     lineItemIndex: '20240325002',
-    accounting: '進項稅額',
+    account: '進項稅額',
     particular: 'WSTP會計師工作輔助幫手: 88,725, 文中網路版主機授權費用: 8,400, 文中工作站授權費用: 6,300',
     debit: true,
     amount: 110
   }},
   {{
     lineItemIndex: '20240426003',
-    accounting: '銀行存款',
+    account: '銀行存款',
     particular: '合庫銀行',
     debit: false,
     amount: 2310
