@@ -39,7 +39,7 @@ export class AuditReportsService {
   public getAuditReportAnalyzingStatus(resultId: string): ProgressStatus {
     const result = this.cache.get(resultId);
     if (!result) {
-      return 'notFound';
+      return ProgressStatus.NotFound;
     }
 
     return result.status;
@@ -51,7 +51,7 @@ export class AuditReportsService {
       return null;
     }
 
-    if (result.status !== 'success') {
+    if (result.status !== ProgressStatus.Success) {
       return null;
     }
 
@@ -143,7 +143,7 @@ export class AuditReportsService {
       summary,
     };
 
-    this.cache.put(hashedKey, 'success', report);
+    this.cache.put(hashedKey, ProgressStatus.Success, report);
   }
 
   private async generateSingleReportAnalysis<T>(

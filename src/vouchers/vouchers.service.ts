@@ -42,7 +42,7 @@ export class VouchersService {
       invoices.length === 0 ||
       !invoices.every((invoice) => isIInvoiceWithPaymentMethod(invoice))
     ) {
-      return this.returnNotSuccessStatus('invalidInput');
+      return this.returnNotSuccessStatus(ProgressStatus.InvalidInput);
     }
 
     const invoiceString = JSON.stringify(invoices);
@@ -50,24 +50,24 @@ export class VouchersService {
     if (this.cache.get(hashedKey).value) {
       return {
         id: hashedKey,
-        status: 'alreadyUpload',
+        status: ProgressStatus.AlreadyUpload,
       };
     }
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
-    this.cache.put(hashedKey, 'inProgress', null);
+    this.cache.put(hashedKey, ProgressStatus.InProgress, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
     return {
       id: hashedKey,
-      status: 'inProgress',
+      status: ProgressStatus.InProgress,
     };
   }
 
   public getVoucherAnalyzingStatus(resultId: string): ProgressStatus {
     const result = this.cache.get(resultId);
     if (!result) {
-      return 'notFound';
+      return ProgressStatus.NotFound;
     }
 
     return result.status;
@@ -79,7 +79,7 @@ export class VouchersService {
       return null;
     }
 
-    if (result.status !== 'success') {
+    if (result.status !== ProgressStatus.Success) {
       return null;
     }
 
@@ -133,7 +133,7 @@ export class VouchersService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR invoicesToAccountVoucherData: ${error}`,
         );
-        this.cache.put(hashedId, 'llmError', null);
+        this.cache.put(hashedId, ProgressStatus.LlmError, null);
         return;
       }
 
@@ -146,7 +146,7 @@ export class VouchersService {
           return cleanILineItem(lineItem);
         });
       } catch (error) {
-        this.cache.put(hashedId, 'llmError', null);
+        this.cache.put(hashedId, ProgressStatus.LlmError, null);
         return;
       }
       const voucherGenerated: IVoucher = {
@@ -159,12 +159,12 @@ export class VouchersService {
       };
 
       if (voucherGenerated) {
-        this.cache.put(hashedId, 'success', voucherGenerated);
+        this.cache.put(hashedId, ProgressStatus.Success, voucherGenerated);
       } else {
-        this.cache.put(hashedId, 'notFound', null);
+        this.cache.put(hashedId, ProgressStatus.NotFound, null);
       }
     } catch (error) {
-      this.cache.put(hashedId, 'systemError', null);
+      this.cache.put(hashedId, ProgressStatus.SystemError, null);
     }
   }
 }

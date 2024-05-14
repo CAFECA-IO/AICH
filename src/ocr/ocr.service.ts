@@ -44,7 +44,7 @@ export class OcrService {
   }> {
     // Todo: 把所有的回傳包成一個function
     if (!imageName || !project || !projectId || !contract || !contractId) {
-      return this.returnNotSuccessStatus('invalidInput');
+      return this.returnNotSuccessStatus(ProgressStatus.InvalidInput);
     }
 
     // Info Murky(20240429): image Buffer is the "Buffer" type of the image file
@@ -63,7 +63,7 @@ export class OcrService {
       );
 
       // Info Murky(20240429): if error, return error message, and add to cache
-      return this.returnNotSuccessStatus('systemError');
+      return this.returnNotSuccessStatus(ProgressStatus.SystemError);
     }
 
     try {
@@ -74,11 +74,11 @@ export class OcrService {
       if (this.cache.get(hashedKey).value) {
         return {
           id: hashedKey,
-          status: 'alreadyUpload',
+          status: ProgressStatus.AlreadyUpload,
         };
       }
 
-      hashedKey = this.cache.put(key, 'inProgress', null);
+      hashedKey = this.cache.put(key, ProgressStatus.InProgress, null);
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
@@ -94,21 +94,21 @@ export class OcrService {
 
       return {
         id: hashedKey,
-        status: 'inProgress',
+        status: ProgressStatus.InProgress,
       };
     } catch (error) {
       this.logger.error(
         `Error in generate key in OCR extractTextFromImage: ${error}`,
       );
 
-      return this.returnNotSuccessStatus('systemError');
+      return this.returnNotSuccessStatus(ProgressStatus.SystemError);
     }
   }
 
   public getOCRStatus(resultId: string): ProgressStatus {
     const result = this.cache.get(resultId);
     if (!result) {
-      return 'notFound';
+      return ProgressStatus.NotFound;
     }
 
     return result.status;
@@ -120,7 +120,7 @@ export class OcrService {
       return null;
     }
 
-    if (result.status !== 'success') {
+    if (result.status !== ProgressStatus.Success) {
       return null;
     }
 
@@ -168,7 +168,7 @@ export class OcrService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
         );
-        this.cache.put(hashedId, 'llmError', null);
+        this.cache.put(hashedId, ProgressStatus.LlmError, null);
         return;
       }
 
@@ -179,12 +179,12 @@ export class OcrService {
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
         invoiceGenerated = cleanInvoiceWithPaymentMethod(invoiceGenerated);
-        this.cache.put(hashedId, 'success', invoiceGenerated);
+        this.cache.put(hashedId, ProgressStatus.Success, invoiceGenerated);
       } else {
-        this.cache.put(hashedId, 'llmError', null);
+        this.cache.put(hashedId, ProgressStatus.LlmError, null);
       }
     } catch (e) {
-      this.cache.put(hashedId, 'systemError', null);
+      this.cache.put(hashedId, ProgressStatus.SystemError, null);
     }
   }
 }

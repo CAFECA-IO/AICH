@@ -29,7 +29,7 @@ export class AuditReportsController {
       message: 'Audit Report uploaded successfully',
       payload: {
         resultId: hashedId,
-        status: 'inProgress',
+        status: ProgressStatus.InProgress,
       },
     };
   }
