@@ -7,7 +7,7 @@ import {
 import { ILineItem, cleanILineItem } from '@/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from '@/interfaces/voucher';
 import { PROGRESS_STATUS } from '@/constants/common';
-import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
+import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { LangChainService } from '@/libs/lang_chain/lang_chain.service';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
 
