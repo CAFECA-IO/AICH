@@ -1,3 +1,5 @@
+import type { Express } from 'express';
+
 import {
   Body,
   Controller,
@@ -12,13 +14,11 @@ import {
   Version,
 } from '@nestjs/common';
 import { OcrService } from '@/api/ocr/ocr.service';
-import type { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { APIResponseType } from '@/interfaces/response';
 import { version } from '@/libs/utils/version';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { AccountResultStatus } from '@/interfaces/account';
-
 import { IInvoice } from '@/interfaces/invoice';
 
 @Controller('ocr')
