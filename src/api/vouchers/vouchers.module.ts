@@ -5,18 +5,18 @@ import { LruCacheModule } from '@/libs/lru_cache/lru_cache.module';
 
 import { LangChainModule } from '@/libs/lang_chain/lang_chain.module';
 import {
-  functionCall,
-  functions,
-  prompt,
+  VOUCHER_LANGCHAIN_FUNCTION_CALL,
+  VOUCHER_RETURN_JSON_TEMPLATE,
+  VOUCHER_LANGCHAIN_PROMPT_TEMPLATE,
 } from '@/constants/lang_chain_template/voucher';
 
 @Module({
   imports: [
     LangChainModule.forRoot({
       moduleName: 'VouchersModule',
-      functionCallOption: functionCall,
-      functions: functions,
-      prompt: prompt,
+      functionCallOption: VOUCHER_LANGCHAIN_FUNCTION_CALL,
+      functions: VOUCHER_RETURN_JSON_TEMPLATE,
+      prompt: VOUCHER_LANGCHAIN_PROMPT_TEMPLATE,
     }),
     LruCacheModule.forRoot({
       capacity: 10,

@@ -5,9 +5,9 @@ import { OcrController } from '@/api/ocr/ocr.controller';
 import { LruCacheModule } from '@/libs/lru_cache/lru_cache.module';
 import { LangChainModule } from '@/libs/lang_chain/lang_chain.module';
 import {
-  functionCall,
-  functions,
-  prompt,
+  OCR_FUNCTION_CALL,
+  OCR_RETURN_JSON_SCHEMA,
+  OCR_LANGCHAIN_PROMPT_TEMPLATE,
 } from '@/constants/lang_chain_template/ocr';
 
 @Module({
@@ -15,9 +15,9 @@ import {
     GoogleVisionModule,
     LangChainModule.forRoot({
       moduleName: 'OcrModule',
-      functionCallOption: functionCall,
-      functions: functions,
-      prompt: prompt,
+      functionCallOption: OCR_FUNCTION_CALL,
+      functions: OCR_RETURN_JSON_SCHEMA,
+      prompt: OCR_LANGCHAIN_PROMPT_TEMPLATE,
     }),
     LruCacheModule.forRoot({
       capacity: 10,

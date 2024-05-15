@@ -15,12 +15,13 @@ Passage:
 {input}
 `;
 
-export const functionName = 'extractInvoiceInformation';
-export const prompt = PromptTemplate.fromTemplate(EXTRACTION_TEMPLATE);
+export const OCR_LANGCHAIN_FUNCTION_NAME = 'extractInvoiceInformation';
+export const OCR_LANGCHAIN_PROMPT_TEMPLATE =
+  PromptTemplate.fromTemplate(EXTRACTION_TEMPLATE);
 
-export const functions: FunctionDefinition[] = [
+export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
   {
-    name: functionName,
+    name: OCR_LANGCHAIN_FUNCTION_NAME,
     description: 'Extract the information from the invoice',
     parameters: {
       type: 'object',
@@ -104,6 +105,6 @@ export const functions: FunctionDefinition[] = [
   },
 ];
 
-export const functionCall: FunctionCallOption = {
-  name: functionName,
+export const OCR_FUNCTION_CALL: FunctionCallOption = {
+  name: OCR_LANGCHAIN_FUNCTION_NAME,
 };

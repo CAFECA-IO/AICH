@@ -140,7 +140,7 @@ export class OcrService {
     try {
       const descriptionString = description.join('\n');
 
-      let invoiceGenerated: IInvoiceWithPaymentMethod;
+      let invoiceGenerated: any;
 
       try {
         // Depreciate Murky (20240429): change to langChain
@@ -172,14 +172,21 @@ export class OcrService {
         return;
       }
 
+      if (invoiceGenerated?.properties) {
+        // Info Murky (20240429): 有的時候LangChain會把回答用properties包起來
+        invoiceGenerated = invoiceGenerated.properties;
+      }
+
       if (invoiceGenerated) {
+        invoiceGenerated;
         invoiceGenerated.invoiceId = imageName;
         invoiceGenerated.project = project;
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
-        invoiceGenerated = cleanInvoiceWithPaymentMethod(invoiceGenerated);
-        this.cache.put(hashedId, PROGRESS_STATUS.Success, invoiceGenerated);
+        const cleanedInvoice: IInvoiceWithPaymentMethod =
+          cleanInvoiceWithPaymentMethod(invoiceGenerated);
+        this.cache.put(hashedId, PROGRESS_STATUS.Success, cleanedInvoice);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
       }

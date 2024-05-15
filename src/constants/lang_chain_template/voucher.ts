@@ -3,7 +3,7 @@ import {
   FunctionCallOption,
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
-export const functionName = 'lineitem_extraction';
+export const VOUCHER_LANGCHAIN_FUNCTION_NAME = 'lineitem_extraction';
 
 // Info: murky (20240512) {{ 與 }} 是為了避免 python f-string 的問題
 export const EXTRACTION_TEMPLATE = `
@@ -73,11 +73,12 @@ Invoice json:
 {input}
 `;
 
-export const prompt = PromptTemplate.fromTemplate(EXTRACTION_TEMPLATE);
+export const VOUCHER_LANGCHAIN_PROMPT_TEMPLATE =
+  PromptTemplate.fromTemplate(EXTRACTION_TEMPLATE);
 
-export const functions: FunctionDefinition[] = [
+export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
   {
-    name: functionName,
+    name: VOUCHER_LANGCHAIN_FUNCTION_NAME,
     description: 'Extract the information from the invoice json',
     parameters: {
       type: 'object',
@@ -122,6 +123,6 @@ export const functions: FunctionDefinition[] = [
   },
 ];
 
-export const functionCall: FunctionCallOption = {
-  name: functionName,
+export const VOUCHER_LANGCHAIN_FUNCTION_CALL: FunctionCallOption = {
+  name: VOUCHER_LANGCHAIN_FUNCTION_NAME,
 };
