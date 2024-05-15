@@ -161,7 +161,7 @@ export class AuditReportsHelperService {
         arg.financingActivities.weightedAverageCost,
       );
     } else {
-      return LIFE_CYCLE_TYPE.unknown;
+      return LIFE_CYCLE_TYPE.UNKNOWN;
     }
 
     // Classify based on cash flow ratios
@@ -170,33 +170,33 @@ export class AuditReportsHelperService {
       investingCashFlow < 0 &&
       financingCashFlow >= 0
     ) {
-      return LIFE_CYCLE_TYPE.introduction;
+      return LIFE_CYCLE_TYPE.INTRODUCTION;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow < 0 &&
       financingCashFlow >= 0
     ) {
-      return LIFE_CYCLE_TYPE.growth;
+      return LIFE_CYCLE_TYPE.GROTH;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow <= 0 &&
       financingCashFlow < 0
     ) {
-      return LIFE_CYCLE_TYPE.maturity;
+      return LIFE_CYCLE_TYPE.MATURITY;
     } else if (
       operatingCashFlow <= 0 &&
       investingCashFlow >= 0 &&
       financingCashFlow < 0
     ) {
-      return LIFE_CYCLE_TYPE.decline;
+      return LIFE_CYCLE_TYPE.DECLINE;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow < 0 &&
       financingCashFlow > 0
     ) {
-      return LIFE_CYCLE_TYPE.renewal;
+      return LIFE_CYCLE_TYPE.RENEWAL;
     } else {
-      return LIFE_CYCLE_TYPE.unknown;
+      return LIFE_CYCLE_TYPE.UNKNOWN;
     }
   }
 }

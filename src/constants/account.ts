@@ -1,22 +1,22 @@
 export enum EVENT_TYPE {
-  Income = 'income',
-  Payment = 'payment',
-  Transfer = 'transfer',
+  INCOME = 'income',
+  PAYMENT = 'payment',
+  TRANSFER = 'transfer',
 }
 
 export enum VOUCHER_TYPE {
-  Receive = 'receive',
-  Expense = 'expense',
-  Transfer = 'transfer',
+  RECEIVE = 'receive',
+  EXPENSE = 'expense',
+  TRANSFER = 'transfer',
 }
 
 export enum PAYMENT_STATUS_TYPE {
-  Paid = 'paid',
-  Unpaid = 'unpaid',
-  Partial = 'partial',
+  PAID = 'paid',
+  UNPAID = 'unpaid',
+  PARTIAL = 'partial',
 }
 
 export enum PAYMENT_PERIOD_TYPE {
-  AtOnce = 'atOnce',
-  Installment = 'installment',
+  AT_ONCE = 'atOnce',
+  INSTALLMENT = 'installment',
 }

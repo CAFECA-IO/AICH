@@ -44,7 +44,7 @@ export class OcrService {
   }> {
     // Todo: 把所有的回傳包成一個function
     if (!imageName || !project || !projectId || !contract || !contractId) {
-      return this.returnNotSuccessStatus(PROGRESS_STATUS.InvalidInput);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.INVALID_INPUT);
     }
 
     // Info Murky(20240429): image Buffer is the "Buffer" type of the image file
@@ -63,7 +63,7 @@ export class OcrService {
       );
 
       // Info Murky(20240429): if error, return error message, and add to cache
-      return this.returnNotSuccessStatus(PROGRESS_STATUS.SystemError);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.SYSTEM_ERROR);
     }
 
     try {
@@ -74,11 +74,11 @@ export class OcrService {
       if (this.cache.get(hashedKey).value) {
         return {
           id: hashedKey,
-          status: PROGRESS_STATUS.AlreadyUpload,
+          status: PROGRESS_STATUS.ALREADY_UPLOAD,
         };
       }
 
-      hashedKey = this.cache.put(key, PROGRESS_STATUS.InProgress, null);
+      hashedKey = this.cache.put(key, PROGRESS_STATUS.IN_PROGRESS, null);
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
@@ -94,21 +94,21 @@ export class OcrService {
 
       return {
         id: hashedKey,
-        status: PROGRESS_STATUS.InProgress,
+        status: PROGRESS_STATUS.IN_PROGRESS,
       };
     } catch (error) {
       this.logger.error(
         `Error in generate key in OCR extractTextFromImage: ${error}`,
       );
 
-      return this.returnNotSuccessStatus(PROGRESS_STATUS.SystemError);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.SYSTEM_ERROR);
     }
   }
 
   public getOCRStatus(resultId: string): PROGRESS_STATUS {
     const result = this.cache.get(resultId);
     if (!result) {
-      return PROGRESS_STATUS.NotFound;
+      return PROGRESS_STATUS.NOT_FOUND;
     }
 
     return result.status;
@@ -120,7 +120,7 @@ export class OcrService {
       return null;
     }
 
-    if (result.status !== PROGRESS_STATUS.Success) {
+    if (result.status !== PROGRESS_STATUS.SUCCESS) {
       return null;
     }
 
@@ -168,7 +168,7 @@ export class OcrService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
         );
-        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
         return;
       }
 
@@ -186,13 +186,13 @@ export class OcrService {
         invoiceGenerated.contractId = contractId;
         const cleanedInvoice: IInvoiceWithPaymentMethod =
           cleanInvoiceWithPaymentMethod(invoiceGenerated);
-        this.cache.put(hashedId, PROGRESS_STATUS.Success, cleanedInvoice);
+        this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, cleanedInvoice);
       } else {
-        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
       }
     } catch (e) {
       this.logger.error(e);
-      this.cache.put(hashedId, PROGRESS_STATUS.SystemError, null);
+      this.cache.put(hashedId, PROGRESS_STATUS.SYSTEM_ERROR, null);
     }
   }
 }

@@ -26,7 +26,7 @@ export class AuditReportsController {
       message: 'Audit Report uploaded successfully',
       payload: {
         resultId: hashedId,
-        status: PROGRESS_STATUS.InProgress,
+        status: PROGRESS_STATUS.IN_PROGRESS,
       },
     };
   }

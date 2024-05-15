@@ -80,12 +80,12 @@ export function cleanIPayment(data: any): IPayment {
   result.paymentMethod = data.paymentMethod ? data.paymentMethod : '';
   result.paymentPeriod = isPaymentPeriodType(data.paymentPeriod)
     ? data.paymentPeriod
-    : PAYMENT_PERIOD_TYPE.AtOnce;
+    : PAYMENT_PERIOD_TYPE.AT_ONCE;
   result.installmentPeriod = cleanNumber(data.installmentPeriod);
   result.paymentAlreadyDone = cleanNumber(data.paymentAlreadyDone);
   result.paymentStatus = isPaymentStatusType(data.paymentStatus)
     ? data.paymentStatus
-    : PAYMENT_STATUS_TYPE.Unpaid;
+    : PAYMENT_STATUS_TYPE.UNPAID;
   result.progress = cleanNumber(data.progress);
 
   let taxPercentage = result.taxPercentage

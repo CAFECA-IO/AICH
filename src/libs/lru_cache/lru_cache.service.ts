@@ -23,8 +23,8 @@ export class LruCacheService<T> {
     this.capacity = capacity;
     this.idLength = idLength;
     this.cache = new Map<string, LRUNode<T>>();
-    this.most = new LRUNode<T>('', PROGRESS_STATUS.InProgress, null);
-    this.least = new LRUNode<T>('', PROGRESS_STATUS.InProgress, null);
+    this.most = new LRUNode<T>('', PROGRESS_STATUS.IN_PROGRESS, null);
+    this.least = new LRUNode<T>('', PROGRESS_STATUS.IN_PROGRESS, null);
     this.least.next = this.most;
     this.most.prev = this.least;
   }
@@ -65,7 +65,7 @@ export class LruCacheService<T> {
 
     if (!this.cache.has(key)) {
       return {
-        status: PROGRESS_STATUS.NotFound,
+        status: PROGRESS_STATUS.NOT_FOUND,
         value: null,
       };
     }

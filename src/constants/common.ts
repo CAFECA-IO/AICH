@@ -1,9 +1,9 @@
 export enum PROGRESS_STATUS {
-  Success = 'success',
-  InProgress = 'inProgress',
-  NotFound = 'notFound',
-  AlreadyUpload = 'alreadyUpload',
-  InvalidInput = 'invalidInput',
-  LlmError = 'llmError',
-  SystemError = 'systemError',
+  SUCCESS = 'success',
+  IN_PROGRESS = 'inProgress',
+  NOT_FOUND = 'notFound',
+  ALREADY_UPLOAD = 'alreadyUpload',
+  INVALID_INPUT = 'invalidInput',
+  LLM_ERROR = 'llmError',
+  SYSTEM_ERROR = 'systemError',
 }

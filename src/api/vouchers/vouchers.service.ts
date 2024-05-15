@@ -42,7 +42,7 @@ export class VouchersService {
       invoices.length === 0 ||
       !invoices.every((invoice) => isIInvoiceWithPaymentMethod(invoice))
     ) {
-      return this.returnNotSuccessStatus(PROGRESS_STATUS.InvalidInput);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.INVALID_INPUT);
     }
 
     const invoiceString = JSON.stringify(invoices);
@@ -50,24 +50,24 @@ export class VouchersService {
     if (this.cache.get(hashedKey).value) {
       return {
         id: hashedKey,
-        status: PROGRESS_STATUS.AlreadyUpload,
+        status: PROGRESS_STATUS.ALREADY_UPLOAD,
       };
     }
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
-    this.cache.put(hashedKey, PROGRESS_STATUS.InProgress, null);
+    this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
     return {
       id: hashedKey,
-      status: PROGRESS_STATUS.InProgress,
+      status: PROGRESS_STATUS.IN_PROGRESS,
     };
   }
 
   public getVoucherAnalyzingStatus(resultId: string): PROGRESS_STATUS {
     const result = this.cache.get(resultId);
     if (!result) {
-      return PROGRESS_STATUS.NotFound;
+      return PROGRESS_STATUS.NOT_FOUND;
     }
 
     return result.status;
@@ -79,7 +79,7 @@ export class VouchersService {
       return null;
     }
 
-    if (result.status !== PROGRESS_STATUS.Success) {
+    if (result.status !== PROGRESS_STATUS.SUCCESS) {
       return null;
     }
 
@@ -133,7 +133,7 @@ export class VouchersService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR invoicesToAccountVoucherData: ${error}`,
         );
-        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
         return;
       }
 
@@ -152,7 +152,7 @@ export class VouchersService {
           return cleanILineItem(lineItem);
         });
       } catch (error) {
-        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
         return;
       }
       const voucherGenerated: IVoucher = {
@@ -165,12 +165,12 @@ export class VouchersService {
       };
 
       if (voucherGenerated) {
-        this.cache.put(hashedId, PROGRESS_STATUS.Success, voucherGenerated);
+        this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, voucherGenerated);
       } else {
-        this.cache.put(hashedId, PROGRESS_STATUS.NotFound, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.NOT_FOUND, null);
       }
     } catch (error) {
-      this.cache.put(hashedId, PROGRESS_STATUS.SystemError, null);
+      this.cache.put(hashedId, PROGRESS_STATUS.SYSTEM_ERROR, null);
     }
   }
 }

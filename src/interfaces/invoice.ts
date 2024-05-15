@@ -88,7 +88,7 @@ export function cleanInvoiceWithPaymentMethod(
   result.date = convertDateToTimestamp(data.date);
   result.eventType = isEventType(data.eventType)
     ? data.eventType
-    : EVENT_TYPE.Income;
+    : EVENT_TYPE.INCOME;
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';
   result.venderOrSupplyer = data.venderOrSupplyer || '';
