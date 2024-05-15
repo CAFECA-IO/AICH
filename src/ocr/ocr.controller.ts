@@ -16,7 +16,7 @@ import type { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { APIResponseType } from '@/common/interfaces/response';
 import { version } from '@/common/utils/version';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 import { AccountResultStatus } from '@/common/interfaces/account';
 
 import { IInvoice } from '@/common/interfaces/invoice';
@@ -88,7 +88,7 @@ export class OcrController {
   @Version('1')
   getProcessStatus(
     @Param('resultId') resultId: string,
-  ): APIResponseType<ProgressStatus> {
+  ): APIResponseType<PROGRESS_STATUS> {
     const result = this.ocrService.getOCRStatus(resultId);
 
     return {

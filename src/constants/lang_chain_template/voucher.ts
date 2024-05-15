@@ -22,7 +22,7 @@ export const EXTRACTION_TEMPLATE = `
   {{
     "date": 1713052800000,
     "invoiceId": "20240426001",
-    "eventType": "income",
+    "EVENT_TYPE": "income",
     "paymentReason": "電信費",
     "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
     "venderOrSupplyer": "中華電信",

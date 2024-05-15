@@ -1,6 +1,6 @@
-import { EventType } from '@/common/enums/account';
+import { EVENT_TYPE } from '@/common/enums/account';
 import { convertDateToTimestamp } from '@/common/utils/common';
-import { isEventType } from '@/common/interfaces/account';
+import { isEVENT_TYPE } from '@/common/interfaces/account';
 import {
   IPartialPaymentForInvoiceUpload,
   IPayment,
@@ -13,7 +13,7 @@ import {
 export interface IInvoiceWithPaymentMethod {
   invoiceId: string;
   date: number; // timestamp
-  eventType: EventType; // 'income' | 'payment' | 'transfer';
+  EVENT_TYPE: EVENT_TYPE; // 'income' | 'payment' | 'transfer';
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;
@@ -28,7 +28,7 @@ export interface IInvoiceWithPaymentMethod {
 export interface IInvoice {
   invoiceId: string;
   date: number; // timestamp
-  eventType: EventType;
+  EVENT_TYPE: EVENT_TYPE;
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;
@@ -44,7 +44,7 @@ export function isIInvoice(data: IInvoice): data is IInvoice {
   return (
     typeof data.invoiceId === 'string' &&
     typeof data.date === 'number' &&
-    isEventType(data.eventType) &&
+    isEVENT_TYPE(data.EVENT_TYPE) &&
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
@@ -62,7 +62,7 @@ export function isIInvoiceWithPaymentMethod(
   return (
     typeof data.invoiceId === 'string' &&
     typeof data.date === 'number' &&
-    isEventType(data.eventType) &&
+    isEVENT_TYPE(data.EVENT_TYPE) &&
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
@@ -86,9 +86,9 @@ export function cleanInvoiceWithPaymentMethod(
 
   result.invoiceId = data.invoiceId || '';
   result.date = convertDateToTimestamp(data.date);
-  result.eventType = isEventType(data.eventType)
-    ? data.eventType
-    : EventType.Income;
+  result.EVENT_TYPE = isEVENT_TYPE(data.EVENT_TYPE)
+    ? data.EVENT_TYPE
+    : EVENT_TYPE.Income;
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';
   result.venderOrSupplyer = data.venderOrSupplyer || '';

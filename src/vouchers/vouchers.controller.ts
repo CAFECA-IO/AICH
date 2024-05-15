@@ -11,7 +11,7 @@ import { VouchersService } from '@/vouchers/vouchers.service';
 import { APIResponseType } from '@/common/interfaces/response';
 import { AccountResultStatus } from '@/common/interfaces/account';
 import { version } from '@/common/utils/version';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 import { IInvoiceWithPaymentMethod } from '@/common/interfaces/invoice';
 import { IVoucher } from '@/common/interfaces/voucher';
 
@@ -49,7 +49,7 @@ export class VouchersController {
   @Version('1')
   getProcessStatus(
     @Param('resultId') resultId: string,
-  ): APIResponseType<ProgressStatus> {
+  ): APIResponseType<PROGRESS_STATUS> {
     const status = this.vouchersService.getVoucherAnalyzingStatus(resultId);
     return {
       powerby: `powered by AICH ${version}`,

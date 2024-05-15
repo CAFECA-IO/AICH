@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import LRUNode from '@/lru_cache/lru_cache_node';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 import { LruServiceOptions } from '@/common/interfaces/lru';
 import { LRU_CACHE_CONFIG } from '@/constants/configs/config';
 
@@ -23,8 +23,8 @@ export class LruCacheService<T> {
     this.capacity = capacity;
     this.idLength = idLength;
     this.cache = new Map<string, LRUNode<T>>();
-    this.most = new LRUNode<T>('', ProgressStatus.InProgress, null);
-    this.least = new LRUNode<T>('', ProgressStatus.InProgress, null);
+    this.most = new LRUNode<T>('', PROGRESS_STATUS.InProgress, null);
+    this.least = new LRUNode<T>('', PROGRESS_STATUS.InProgress, null);
     this.least.next = this.most;
     this.most.prev = this.least;
   }
@@ -57,7 +57,7 @@ export class LruCacheService<T> {
     target.prev = node;
   }
 
-  public get(key: string): { status: ProgressStatus; value: T | null } {
+  public get(key: string): { status: PROGRESS_STATUS; value: T | null } {
     // Info Murky (20240423) key need to be hashed already
     if (!this.isHashId(key)) {
       key = this.hashId(key);
@@ -65,7 +65,7 @@ export class LruCacheService<T> {
 
     if (!this.cache.has(key)) {
       return {
-        status: ProgressStatus.NotFound,
+        status: PROGRESS_STATUS.NotFound,
         value: null,
       };
     }
@@ -78,7 +78,7 @@ export class LruCacheService<T> {
     };
   }
 
-  public put(key: string, status: ProgressStatus, value: T | null): string {
+  public put(key: string, status: PROGRESS_STATUS, value: T | null): string {
     if (!this.isHashId(key)) {
       key = this.hashId(key);
     }

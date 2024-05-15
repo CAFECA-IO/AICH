@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FinancialStatements } from '@/common/interfaces/audit_report';
 import { CashFlow } from '@/common/interfaces/cash_flow';
-import { LifeCycleType } from '@/common/enums/audit_report';
+import { LIFE_CYCLE_TYPE } from '@/common/enums/audit_report';
 import { isZero } from '@/common/utils/common';
 
 @Injectable()
@@ -127,11 +127,13 @@ export class AuditReportsHelperService {
   }
 
   // Overload signatures
-  public static classifyLifeCycleStage(fs: FinancialStatements): LifeCycleType;
-  public static classifyLifeCycleStage(cashFlow: CashFlow): LifeCycleType;
+  public static classifyLifeCycleStage(
+    fs: FinancialStatements,
+  ): LIFE_CYCLE_TYPE;
+  public static classifyLifeCycleStage(cashFlow: CashFlow): LIFE_CYCLE_TYPE;
   public static classifyLifeCycleStage(
     arg: FinancialStatements | CashFlow,
-  ): LifeCycleType {
+  ): LIFE_CYCLE_TYPE {
     let operatingCashFlow: number;
     let investingCashFlow: number;
     let financingCashFlow: number;
@@ -159,7 +161,7 @@ export class AuditReportsHelperService {
         arg.financingActivities.weightedAverageCost,
       );
     } else {
-      return LifeCycleType.unknown;
+      return LIFE_CYCLE_TYPE.unknown;
     }
 
     // Classify based on cash flow ratios
@@ -168,33 +170,33 @@ export class AuditReportsHelperService {
       investingCashFlow < 0 &&
       financingCashFlow >= 0
     ) {
-      return LifeCycleType.introduction;
+      return LIFE_CYCLE_TYPE.introduction;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow < 0 &&
       financingCashFlow >= 0
     ) {
-      return LifeCycleType.growth;
+      return LIFE_CYCLE_TYPE.growth;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow <= 0 &&
       financingCashFlow < 0
     ) {
-      return LifeCycleType.maturity;
+      return LIFE_CYCLE_TYPE.maturity;
     } else if (
       operatingCashFlow <= 0 &&
       investingCashFlow >= 0 &&
       financingCashFlow < 0
     ) {
-      return LifeCycleType.decline;
+      return LIFE_CYCLE_TYPE.decline;
     } else if (
       operatingCashFlow > 0 &&
       investingCashFlow < 0 &&
       financingCashFlow > 0
     ) {
-      return LifeCycleType.renewal;
+      return LIFE_CYCLE_TYPE.renewal;
     } else {
-      return LifeCycleType.unknown;
+      return LIFE_CYCLE_TYPE.unknown;
     }
   }
 }

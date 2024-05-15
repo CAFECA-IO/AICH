@@ -1,22 +1,22 @@
-export enum EventType {
+export enum EVENT_TYPE {
   Income = 'income',
   Payment = 'payment',
   Transfer = 'transfer',
 }
 
-export enum VoucherType {
+export enum VOUCHER_TYPE {
   Receive = 'receive',
   Expense = 'expense',
   Transfer = 'transfer',
 }
 
-export enum PaymentStatusType {
+export enum PAYMENT_STATUS_TYPE {
   Paid = 'paid',
   Unpaid = 'unpaid',
   Partial = 'partial',
 }
 
-export enum PaymentPeriodType {
+export enum PAYMENT_PERIOD_TYPE {
   AtOnce = 'atOnce',
   Installment = 'installment',
 }

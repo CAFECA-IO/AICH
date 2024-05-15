@@ -1,4 +1,4 @@
-import { LifeCycleType } from '@/common/enums/audit_report';
+import { LIFE_CYCLE_TYPE } from '@/common/enums/audit_report';
 import {
   BalanceSheet,
   isBalanceSheet,
@@ -31,7 +31,7 @@ export interface AuditReport {
     cashFlowRatios: { [key: string]: number };
     cashFlowAnalysis: string;
   };
-  lifeCycle: LifeCycleType;
+  lifeCycle: LIFE_CYCLE_TYPE;
   creditRating: string;
   financialStatementsAnalysis: string;
   summary: string;

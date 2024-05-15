@@ -1,36 +1,36 @@
 import {
-  EventType,
-  VoucherType,
-  PaymentStatusType,
-  PaymentPeriodType,
+  EVENT_TYPE,
+  VOUCHER_TYPE,
+  PAYMENT_STATUS_TYPE,
+  PAYMENT_PERIOD_TYPE,
 } from '@/common/enums/account';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 
 // Info Murky (20240416): Interface
 export interface AccountResultStatus {
   resultId: string;
-  status: ProgressStatus;
+  status: PROGRESS_STATUS;
 }
 
 // Info Murky (20240416): Constants
-export const eventTypeToVoucherType = {
-  income: 'receive' as VoucherType,
-  payment: 'expense' as VoucherType,
-  transfer: 'transfer' as VoucherType,
+export const EVENT_TYPEToVOUCHER_TYPE = {
+  income: 'receive' as VOUCHER_TYPE,
+  payment: 'expense' as VOUCHER_TYPE,
+  transfer: 'transfer' as VOUCHER_TYPE,
 };
 
-export function isEventType(data: any): data is EventType {
-  return Object.values(EventType).includes(data);
+export function isEVENT_TYPE(data: any): data is EVENT_TYPE {
+  return Object.values(EVENT_TYPE).includes(data);
 }
 
-export function isVoucherType(data: any): data is VoucherType {
-  return Object.values(VoucherType).includes(data);
+export function isVOUCHER_TYPE(data: any): data is VOUCHER_TYPE {
+  return Object.values(VOUCHER_TYPE).includes(data);
 }
 
-export function isPaymentStatusType(data: any): data is PaymentStatusType {
-  return Object.values(PaymentStatusType).includes(data);
+export function isPAYMENT_STATUS_TYPE(data: any): data is PAYMENT_STATUS_TYPE {
+  return Object.values(PAYMENT_STATUS_TYPE).includes(data);
 }
 
-export function isPaymentPeriodType(data: any): data is PaymentPeriodType {
-  return Object.values(PaymentPeriodType).includes(data);
+export function isPayment_Period_Type(data: any): data is PAYMENT_PERIOD_TYPE {
+  return Object.values(PAYMENT_PERIOD_TYPE).includes(data);
 }

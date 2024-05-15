@@ -1,10 +1,10 @@
 // Info Murky (20240422) THis class is node for LRU cache
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 
 export default class LRUNode<T> {
   key: string;
 
-  status: ProgressStatus;
+  status: PROGRESS_STATUS;
 
   value: T | null;
 
@@ -12,7 +12,7 @@ export default class LRUNode<T> {
 
   next: LRUNode<T> | null;
 
-  constructor(key: string, status: ProgressStatus, value: T | null) {
+  constructor(key: string, status: PROGRESS_STATUS, value: T | null) {
     this.key = key;
     this.status = status;
     this.value = value;

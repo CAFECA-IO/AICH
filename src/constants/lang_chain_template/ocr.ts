@@ -32,7 +32,7 @@ export const functions: FunctionDefinition[] = [
             type: 'string',
             description: 'the date of the invoice, yyyy-mm-dd, ex: 2024-04-14',
           },
-          eventType: {
+          EVENT_TYPE: {
             type: 'string',
             enum: ['income', 'payment', 'transfer'],
             description: '收入, 支付, 或是轉賬, ex: payment',

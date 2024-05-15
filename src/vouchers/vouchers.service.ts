@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { eventTypeToVoucherType } from 'src/common/interfaces/account';
+import { EVENT_TYPEToVOUCHER_TYPE } from 'src/common/interfaces/account';
 import {
   IInvoiceWithPaymentMethod,
   isIInvoiceWithPaymentMethod,
 } from 'src/common/interfaces/invoice';
 import { ILineItem, cleanILineItem } from 'src/common/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from 'src/common/interfaces/voucher';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
 import { LangChainService } from 'src/lang_chain/lang_chain.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';
@@ -24,7 +24,7 @@ export class VouchersService {
     this.logger.log('VouchersService initialized');
   }
 
-  private returnNotSuccessStatus(errorMessage: ProgressStatus) {
+  private returnNotSuccessStatus(errorMessage: PROGRESS_STATUS) {
     const hashedKey = this.cache.put(errorMessage, errorMessage, null);
     return {
       id: hashedKey,
@@ -34,7 +34,7 @@ export class VouchersService {
 
   public generateVoucherFromInvoices(invoices: IInvoiceWithPaymentMethod[]): {
     id: string;
-    status: ProgressStatus;
+    status: PROGRESS_STATUS;
   } {
     // Info Murky (20240512) if no invoice, return invalid
     if (
@@ -42,7 +42,7 @@ export class VouchersService {
       invoices.length === 0 ||
       !invoices.every((invoice) => isIInvoiceWithPaymentMethod(invoice))
     ) {
-      return this.returnNotSuccessStatus(ProgressStatus.InvalidInput);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.InvalidInput);
     }
 
     const invoiceString = JSON.stringify(invoices);
@@ -50,24 +50,24 @@ export class VouchersService {
     if (this.cache.get(hashedKey).value) {
       return {
         id: hashedKey,
-        status: ProgressStatus.AlreadyUpload,
+        status: PROGRESS_STATUS.AlreadyUpload,
       };
     }
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
-    this.cache.put(hashedKey, ProgressStatus.InProgress, null);
+    this.cache.put(hashedKey, PROGRESS_STATUS.InProgress, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
     return {
       id: hashedKey,
-      status: ProgressStatus.InProgress,
+      status: PROGRESS_STATUS.InProgress,
     };
   }
 
-  public getVoucherAnalyzingStatus(resultId: string): ProgressStatus {
+  public getVoucherAnalyzingStatus(resultId: string): PROGRESS_STATUS {
     const result = this.cache.get(resultId);
     if (!result) {
-      return ProgressStatus.NotFound;
+      return PROGRESS_STATUS.NotFound;
     }
 
     return result.status;
@@ -79,7 +79,7 @@ export class VouchersService {
       return null;
     }
 
-    if (result.status !== ProgressStatus.Success) {
+    if (result.status !== PROGRESS_STATUS.Success) {
       return null;
     }
 
@@ -95,7 +95,7 @@ export class VouchersService {
       const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
         return {
           date: invoice.date,
-          voucherType: eventTypeToVoucherType[invoice.eventType],
+          VOUCHER_TYPE: EVENT_TYPEToVOUCHER_TYPE[invoice.EVENT_TYPE],
           companyId: invoice.venderOrSupplyer,
           companyName: invoice.venderOrSupplyer,
           description: invoice.description,
@@ -133,7 +133,7 @@ export class VouchersService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR invoicesToAccountVoucherData: ${error}`,
         );
-        this.cache.put(hashedId, ProgressStatus.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
         return;
       }
 
@@ -146,7 +146,7 @@ export class VouchersService {
           return cleanILineItem(lineItem);
         });
       } catch (error) {
-        this.cache.put(hashedId, ProgressStatus.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
         return;
       }
       const voucherGenerated: IVoucher = {
@@ -159,12 +159,12 @@ export class VouchersService {
       };
 
       if (voucherGenerated) {
-        this.cache.put(hashedId, ProgressStatus.Success, voucherGenerated);
+        this.cache.put(hashedId, PROGRESS_STATUS.Success, voucherGenerated);
       } else {
-        this.cache.put(hashedId, ProgressStatus.NotFound, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.NotFound, null);
       }
     } catch (error) {
-      this.cache.put(hashedId, ProgressStatus.SystemError, null);
+      this.cache.put(hashedId, PROGRESS_STATUS.SystemError, null);
     }
   }
 }

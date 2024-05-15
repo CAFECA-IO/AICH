@@ -9,7 +9,7 @@ import {
 import { BalanceSheet } from '@/common/interfaces/balance_sheet';
 import { ComprehensiveIncome } from '@/common/interfaces/comprehensive_income';
 import { CashFlow } from '@/common/interfaces/cash_flow';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 @Injectable()
 export class AuditReportsService {
   private readonly logger = new Logger(AuditReportsService.name);
@@ -36,10 +36,10 @@ export class AuditReportsService {
     return hashedKey;
   }
 
-  public getAuditReportAnalyzingStatus(resultId: string): ProgressStatus {
+  public getAuditReportAnalyzingStatus(resultId: string): PROGRESS_STATUS {
     const result = this.cache.get(resultId);
     if (!result) {
-      return ProgressStatus.NotFound;
+      return PROGRESS_STATUS.NotFound;
     }
 
     return result.status;
@@ -51,7 +51,7 @@ export class AuditReportsService {
       return null;
     }
 
-    if (result.status !== ProgressStatus.Success) {
+    if (result.status !== PROGRESS_STATUS.Success) {
       return null;
     }
 
@@ -143,7 +143,7 @@ export class AuditReportsService {
       summary,
     };
 
-    this.cache.put(hashedKey, ProgressStatus.Success, report);
+    this.cache.put(hashedKey, PROGRESS_STATUS.Success, report);
   }
 
   private async generateSingleReportAnalysis<T>(

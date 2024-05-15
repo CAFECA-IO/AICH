@@ -7,7 +7,7 @@ import {
 
 import { version } from 'src/common/utils/version';
 import { APIResponseType } from 'src/common/interfaces/response';
-import { ProgressStatus } from 'src/common/types/common';
+import { PROGRESS_STATUS } from 'src/common/enums/common';
 
 @Controller('audit_reports')
 export class AuditReportsController {
@@ -29,7 +29,7 @@ export class AuditReportsController {
       message: 'Audit Report uploaded successfully',
       payload: {
         resultId: hashedId,
-        status: ProgressStatus.InProgress,
+        status: PROGRESS_STATUS.InProgress,
       },
     };
   }
@@ -38,7 +38,7 @@ export class AuditReportsController {
   @Version('1')
   getProcessStatus(
     @Param('resultId') resultId: string,
-  ): APIResponseType<ProgressStatus> {
+  ): APIResponseType<PROGRESS_STATUS> {
     const status =
       this.auditReportsService.getAuditReportAnalyzingStatus(resultId);
 

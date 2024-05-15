@@ -5,7 +5,7 @@ import {
   IInvoiceWithPaymentMethod,
   cleanInvoiceWithPaymentMethod,
 } from '@/common/interfaces/invoice';
-import { ProgressStatus } from '@/common/enums/common';
+import { PROGRESS_STATUS } from '@/common/enums/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { GoogleVisionService } from '@/google_vision/google_vision.service';
 import { LangChainService } from '@/lang_chain/lang_chain.service';
@@ -23,7 +23,7 @@ export class OcrService {
     this.logger.log('OcrService initialized');
   }
 
-  private async returnNotSuccessStatus(errorMessage: ProgressStatus) {
+  private async returnNotSuccessStatus(errorMessage: PROGRESS_STATUS) {
     const hashedKey = this.cache.put(errorMessage, errorMessage, null);
     return {
       id: hashedKey,
@@ -40,11 +40,11 @@ export class OcrService {
     contractId: string | undefined,
   ): Promise<{
     id: string;
-    status: ProgressStatus;
+    status: PROGRESS_STATUS;
   }> {
     // Todo: 把所有的回傳包成一個function
     if (!imageName || !project || !projectId || !contract || !contractId) {
-      return this.returnNotSuccessStatus(ProgressStatus.InvalidInput);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.InvalidInput);
     }
 
     // Info Murky(20240429): image Buffer is the "Buffer" type of the image file
@@ -63,7 +63,7 @@ export class OcrService {
       );
 
       // Info Murky(20240429): if error, return error message, and add to cache
-      return this.returnNotSuccessStatus(ProgressStatus.SystemError);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.SystemError);
     }
 
     try {
@@ -74,11 +74,11 @@ export class OcrService {
       if (this.cache.get(hashedKey).value) {
         return {
           id: hashedKey,
-          status: ProgressStatus.AlreadyUpload,
+          status: PROGRESS_STATUS.AlreadyUpload,
         };
       }
 
-      hashedKey = this.cache.put(key, ProgressStatus.InProgress, null);
+      hashedKey = this.cache.put(key, PROGRESS_STATUS.InProgress, null);
 
       // Info Murky (20240423) this is async function, but we don't await
       // it will be processed in background
@@ -94,21 +94,21 @@ export class OcrService {
 
       return {
         id: hashedKey,
-        status: ProgressStatus.InProgress,
+        status: PROGRESS_STATUS.InProgress,
       };
     } catch (error) {
       this.logger.error(
         `Error in generate key in OCR extractTextFromImage: ${error}`,
       );
 
-      return this.returnNotSuccessStatus(ProgressStatus.SystemError);
+      return this.returnNotSuccessStatus(PROGRESS_STATUS.SystemError);
     }
   }
 
-  public getOCRStatus(resultId: string): ProgressStatus {
+  public getOCRStatus(resultId: string): PROGRESS_STATUS {
     const result = this.cache.get(resultId);
     if (!result) {
-      return ProgressStatus.NotFound;
+      return PROGRESS_STATUS.NotFound;
     }
 
     return result.status;
@@ -120,7 +120,7 @@ export class OcrService {
       return null;
     }
 
-    if (result.status !== ProgressStatus.Success) {
+    if (result.status !== PROGRESS_STATUS.Success) {
       return null;
     }
 
@@ -168,7 +168,7 @@ export class OcrService {
         this.logger.error(
           `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
         );
-        this.cache.put(hashedId, ProgressStatus.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
         return;
       }
 
@@ -179,12 +179,12 @@ export class OcrService {
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
         invoiceGenerated = cleanInvoiceWithPaymentMethod(invoiceGenerated);
-        this.cache.put(hashedId, ProgressStatus.Success, invoiceGenerated);
+        this.cache.put(hashedId, PROGRESS_STATUS.Success, invoiceGenerated);
       } else {
-        this.cache.put(hashedId, ProgressStatus.LlmError, null);
+        this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
       }
     } catch (e) {
-      this.cache.put(hashedId, ProgressStatus.SystemError, null);
+      this.cache.put(hashedId, PROGRESS_STATUS.SystemError, null);
     }
   }
 }

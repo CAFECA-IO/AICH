@@ -1,4 +1,4 @@
-export enum LifeCycleType {
+export enum LIFE_CYCLE_TYPE {
   introduction = '初創期',
   growth = '成長期',
   maturity = '成熟期',
