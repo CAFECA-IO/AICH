@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
-import { OcrModule } from '@/ocr/ocr.module';
-import { VouchersModule } from '@/vouchers/vouchers.module';
-import { AuditReportsModule } from '@/audit_reports/audit_reports.module';
-import { LangChainModule } from '@/lang_chain/lang_chain.module';
+import { OcrModule } from '@/api/ocr/ocr.module';
+import { VouchersModule } from '@/api/vouchers/vouchers.module';
+import { AuditReportsModule } from '@/api/audit_reports/audit_reports.module';
 
 @Module({
-  imports: [OcrModule, VouchersModule, AuditReportsModule, LangChainModule],
+  imports: [OcrModule, VouchersModule, AuditReportsModule],
   controllers: [AppController],
   providers: [AppService],
 })
