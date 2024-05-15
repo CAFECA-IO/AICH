@@ -46,12 +46,22 @@ export class OcrController {
     )
     image: Express.Multer.File,
     // 需要主動放入 invoiceName, project, projectId, contract, contractId
-    @Body('imageName') imageName: string,
-    @Body('project') project: string,
-    @Body('projectId') projectId: string,
-    @Body('contract') contract: string,
-    @Body('contractId') contractId: string,
+    @Body() body: any,
   ): Promise<APIResponseType<AccountResultStatus[]>> {
+    const {
+      imageName = 'None',
+      project = 'None',
+      projectId = 'None',
+      contract = 'None',
+      contractId = 'None',
+    }: {
+      imageName: string;
+      project: string;
+      projectId: string;
+      contract: string;
+      contractId: string;
+    } = body;
+
     try {
       const { id, status } = await this.ocrService.extractTextFromImage(
         image,

@@ -4,8 +4,8 @@ import {
 } from '@/common/enums/account';
 import { cleanBoolean, cleanNumber } from '@/common/utils/common';
 import {
-  isPayment_Period_Type,
-  isPAYMENT_STATUS_TYPE,
+  isPaymentPeriodType,
+  isPaymentStatusType,
 } from '@/common/interfaces/account';
 
 export interface IPayment {
@@ -42,10 +42,10 @@ export function isIPayment(arg: IPayment): arg is IPayment {
     typeof arg.hasFee !== 'boolean' ||
     typeof arg.fee !== 'number' ||
     typeof arg.paymentMethod !== 'string' ||
-    !isPayment_Period_Type(arg.paymentPeriod) ||
+    !isPaymentPeriodType(arg.paymentPeriod) ||
     typeof arg.installmentPeriod !== 'number' ||
     typeof arg.paymentAlreadyDone !== 'number' ||
-    !isPAYMENT_STATUS_TYPE(arg.paymentStatus) ||
+    !isPaymentStatusType(arg.paymentStatus) ||
     typeof arg.progress !== 'number'
   ) {
     return false;
@@ -84,12 +84,12 @@ export function cleanIPayment(data: any): IPayment {
   result.hasFee = cleanBoolean(data.hasFee);
   result.fee = cleanNumber(data.fee);
   result.paymentMethod = data.paymentMethod ? data.paymentMethod : '';
-  result.paymentPeriod = isPayment_Period_Type(data.paymentPeriod)
+  result.paymentPeriod = isPaymentPeriodType(data.paymentPeriod)
     ? data.paymentPeriod
     : PAYMENT_PERIOD_TYPE.AtOnce;
   result.installmentPeriod = cleanNumber(data.installmentPeriod);
   result.paymentAlreadyDone = cleanNumber(data.paymentAlreadyDone);
-  result.paymentStatus = isPAYMENT_STATUS_TYPE(data.paymentStatus)
+  result.paymentStatus = isPaymentStatusType(data.paymentStatus)
     ? data.paymentStatus
     : PAYMENT_STATUS_TYPE.Unpaid;
   result.progress = cleanNumber(data.progress);

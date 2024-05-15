@@ -1,6 +1,6 @@
 import { EVENT_TYPE } from '@/common/enums/account';
 import { convertDateToTimestamp } from '@/common/utils/common';
-import { isEVENT_TYPE } from '@/common/interfaces/account';
+import { isEventType } from '@/common/interfaces/account';
 import {
   IPartialPaymentForInvoiceUpload,
   IPayment,
@@ -13,7 +13,7 @@ import {
 export interface IInvoiceWithPaymentMethod {
   invoiceId: string;
   date: number; // timestamp
-  EVENT_TYPE: EVENT_TYPE; // 'income' | 'payment' | 'transfer';
+  eventType: EVENT_TYPE; // 'income' | 'payment' | 'transfer';
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;
@@ -28,7 +28,7 @@ export interface IInvoiceWithPaymentMethod {
 export interface IInvoice {
   invoiceId: string;
   date: number; // timestamp
-  EVENT_TYPE: EVENT_TYPE;
+  eventType: EVENT_TYPE;
   paymentReason: string;
   description: string;
   venderOrSupplyer: string;
@@ -44,7 +44,7 @@ export function isIInvoice(data: IInvoice): data is IInvoice {
   return (
     typeof data.invoiceId === 'string' &&
     typeof data.date === 'number' &&
-    isEVENT_TYPE(data.EVENT_TYPE) &&
+    isEventType(data.eventType) &&
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
@@ -62,7 +62,7 @@ export function isIInvoiceWithPaymentMethod(
   return (
     typeof data.invoiceId === 'string' &&
     typeof data.date === 'number' &&
-    isEVENT_TYPE(data.EVENT_TYPE) &&
+    isEventType(data.eventType) &&
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.venderOrSupplyer === 'string' &&
@@ -86,8 +86,8 @@ export function cleanInvoiceWithPaymentMethod(
 
   result.invoiceId = data.invoiceId || '';
   result.date = convertDateToTimestamp(data.date);
-  result.EVENT_TYPE = isEVENT_TYPE(data.EVENT_TYPE)
-    ? data.EVENT_TYPE
+  result.eventType = isEventType(data.eventType)
+    ? data.eventType
     : EVENT_TYPE.Income;
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';

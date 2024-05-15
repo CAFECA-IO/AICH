@@ -1,5 +1,5 @@
 import { VOUCHER_TYPE } from '@/common/enums/account';
-import { isVOUCHER_TYPE } from '@/common/interfaces/account';
+import { isVoucherType } from '@/common/interfaces/account';
 import { ILineItem, isILineItem } from '@/common/interfaces/line_item';
 import { IPayment, isIPayment } from '@/common/interfaces/payment';
 
@@ -27,7 +27,7 @@ export interface IVoucher {
 function isIVoucherMetaData(arg: IVoucherMetaData): arg is IVoucherMetaData {
   if (
     typeof arg.date !== 'number' ||
-    isVOUCHER_TYPE(arg.VOUCHER_TYPE) ||
+    isVoucherType(arg.VOUCHER_TYPE) ||
     typeof arg.companyId !== 'string' ||
     typeof arg.companyName !== 'string' ||
     typeof arg.description !== 'string' ||

@@ -27,9 +27,12 @@ export class VouchersController {
     @Body()
     invoices: IInvoiceWithPaymentMethod[],
   ): APIResponseType<AccountResultStatus> {
-    // const invoiceWithPaymentMethod = invoices.map((invoice) => {
-    //   return transformDTOToInvoiceWithPaymentMethod(invoice);
-    // });
+    invoices.map((invoice) => {
+      invoice.project = invoice.project || 'None';
+      invoice.projectId = invoice.projectId || 'None';
+      invoice.contract = invoice.contract || 'None';
+      invoice.contractId = invoice.contractId || 'None';
+    });
 
     const { id, status } =
       this.vouchersService.generateVoucherFromInvoices(invoices);

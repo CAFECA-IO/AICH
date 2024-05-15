@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EVENT_TYPEToVOUCHER_TYPE } from 'src/common/interfaces/account';
+import { eventToVoucherTYPE } from 'src/common/interfaces/account';
 import {
   IInvoiceWithPaymentMethod,
   isIInvoiceWithPaymentMethod,
@@ -95,7 +95,7 @@ export class VouchersService {
       const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
         return {
           date: invoice.date,
-          VOUCHER_TYPE: EVENT_TYPEToVOUCHER_TYPE[invoice.EVENT_TYPE],
+          VOUCHER_TYPE: eventToVoucherTYPE[invoice.eventType],
           companyId: invoice.venderOrSupplyer,
           companyName: invoice.venderOrSupplyer,
           description: invoice.description,
@@ -108,7 +108,7 @@ export class VouchersService {
         };
       });
 
-      let lineItemsGenerated: ILineItem[];
+      let lineItemsGenerated: any;
 
       try {
         lineItemsGenerated = await this.langChainService.invoke(
@@ -142,7 +142,13 @@ export class VouchersService {
       }
 
       try {
-        lineItemsGenerated = lineItemsGenerated.map((lineItem) => {
+        if (lineItemsGenerated?.lineItems) {
+          lineItemsGenerated = lineItemsGenerated.lineItems;
+        }
+
+        lineItemsGenerated as ILineItem[];
+
+        lineItemsGenerated = lineItemsGenerated.map((lineItem: ILineItem) => {
           return cleanILineItem(lineItem);
         });
       } catch (error) {

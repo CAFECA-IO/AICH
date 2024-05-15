@@ -184,6 +184,7 @@ export class OcrService {
         this.cache.put(hashedId, PROGRESS_STATUS.LlmError, null);
       }
     } catch (e) {
+      this.logger.error(e);
       this.cache.put(hashedId, PROGRESS_STATUS.SystemError, null);
     }
   }
