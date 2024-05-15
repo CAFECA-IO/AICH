@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AuditReportsHelperService as helper } from './audit_reports_helper/audit_reports_helper.service';
-import { LlamaService } from 'src/llama/llama.service';
-import { LruCacheService } from 'src/lru_cache/lru_cache.service';
+import { AuditReportsHelperService as helper } from '@/audit_reports/audit_reports_helper/audit_reports_helper.service';
+import { LlamaService } from '@/llama/llama.service';
+import { LruCacheService } from '@/lru_cache/lru_cache.service';
 import {
   AuditReport,
   FinancialStatements,
-} from 'src/common/interfaces/audit_report';
-import { BalanceSheet } from 'src/common/interfaces/balance_sheet';
-import { ComprehensiveIncome } from 'src/common/interfaces/comprehensive_income';
-import { CashFlow } from 'src/common/interfaces/cash_flow';
-import { ProgressStatus } from 'src/common/types/common';
+} from '@/common/interfaces/audit_report';
+import { BalanceSheet } from '@/common/interfaces/balance_sheet';
+import { ComprehensiveIncome } from '@/common/interfaces/comprehensive_income';
+import { CashFlow } from '@/common/interfaces/cash_flow';
+import { ProgressStatus } from '@/common/enums/common';
 @Injectable()
 export class AuditReportsService {
   private readonly logger = new Logger(AuditReportsService.name);

@@ -14,12 +14,12 @@ import {
 import { OcrService } from './ocr.service';
 import type { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { APIResponseType } from 'src/common/interfaces/response';
-import { version } from 'src/common/utils/version';
-import { ProgressStatus } from 'src/common/types/common';
-import { AccountResultStatus } from 'src/common/interfaces/account';
+import { APIResponseType } from '@/common/interfaces/response';
+import { version } from '@/common/utils/version';
+import { ProgressStatus } from '@/common/enums/common';
+import { AccountResultStatus } from '@/common/interfaces/account';
 
-import { IInvoice } from 'src/common/interfaces/invoice';
+import { IInvoice } from '@/common/interfaces/invoice';
 
 @Controller('ocr')
 export class OcrController {

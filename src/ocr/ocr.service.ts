@@ -4,12 +4,12 @@ import {
   IInvoice,
   IInvoiceWithPaymentMethod,
   cleanInvoiceWithPaymentMethod,
-} from 'src/common/interfaces/invoice';
-import { ProgressStatus } from 'src/common/types/common';
-import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
-import { GoogleVisionService } from 'src/google_vision/google_vision.service';
-import { LangChainService } from 'src/lang_chain/lang_chain.service';
-import { LruCacheService } from 'src/lru_cache/lru_cache.service';
+} from '@/common/interfaces/invoice';
+import { ProgressStatus } from '@/common/enums/common';
+import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
+import { GoogleVisionService } from '@/google_vision/google_vision.service';
+import { LangChainService } from '@/lang_chain/lang_chain.service';
+import { LruCacheService } from '@/lru_cache/lru_cache.service';
 
 @Injectable()
 export class OcrService {

@@ -1,4 +1,4 @@
-import { cleanBoolean, cleanNumber } from '../utils/common';
+import { cleanBoolean, cleanNumber } from '@/common/utils/common';
 
 export interface ILineItem {
   lineItemIndex: string;

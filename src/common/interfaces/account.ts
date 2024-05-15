@@ -3,8 +3,8 @@ import {
   VoucherType,
   PaymentStatusType,
   PaymentPeriodType,
-} from '../types/account';
-import { ProgressStatus } from '../types/common';
+} from '@/common/enums/account';
+import { ProgressStatus } from '@/common/enums/common';
 
 // Info Murky (20240416): Interface
 export interface AccountResultStatus {

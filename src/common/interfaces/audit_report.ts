@@ -1,6 +1,9 @@
-import { LifeCycleType } from '../types/audit_report';
-import { BalanceSheet, isBalanceSheet } from './balance_sheet';
-import { CashFlow, isCashFlow } from './cash_flow';
+import { LifeCycleType } from '@/common/enums/audit_report';
+import {
+  BalanceSheet,
+  isBalanceSheet,
+} from '@/common/interfaces/balance_sheet';
+import { CashFlow, isCashFlow } from '@/common/interfaces/cash_flow';
 import {
   ComprehensiveIncome,
   isComprehensiveIncome,

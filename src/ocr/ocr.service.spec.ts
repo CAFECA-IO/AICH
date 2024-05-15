@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OcrService } from './ocr.service';
+import { OcrService } from '@/ocr/ocr.service';
 
 describe('OcrService', () => {
   let service: OcrService;

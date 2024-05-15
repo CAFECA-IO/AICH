@@ -6,7 +6,7 @@ import {
 } from 'src/common/interfaces/invoice';
 import { ILineItem, cleanILineItem } from 'src/common/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from 'src/common/interfaces/voucher';
-import { ProgressStatus } from 'src/common/types/common';
+import { ProgressStatus } from '@/common/enums/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
 import { LangChainService } from 'src/lang_chain/lang_chain.service';
 import { LruCacheService } from 'src/lru_cache/lru_cache.service';

@@ -1,4 +1,4 @@
-import { isStringNumber } from './common';
+import { isStringNumber } from '@/common/interfaces/common';
 
 export type ComprehensiveIncome = {
   reportType: string;

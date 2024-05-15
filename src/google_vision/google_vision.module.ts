@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { GoogleVisionService } from './google_vision.service';
+import { GoogleVisionService } from '@/google_vision/google_vision.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({

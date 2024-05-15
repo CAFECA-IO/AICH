@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { LruCacheService } from './lru_cache.service';
-import { LruServiceOptions } from 'src/common/interfaces/lru';
+import { LruCacheService } from '@/lru_cache/lru_cache.service';
+import { LruServiceOptions } from '@/common/interfaces/lru';
 
 @Module({})
 export class LruCacheModule {

@@ -2,7 +2,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatResponse, ModelResponse, Ollama } from 'ollama';
-import { LlamaServiceOptions } from 'src/common/interfaces/llama';
+import { LlamaServiceOptions } from '@/common/interfaces/llama';
 @Injectable()
 export class LlamaService<T> {
   private logger = new Logger(LlamaService.name);

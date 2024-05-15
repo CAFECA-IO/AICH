@@ -1,5 +1,5 @@
 // Info Murky (20240422) THis class is node for LRU cache
-import { ProgressStatus } from 'src/common/types/common';
+import { ProgressStatus } from '@/common/enums/common';
 
 export default class LRUNode<T> {
   key: string;

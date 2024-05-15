@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LangChainService } from './lang_chain.service';
+import { LangChainService } from '@/lang_chain/lang_chain.service';
 
 describe('LangChainService', () => {
   let service: LangChainService;

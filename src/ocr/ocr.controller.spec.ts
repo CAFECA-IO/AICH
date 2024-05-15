@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OcrController } from './ocr.controller';
+import { OcrController } from '@/ocr/ocr.controller';
 
 describe('OcrController', () => {
   let controller: OcrController;

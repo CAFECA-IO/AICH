@@ -1,9 +1,3 @@
-// Deprecated: Murky(20240429): change to enum
-// export type EventType = 'income' | 'payment' | 'transfer';
-// export type VoucherType = 'receive' | 'expense' | 'transfer';
-// export type PaymentStatusType = 'paid' | 'unpaid' | 'partial';
-// export type PaymentPeriodType = 'atOnce' | 'installment';
-
 export enum EventType {
   Income = 'income',
   Payment = 'payment',

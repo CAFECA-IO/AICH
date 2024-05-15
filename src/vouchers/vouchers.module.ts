@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { VouchersController } from './vouchers.controller';
-import { VouchersService } from './vouchers.service';
-import { LruCacheModule } from 'src/lru_cache/lru_cache.module';
+import { VouchersController } from '@/vouchers/vouchers.controller';
+import { VouchersService } from '@/vouchers/vouchers.service';
+import { LruCacheModule } from '@/lru_cache/lru_cache.module';
 
-import { LangChainModule } from 'src/lang_chain/lang_chain.module';
+import { LangChainModule } from '@/lang_chain/lang_chain.module';
 import {
   functionCall,
   functions,
   prompt,
-} from 'src/constants/lang_chain_template/voucher';
+} from '@/constants/lang_chain_template/voucher';
 
 @Module({
   imports: [

@@ -7,13 +7,13 @@ import {
   Post,
   Version,
 } from '@nestjs/common';
-import { VouchersService } from './vouchers.service';
-import { APIResponseType } from 'src/common/interfaces/response';
-import { AccountResultStatus } from 'src/common/interfaces/account';
-import { version } from 'src/common/utils/version';
-import { ProgressStatus } from 'src/common/types/common';
-import { IInvoiceWithPaymentMethod } from 'src/common/interfaces/invoice';
-import { IVoucher } from 'src/common/interfaces/voucher';
+import { VouchersService } from '@/vouchers/vouchers.service';
+import { APIResponseType } from '@/common/interfaces/response';
+import { AccountResultStatus } from '@/common/interfaces/account';
+import { version } from '@/common/utils/version';
+import { ProgressStatus } from '@/common/enums/common';
+import { IInvoiceWithPaymentMethod } from '@/common/interfaces/invoice';
+import { IVoucher } from '@/common/interfaces/voucher';
 
 @Controller('vouchers')
 export class VouchersController {

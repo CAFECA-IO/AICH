@@ -1,4 +1,4 @@
-import { isStringNumber } from './common';
+import { isStringNumber } from '@/common/interfaces/common';
 
 export interface BalanceSheet {
   reportID: string;

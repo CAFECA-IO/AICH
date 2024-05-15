@@ -1,6 +1,6 @@
-import { EventType } from '../types/account';
-import { convertDateToTimestamp } from '../utils/common';
-import { isEventType } from './account';
+import { EventType } from '@/common/enums/account';
+import { convertDateToTimestamp } from '@/common/utils/common';
+import { isEventType } from '@/common/interfaces/account';
 import {
   IPartialPaymentForInvoiceUpload,
   IPayment,

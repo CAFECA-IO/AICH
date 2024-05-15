@@ -1,7 +1,7 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { LlamaService } from './llama.service';
-import { LlamaServiceOptions } from 'src/common/interfaces/llama';
+import { LlamaService } from '@/llama/llama.service';
+import { LlamaServiceOptions } from '@/common/interfaces/llama';
 
 @Module({
   imports: [ConfigModule],

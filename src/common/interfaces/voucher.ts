@@ -1,7 +1,7 @@
-import { VoucherType } from '../types/account';
-import { isVoucherType } from './account';
-import { ILineItem, isILineItem } from './line_item';
-import { IPayment, isIPayment } from './payment';
+import { VoucherType } from '@/common/enums/account';
+import { isVoucherType } from '@/common/interfaces/account';
+import { ILineItem, isILineItem } from '@/common/interfaces/line_item';
+import { IPayment, isIPayment } from '@/common/interfaces/payment';
 
 export interface IVoucherMetaData {
   date: number;

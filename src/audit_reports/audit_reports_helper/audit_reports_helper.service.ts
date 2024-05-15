@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { FinancialStatements } from 'src/common/interfaces/audit_report';
-import { CashFlow } from 'src/common/interfaces/cash_flow';
-import { LifeCycleType } from 'src/common/types/audit_report';
-import { isZero } from 'src/common/utils/common';
+import { FinancialStatements } from '@/common/interfaces/audit_report';
+import { CashFlow } from '@/common/interfaces/cash_flow';
+import { LifeCycleType } from '@/common/enums/audit_report';
+import { isZero } from '@/common/utils/common';
 
 @Injectable()
 export class AuditReportsHelperService {

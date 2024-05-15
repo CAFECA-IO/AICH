@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IBlockData } from 'src/common/interfaces/google_vision';
+import { IBlockData } from '@/common/interfaces/google_vision';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { google } from '@google-cloud/vision/build/protos/protos';
 

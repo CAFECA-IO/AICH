@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { OcrService } from './ocr.service';
-import { GoogleVisionModule } from 'src/google_vision/google_vision.module';
-import { OcrController } from './ocr.controller';
-import { LruCacheModule } from 'src/lru_cache/lru_cache.module';
-import { LangChainModule } from 'src/lang_chain/lang_chain.module';
+import { OcrService } from '@/ocr/ocr.service';
+import { GoogleVisionModule } from '@/google_vision/google_vision.module';
+import { OcrController } from '@/ocr/ocr.controller';
+import { LruCacheModule } from '@/lru_cache/lru_cache.module';
+import { LangChainModule } from '@/lang_chain/lang_chain.module';
 import {
   functionCall,
   functions,
   prompt,
-} from 'src/constants/lang_chain_template/ocr';
+} from '@/constants/lang_chain_template/ocr';
 
 @Module({
   imports: [

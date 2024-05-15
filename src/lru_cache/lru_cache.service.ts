@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
-import LRUNode from './lru_cache_node';
-import { ProgressStatus } from 'src/common/types/common';
-import { LruServiceOptions } from 'src/common/interfaces/lru';
-import { LRU_CACHE_CONFIG } from 'src/constants/configs/config';
+import LRUNode from '@/lru_cache/lru_cache_node';
+import { ProgressStatus } from '@/common/enums/common';
+import { LruServiceOptions } from '@/common/interfaces/lru';
+import { LRU_CACHE_CONFIG } from '@/constants/configs/config';
 
 @Injectable()
 export class LruCacheService<T> {

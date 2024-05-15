@@ -1,7 +1,7 @@
 // https://js.langchain.com/docs/integrations/chat/ollama_functions
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LangChainServiceOption } from 'src/common/interfaces/lang_chain';
+import { LangChainServiceOption } from '@/common/interfaces/lang_chain';
 import {
   ChatOllamaFunctionsCallOptions,
   OllamaFunctions,
@@ -9,7 +9,7 @@ import {
 import { Runnable } from '@langchain/core/dist/runnables/base';
 import { BaseLanguageModelInput } from '@langchain/core/dist/language_models/base';
 import { BaseMessageChunk } from '@langchain/core/dist/messages';
-import { LANG_CHAIN_SERVICE_OPTIONS } from 'src/constants/configs/config';
+import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { ParamsFromFString } from '@langchain/core/prompts';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { JsonOutputFunctionsParser } from 'langchain/output_parsers';
