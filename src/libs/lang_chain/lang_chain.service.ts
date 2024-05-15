@@ -30,7 +30,7 @@ export class LangChainService {
   ) {
     // Info murky(20240429): create a new model if not list in ollama when module is initialized
     this.model = new OllamaFunctions({
-      model: LANG_CHAIN_SERVICE_OPTIONS.model,
+      model: LANG_CHAIN_SERVICE_OPTIONS.MODEL,
       baseUrl: this.baseUrl,
     }).bind({
       functions: options.functions,

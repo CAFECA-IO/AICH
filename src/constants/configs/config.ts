@@ -1,11 +1,11 @@
 export const LRU_CACHE_CONFIG = {
-  defaultCapacity: 10,
-  defaultIdLength: 10,
+  DEFAULT_CAPACITY: 10,
+  DEFAULT_ID_LENGTH: 10,
 };
 
 export const DEFAULT_PORT = 3001;
 
 export const LANG_CHAIN_SERVICE_OPTIONS = {
-  model: 'llama3',
-  recursiveLimit: 1,
+  MODEL: 'llama3',
+  RECURSIVE_LIMIT: 1,
 };

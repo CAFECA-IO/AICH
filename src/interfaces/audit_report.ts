@@ -4,7 +4,7 @@ import { CashFlow, isCashFlow } from '@/interfaces/cash_flow';
 import {
   ComprehensiveIncome,
   isComprehensiveIncome,
-} from './comprehensive_income';
+} from '@/interfaces/comprehensive_income';
 
 export interface FinancialStatements {
   balanceSheet: BalanceSheet;

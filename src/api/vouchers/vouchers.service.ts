@@ -115,7 +115,7 @@ export class VouchersService {
           {
             input: invoiceString,
           },
-          { recursionLimit: LANG_CHAIN_SERVICE_OPTIONS.recursiveLimit },
+          { recursionLimit: LANG_CHAIN_SERVICE_OPTIONS.RECURSIVE_LIMIT },
         );
 
         //Depreciate Murky (20240429): debug

@@ -7,7 +7,7 @@ import {
   isIPayment,
   isIPartialPaymentForInvoiceUpload,
   cleanIPayment,
-} from './payment';
+} from '@/interfaces/payment';
 
 // IInvoiceWithPaymentMethod Interface
 export interface IInvoiceWithPaymentMethod {

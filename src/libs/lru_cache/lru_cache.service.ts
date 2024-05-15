@@ -13,9 +13,9 @@ export class LruCacheService<T> {
 
   private least: LRUNode<T>;
 
-  private capacity: number = LRU_CACHE_CONFIG.defaultCapacity;
+  private capacity: number = LRU_CACHE_CONFIG.DEFAULT_CAPACITY;
 
-  private idLength: number = LRU_CACHE_CONFIG.defaultIdLength;
+  private idLength: number = LRU_CACHE_CONFIG.DEFAULT_ID_LENGTH;
 
   constructor(
     @Inject('LRU_SERVICE_OPTIONS') { capacity, idLength }: LruServiceOptions,

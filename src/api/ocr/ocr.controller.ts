@@ -11,7 +11,7 @@ import {
   UseInterceptors,
   Version,
 } from '@nestjs/common';
-import { OcrService } from './ocr.service';
+import { OcrService } from '@/api/ocr/ocr.service';
 import type { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { APIResponseType } from '@/interfaces/response';
