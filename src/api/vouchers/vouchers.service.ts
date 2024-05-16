@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { eventToVoucherTYPE } from '@/interfaces/account';
 import { IInvoice } from '@/interfaces/invoice';
-import { ILineItem, cleanILineItem } from '@/interfaces/line_item';
+import { ILineItem } from '@/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from '@/interfaces/voucher';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { LangChainService } from '@/libs/lang_chain/lang_chain.service';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
 import { isIInvoice } from '@/libs/utils/type_guard/invoice';
+import { cleanILineItem } from '@/libs/utils/type_cleaner/line_item';
 
 @Injectable()
 export class VouchersService {
