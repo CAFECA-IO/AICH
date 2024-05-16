@@ -21,7 +21,10 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@package": [
+        "package.json"
       ]
-    }
+    },
   },
 }
