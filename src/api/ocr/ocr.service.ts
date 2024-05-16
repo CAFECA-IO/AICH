@@ -1,10 +1,6 @@
 //https://js.langchain.com/docs/integrations/chat/ollama_functions
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  IInvoice,
-  IInvoiceWithPaymentMethod,
-  cleanInvoiceWithPaymentMethod,
-} from '@/interfaces/invoice';
+import { IInvoice, cleanInvoice } from '@/interfaces/invoice';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { GoogleVisionService } from '@/libs/google_vision/google_vision.service';
@@ -17,7 +13,7 @@ export class OcrService {
 
   constructor(
     private readonly googleVisionService: GoogleVisionService,
-    private readonly cache: LruCacheService<IInvoiceWithPaymentMethod>,
+    private readonly cache: LruCacheService<IInvoice>,
     private langChainService: LangChainService,
   ) {
     this.logger.log('OcrService initialized');
@@ -143,10 +139,6 @@ export class OcrService {
       let invoiceGenerated: any;
 
       try {
-        // Depreciate Murky (20240429): change to langChain
-        // invoiceGenerated =
-        //   await this.llamaService.genetateResponseLoop(descriptionString);
-
         this.logger.log(`OCR id ${hashedId} start to generate invoice`);
 
         invoiceGenerated = await this.langChainService.invoke(
@@ -184,8 +176,7 @@ export class OcrService {
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
-        const cleanedInvoice: IInvoiceWithPaymentMethod =
-          cleanInvoiceWithPaymentMethod(invoiceGenerated);
+        const cleanedInvoice: IInvoice = cleanInvoice(invoiceGenerated);
         this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, cleanedInvoice);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);

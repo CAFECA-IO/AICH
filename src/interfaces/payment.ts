@@ -20,16 +20,6 @@ export interface IPayment {
   progress: number; // 這是給contract 使用的， 看contract 實際工作完成了多少%, 不是指付款進度
 }
 
-export type IPartialPaymentForInvoiceUpload = Omit<
-  IPayment,
-  | 'paymentMethod'
-  | 'paymentPeriod'
-  | 'installmentPeriod'
-  | 'paymentStatus'
-  | 'paymentAlreadyDone'
-  | 'progress'
->;
-
 export function isIPayment(arg: IPayment): arg is IPayment {
   if (
     typeof arg.isRevenue !== 'boolean' ||
@@ -44,22 +34,6 @@ export function isIPayment(arg: IPayment): arg is IPayment {
     typeof arg.paymentAlreadyDone !== 'number' ||
     !isPaymentStatusType(arg.paymentStatus) ||
     typeof arg.progress !== 'number'
-  ) {
-    return false;
-  }
-  return true;
-}
-
-export function isIPartialPaymentForInvoiceUpload(
-  arg: IPartialPaymentForInvoiceUpload,
-): arg is IPartialPaymentForInvoiceUpload {
-  if (
-    typeof arg.isRevenue !== 'boolean' ||
-    typeof arg.price !== 'number' ||
-    typeof arg.hasTax !== 'boolean' ||
-    typeof arg.taxPercentage !== 'number' ||
-    typeof arg.hasFee !== 'boolean' ||
-    typeof arg.fee !== 'number'
   ) {
     return false;
   }
@@ -106,40 +80,6 @@ export function cleanIPayment(data: any): IPayment {
   result.taxPercentage = taxPercentage;
 
   if (!isIPayment(result)) {
-    throw new Error('Invalid IPayment data');
-  }
-  return result;
-}
-
-export function cleanPartialPaymentForInvoiceUpload(
-  data: any,
-): IPartialPaymentForInvoiceUpload {
-  if (!data) {
-    throw new Error('Invalid IPayment data, data is empty');
-  }
-  const result: any = {};
-
-  result.isRevenue = cleanBoolean(data.isRevenue);
-  result.price = cleanNumber(data.price);
-  result.hasTax = cleanBoolean(data.hasTax);
-  result.taxPercentage = cleanNumber(data.taxPercentage);
-  result.hasFee = cleanBoolean(data.hasFee);
-  result.fee = cleanNumber(data.fee);
-
-  let taxPercentage = result.taxPercentage
-    ? parseFloat(result.taxPercentage)
-    : 5;
-
-  if (taxPercentage > 100) {
-    if (taxPercentage > result.price) {
-      taxPercentage = ((taxPercentage - result.price) / result.price) * 100;
-    } else {
-      taxPercentage = ((result.price - taxPercentage) / taxPercentage) * 100;
-    }
-  }
-
-  result.taxPercentage = taxPercentage;
-  if (!isIPartialPaymentForInvoiceUpload(result)) {
     throw new Error('Invalid IPayment data');
   }
   return result;

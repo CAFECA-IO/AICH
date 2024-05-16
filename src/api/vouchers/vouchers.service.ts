@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { eventToVoucherTYPE } from '@/interfaces/account';
-import {
-  IInvoiceWithPaymentMethod,
-  isIInvoiceWithPaymentMethod,
-} from '@/interfaces/invoice';
+import { IInvoice, isIInvoice } from '@/interfaces/invoice';
 import { ILineItem, cleanILineItem } from '@/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from '@/interfaces/voucher';
 import { PROGRESS_STATUS } from '@/constants/common';
@@ -32,7 +29,7 @@ export class VouchersService {
     };
   }
 
-  public generateVoucherFromInvoices(invoices: IInvoiceWithPaymentMethod[]): {
+  public generateVoucherFromInvoices(invoices: IInvoice[]): {
     id: string;
     status: PROGRESS_STATUS;
   } {
@@ -40,7 +37,7 @@ export class VouchersService {
     if (
       !invoices ||
       invoices.length === 0 ||
-      !invoices.every((invoice) => isIInvoiceWithPaymentMethod(invoice))
+      !invoices.every((invoice) => isIInvoice(invoice))
     ) {
       return this.returnNotSuccessStatus(PROGRESS_STATUS.INVALID_INPUT);
     }
@@ -88,7 +85,7 @@ export class VouchersService {
 
   private async invoicesToAccountVoucherData(
     hashedId: string,
-    invoices: IInvoiceWithPaymentMethod[],
+    invoices: IInvoice[],
   ): Promise<void> {
     try {
       const invoiceString = JSON.stringify(invoices);

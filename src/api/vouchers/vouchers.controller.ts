@@ -12,7 +12,7 @@ import { APIResponseType } from '@/interfaces/response';
 import { AccountResultStatus } from '@/interfaces/account';
 import { version } from '@/libs/utils/version';
 import { PROGRESS_STATUS } from '@/constants/common';
-import { IInvoiceWithPaymentMethod } from '@/interfaces/invoice';
+import { IInvoice } from '@/interfaces/invoice';
 import { IVoucher } from '@/interfaces/voucher';
 
 @Controller('vouchers')
@@ -25,7 +25,7 @@ export class VouchersController {
   @Version('1')
   uploadInvoice(
     @Body()
-    invoices: IInvoiceWithPaymentMethod[],
+    invoices: IInvoice[],
   ): APIResponseType<AccountResultStatus> {
     invoices.map((invoice) => {
       invoice.project = invoice.project || 'None';
