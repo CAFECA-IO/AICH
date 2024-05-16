@@ -1,5 +1,3 @@
-import { isStringNumber } from '@/interfaces/common';
-
 export interface BalanceSheet {
   reportID: string;
   reportName: string;
@@ -23,7 +21,7 @@ export interface AssetDetails {
   };
 }
 
-interface LiabilityDetails {
+export interface LiabilityDetails {
   fairValue: string;
   details: {
     userDeposit: AssetType;
@@ -31,7 +29,7 @@ interface LiabilityDetails {
   };
 }
 
-interface EquityDetails {
+export interface EquityDetails {
   fairValue: string;
   details: {
     retainedEarning: AssetType;
@@ -39,7 +37,7 @@ interface EquityDetails {
   };
 }
 
-interface AssetType {
+export interface AssetType {
   fairValue: string;
   breakdown: {
     [key: string]: {
@@ -49,82 +47,6 @@ interface AssetType {
   };
 }
 
-interface FairValueContainer {
+export interface FairValueContainer {
   fairValue: string;
-}
-
-// Info Murky (20240505): type guards
-export function isBalanceSheet(obj: any): obj is BalanceSheet {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    typeof obj.reportID === 'string' &&
-    typeof obj.reportName === 'string' &&
-    typeof obj.reportStartTime === 'number' &&
-    typeof obj.reportEndTime === 'number' &&
-    typeof obj.reportType === 'string' &&
-    isStringNumber(obj.totalAssetsFairValue) &&
-    isStringNumber(obj.totalLiabilitiesAndEquityFairValue) &&
-    isAssetDetails(obj.assets) &&
-    isFairValueContainer(obj.nonAssets) &&
-    isLiabilityDetails(obj.liabilities) &&
-    isEquityDetails(obj.equity)
-  );
-}
-
-export function isAssetDetails(obj: any): obj is AssetDetails {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    isStringNumber(obj.fairValue) &&
-    isAssetType(obj.details.cryptocurrency) &&
-    isAssetType(obj.details.cashAndCashEquivalent) &&
-    isAssetType(obj.details.accountsReceivable)
-  );
-}
-
-export function isLiabilityDetails(obj: any): obj is LiabilityDetails {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    isStringNumber(obj.fairValue) &&
-    isAssetType(obj.details.userDeposit) &&
-    isAssetType(obj.details.accountsPayable)
-  );
-}
-
-export function isEquityDetails(obj: any): obj is EquityDetails {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    isStringNumber(obj.fairValue) &&
-    isAssetType(obj.details.retainedEarning) &&
-    isAssetType(obj.details.otherCapitalReserve)
-  );
-}
-
-function isAssetType(obj: any): obj is AssetType {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    isStringNumber(obj.fairValue) &&
-    isBreakdown(obj.breakdown)
-  );
-}
-
-function isBreakdown(obj: any): boolean {
-  if (typeof obj !== 'object' || obj === null) return false;
-  return Object.values(obj).every(
-    (item: any) =>
-      typeof item === 'object' &&
-      item !== null &&
-      isStringNumber(item.amount) &&
-      isStringNumber(item.fairValue),
-  );
-}
-
-function isFairValueContainer(obj: any): obj is FairValueContainer {
-  return (
-    typeof obj === 'object' && obj !== null && isStringNumber(obj.fairValue)
-  );
 }

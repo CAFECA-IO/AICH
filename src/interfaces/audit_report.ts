@@ -1,10 +1,7 @@
 import { LIFE_CYCLE_TYPE } from '@/constants/audit_report';
-import { BalanceSheet, isBalanceSheet } from '@/interfaces/balance_sheet';
-import { CashFlow, isCashFlow } from '@/interfaces/cash_flow';
-import {
-  ComprehensiveIncome,
-  isComprehensiveIncome,
-} from '@/interfaces/comprehensive_income';
+import { BalanceSheet } from '@/interfaces/balance_sheet';
+import { CashFlow } from '@/interfaces/cash_flow';
+import { ComprehensiveIncome } from '@/interfaces/comprehensive_income';
 
 export interface FinancialStatements {
   balanceSheet: BalanceSheet;
@@ -32,15 +29,4 @@ export interface AuditReport {
   creditRating: string;
   financialStatementsAnalysis: string;
   summary: string;
-}
-
-//Info Murky (20240505): type guards
-export function isFinancialStatements(obj: any): obj is FinancialStatements {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    isBalanceSheet(obj.balanceSheet) &&
-    isComprehensiveIncome(obj.comprehensiveIncome) &&
-    isCashFlow(obj.cashFlow)
-  );
 }

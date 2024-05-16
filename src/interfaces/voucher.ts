@@ -1,5 +1,5 @@
 import { VOUCHER_TYPE } from '@/constants/account';
-import { isVoucherType } from '@/interfaces/account';
+import { isVoucherType } from '@/libs/utils/type_guard/account';
 import { ILineItem, isILineItem } from '@/interfaces/line_item';
 import { IPayment, isIPayment } from '@/interfaces/payment';
 

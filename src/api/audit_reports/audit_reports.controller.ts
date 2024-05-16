@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Version } from '@nestjs/common';
 import { AuditReportsService } from 'src/api/audit_reports/audit_reports.service';
-import { AuditReport, isFinancialStatements } from '@/interfaces/audit_report';
+import { AuditReport } from '@/interfaces/audit_report';
 
 import { version } from '@/libs/utils/version';
 import { APIResponseType } from '@/interfaces/response';
 import { PROGRESS_STATUS } from '@/constants/common';
+import { isFinancialStatements } from '@/libs/utils/type_guard/financial_statement';
 
 @Controller('audit_reports')
 export class AuditReportsController {

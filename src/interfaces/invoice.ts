@@ -1,6 +1,6 @@
 import { EVENT_TYPE } from '@/constants/account';
 import { convertDateToTimestamp } from '@/libs/utils/common';
-import { isEventType } from '@/libs/utils/type_guard';
+import { isEventType } from '@/libs/utils/type_guard/account';
 import {
   IPartialPaymentForInvoiceUpload,
   IPayment,

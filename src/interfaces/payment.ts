@@ -1,6 +1,9 @@
 import { PAYMENT_PERIOD_TYPE, PAYMENT_STATUS_TYPE } from '@/constants/account';
 import { cleanBoolean, cleanNumber } from '@/libs/utils/common';
-import { isPaymentPeriodType, isPaymentStatusType } from '@/interfaces/account';
+import {
+  isPaymentPeriodType,
+  isPaymentStatusType,
+} from '@/libs/utils/type_guard/account';
 
 export interface IPayment {
   isRevenue: boolean; // 是否會創造收入，true是錢會進來，false是錢會出去
