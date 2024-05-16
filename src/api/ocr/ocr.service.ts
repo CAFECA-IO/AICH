@@ -177,7 +177,13 @@ export class OcrService {
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;
         invoiceGenerated.contractId = contractId;
-        const cleanedInvoice: IInvoice = cleanInvoice(invoiceGenerated);
+        let cleanedInvoice: IInvoice;
+        try {
+          cleanedInvoice = cleanInvoice(invoiceGenerated);
+        } catch (e) {
+          this.logger.error(e);
+          throw new Error('Invalid IInvoice');
+        }
         this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, cleanedInvoice);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
