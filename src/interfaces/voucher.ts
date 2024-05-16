@@ -1,7 +1,9 @@
 import { VOUCHER_TYPE } from '@/constants/account';
 import { isVoucherType } from '@/libs/utils/type_guard/account';
-import { ILineItem, isILineItem } from '@/interfaces/line_item';
-import { IPayment, isIPayment } from '@/interfaces/payment';
+import { ILineItem } from '@/interfaces/line_item';
+import { IPayment } from '@/interfaces/payment';
+import { isIPayment } from '@/libs/utils/type_guard/payment';
+import { isILineItem } from '@/libs/utils/type_guard/line_item';
 
 export interface IVoucherMetaData {
   date: number;
