@@ -1,6 +1,6 @@
 {
   "name": "aich",
-  "version": "0.0.1+9",
+  "version": "0.0.1+15",
   "description": "Artificial Intelligence Computing Hub",
   "author": "",
   "private": true,
@@ -22,6 +22,7 @@
   "dependencies": {
     "@google-cloud/vision": "^4.2.1",
     "@langchain/community": "^0.0.55",
+    "@langchain/core": "^0.1.62",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
