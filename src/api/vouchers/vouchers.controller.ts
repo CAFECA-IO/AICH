@@ -36,6 +36,7 @@ export class VouchersController {
 
     const { id, status } =
       this.vouchersService.generateVoucherFromInvoices(invoices);
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
@@ -54,6 +55,8 @@ export class VouchersController {
     @Param('resultId') resultId: string,
   ): APIResponseType<PROGRESS_STATUS> {
     const status = this.vouchersService.getVoucherAnalyzingStatus(resultId);
+
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
@@ -69,6 +72,8 @@ export class VouchersController {
     @Param('resultId') resultId: string,
   ): APIResponseType<IVoucher | null> {
     const result = this.vouchersService.getVoucherAnalyzingResult(resultId);
+
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,

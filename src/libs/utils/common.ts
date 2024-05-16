@@ -1,4 +1,11 @@
 // Info Murky (20240425) - Helper function to convert date strings to timestamps
+
+import {
+  EVENT_TYPE,
+  EVENT_TYPE_TO_VOUCHER_TYPE_MAP,
+  VOUCHER_TYPE,
+} from '@/constants/account';
+
 // will return timestamp of current if input is not valid
 export function convertDateToTimestamp(dateStr: string | number): number {
   // 檢查是否為有效的日期字串
@@ -81,4 +88,8 @@ export function isZero(number: number | string): boolean {
     return parseFloat(number) === 0;
   }
   return number === 0;
+}
+
+export function eventTypeToVoucherType(eventType: EVENT_TYPE): VOUCHER_TYPE {
+  return EVENT_TYPE_TO_VOUCHER_TYPE_MAP[eventType];
 }

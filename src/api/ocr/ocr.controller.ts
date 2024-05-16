@@ -71,6 +71,8 @@ export class OcrController {
         contract,
         contractId,
       );
+
+      // Todo Murky (20240512): need to format the response
       return {
         powerby: `powered by AICH ${version}`,
         success: true,
@@ -101,6 +103,7 @@ export class OcrController {
   ): APIResponseType<PROGRESS_STATUS> {
     const result = this.ocrService.getOCRStatus(resultId);
 
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
@@ -116,6 +119,8 @@ export class OcrController {
     @Param('resultId') resultId: string,
   ): APIResponseType<IInvoice | null> {
     const result = this.ocrService.getOCRResult(resultId);
+
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,

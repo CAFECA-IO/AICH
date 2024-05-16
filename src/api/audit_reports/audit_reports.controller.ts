@@ -20,6 +20,7 @@ export class AuditReportsController {
 
     const hashedId = this.auditReportsService.generateAuditReport(body);
 
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
@@ -40,6 +41,7 @@ export class AuditReportsController {
     const status =
       this.auditReportsService.getAuditReportAnalyzingStatus(resultId);
 
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,
@@ -56,6 +58,8 @@ export class AuditReportsController {
   ): APIResponseType<AuditReport | null> {
     const result =
       this.auditReportsService.getAuditReportAnalyzingResult(resultId);
+
+    // Todo Murky (20240512): need to format the response
     return {
       powerby: `powered by AICH ${version}`,
       success: true,

@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { eventToVoucherTYPE } from '@/interfaces/account';
 import { IInvoice } from '@/interfaces/invoice';
 import { ILineItem } from '@/interfaces/line_item';
 import { IVoucher, IVoucherMetaData } from '@/interfaces/voucher';
@@ -9,6 +8,7 @@ import { LangChainService } from '@/libs/lang_chain/lang_chain.service';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
 import { isIInvoice } from '@/libs/utils/type_guard/invoice';
 import { cleanILineItem } from '@/libs/utils/type_cleaner/line_item';
+import { eventTypeToVoucherType } from '@/libs/utils/common';
 
 @Injectable()
 export class VouchersService {
@@ -94,7 +94,7 @@ export class VouchersService {
       const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
         return {
           date: invoice.date,
-          VOUCHER_TYPE: eventToVoucherTYPE[invoice.eventType],
+          VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
           companyId: invoice.venderOrSupplyer,
           companyName: invoice.venderOrSupplyer,
           description: invoice.description,
