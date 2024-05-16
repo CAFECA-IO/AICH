@@ -6,7 +6,7 @@ import {
   FairValueContainer,
   LiabilityDetails,
 } from '@/interfaces/balance_sheet';
-import { isStringNumber } from '@/interfaces/common';
+import { isStringNumber } from '@/libs/utils/type_guard/common';
 
 // Info Murky (20240505): type guards
 export function isBalanceSheet(obj: any): obj is BalanceSheet {

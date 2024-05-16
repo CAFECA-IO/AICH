@@ -8,7 +8,7 @@ import {
   SupplementalSchedule,
   WeightedCost,
 } from '@/interfaces/cash_flow';
-import { isStringNumber } from '@/interfaces/common';
+import { isStringNumber } from '@/libs/utils/type_guard/common';
 
 // Info Murky (20240505): type guards
 export function isCashFlow(obj: any): obj is CashFlow {

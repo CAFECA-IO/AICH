@@ -1,4 +1,4 @@
-import { isStringNumber } from '@/interfaces/common';
+import { isStringNumber } from '@/libs/utils/type_guard/common';
 import {
   ComprehensiveIncome,
   Costs,
