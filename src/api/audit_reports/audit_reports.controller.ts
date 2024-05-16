@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Version } from '@nestjs/common';
-import { AuditReportsService } from 'src/api/audit_reports/audit_reports.service';
+import { AuditReportsService } from '@/api/audit_reports/audit_reports.service';
 import { AuditReport } from '@/interfaces/audit_report';
 
 import { version } from '@/libs/utils/version';
