@@ -1,71 +1,83 @@
-import { Body, Controller, Get, Param, Post, Version } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  UseInterceptors,
+  Version,
+} from '@nestjs/common';
 import { AuditReportsService } from '@/api/audit_reports/audit_reports.service';
 import { AuditReport } from '@/interfaces/audit_report';
 
-import { version } from '@/libs/utils/version';
-import { APIResponseType } from '@/interfaces/response';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { isFinancialStatements } from '@/libs/utils/type_guard/financial_statement';
+import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
+import { ResponseMessage } from '@/libs/utils/decorator/response_message.decorator';
+import { ResponseException } from '@/libs/utils/response_exception';
+import { STATUS_MESSAGE } from '@/constants/status_code';
+import { AccountResultStatus } from '@/interfaces/account';
 
+@UseInterceptors(ResponseFormatInterceptor)
 @Controller('audit_reports')
 export class AuditReportsController {
+  private readonly logger = new Logger(AuditReportsController.name);
+
   constructor(private readonly auditReportsService: AuditReportsService) {}
 
   @Post()
   @Version('1')
-  generateAuditReport(@Body() body: unknown) {
+  @ResponseMessage('Financial statement uploaded to audit report successfully')
+  generateAuditReport(@Body() body: unknown): AccountResultStatus {
     if (!isFinancialStatements(body)) {
-      throw new Error('Invalid input');
+      throw new ResponseException(STATUS_MESSAGE.INVALID_INPUT);
     }
 
-    const hashedId = this.auditReportsService.generateAuditReport(body);
+    try {
+      const hashedId = this.auditReportsService.generateAuditReport(body);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Audit Report uploaded successfully',
-      payload: {
+      const resultStatus = {
         resultId: hashedId,
         status: PROGRESS_STATUS.IN_PROGRESS,
-      },
-    };
+      };
+      return resultStatus;
+    } catch (error) {
+      this.logger.error(error);
+      throw new ResponseException(
+        STATUS_MESSAGE.UPLOAD_FINANCIAL_STATEMENT_TO_AUDIT_REPORT_FAILED,
+      );
+    }
   }
 
   @Get(':resultId/process_status')
   @Version('1')
-  getProcessStatus(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<PROGRESS_STATUS> {
-    const status =
-      this.auditReportsService.getAuditReportAnalyzingStatus(resultId);
+  @ResponseMessage('Process status retrieved successfully')
+  getProcessStatus(@Param('resultId') resultId: string): PROGRESS_STATUS {
+    try {
+      const status =
+        this.auditReportsService.getAuditReportAnalyzingStatus(resultId);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Process status',
-      payload: status,
-    };
+      return status;
+    } catch (error) {
+      this.logger.error(error);
+      throw new ResponseException(STATUS_MESSAGE.GET_PROCESS_STATUS_FAILED);
+    }
   }
 
   @Get(':resultId/result')
   @Version('1')
-  getProcessResult(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<AuditReport | null> {
-    const result =
-      this.auditReportsService.getAuditReportAnalyzingResult(resultId);
+  @ResponseMessage('Audit report retrieved successfully')
+  getProcessResult(@Param('resultId') resultId: string): AuditReport {
+    try {
+      const result =
+        this.auditReportsService.getAuditReportAnalyzingResult(resultId);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Process result retrieved successfully',
-      payload: result,
-    };
+      // Todo Murky (20240512): need to format the response
+      return result;
+    } catch (error) {
+      this.logger.error(error);
+      throw new ResponseException(STATUS_MESSAGE.GET_AICH_RESULT_FAILED);
+    }
   }
 }

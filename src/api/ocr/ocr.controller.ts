@@ -15,13 +15,16 @@ import {
 } from '@nestjs/common';
 import { OcrService } from '@/api/ocr/ocr.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { APIResponseType } from '@/interfaces/response';
-import { version } from '@/libs/utils/version';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { AccountResultStatus } from '@/interfaces/account';
 import { IInvoice } from '@/interfaces/invoice';
+import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
+import { ResponseMessage } from '@/libs/utils/decorator/response_message.decorator';
+import { ResponseException } from '@/libs/utils/response_exception';
+import { STATUS_MESSAGE } from '@/constants/status_code';
 
 @Controller('ocr')
+@UseInterceptors(ResponseFormatInterceptor)
 export class OcrController {
   private readonly logger = new Logger(OcrController.name);
 
@@ -29,6 +32,7 @@ export class OcrController {
 
   @Post('upload')
   @Version('1')
+  @ResponseMessage('Image uploaded to OCR successfully')
   @UseInterceptors(FileInterceptor('image'))
   async uploadInvoice(
     // Info Murky(20240429): UploadedFile decorator is used to get the file from the request, use Multer to parse the file.
@@ -47,7 +51,7 @@ export class OcrController {
     image: Express.Multer.File,
     // 需要主動放入 invoiceName, project, projectId, contract, contractId
     @Body() body: any,
-  ): Promise<APIResponseType<AccountResultStatus[]>> {
+  ): Promise<AccountResultStatus[]> {
     const {
       imageName = 'None',
       project = 'None',
@@ -72,61 +76,45 @@ export class OcrController {
         contractId,
       );
 
-      // Todo Murky (20240512): need to format the response
-      return {
-        powerby: `powered by AICH ${version}`,
-        success: true,
-        code: '200',
-        message: 'Image uploaded to OCR successfully',
-        payload: [
-          {
-            resultId: id,
-            status: status,
-          },
-        ],
-      };
+      const resultStatusArray = [
+        {
+          resultId: id,
+          status: status,
+        },
+      ];
+      return resultStatusArray;
     } catch (error) {
       this.logger.error(`Error in uploading image to OCR: ${error}`);
-      return {
-        powerby: `powered by AICH ${version}`,
-        success: false,
-        code: '500',
-        message: 'Internal server error, upload image to OCR failed',
-      };
+      throw new ResponseException(
+        STATUS_MESSAGE.EXTRACT_INVOICE_FROM_OCR_FAILED,
+      );
     }
   }
 
   @Get(':resultId/process_status')
   @Version('1')
-  getProcessStatus(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<PROGRESS_STATUS> {
-    const result = this.ocrService.getOCRStatus(resultId);
+  @ResponseMessage('Return process status successfully')
+  getProcessStatus(@Param('resultId') resultId: string): PROGRESS_STATUS {
+    try {
+      const result = this.ocrService.getOCRStatus(resultId);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'OCR process status',
-      payload: result,
-    };
+      return result;
+    } catch (error) {
+      this.logger.error(`Error in getting process status: ${error}`);
+      throw new ResponseException(STATUS_MESSAGE.GET_PROCESS_STATUS_FAILED);
+    }
   }
 
   @Get(':resultId/result')
   @Version('1')
-  getProcessResult(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<IInvoice | null> {
-    const result = this.ocrService.getOCRResult(resultId);
-
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'OCR process result',
-      payload: result,
-    };
+  @ResponseMessage('return Invoice JSON Successfully ')
+  getProcessResult(@Param('resultId') resultId: string): IInvoice {
+    try {
+      const result = this.ocrService.getOCRResult(resultId);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error in getting process result: ${error}`);
+      throw new ResponseException(STATUS_MESSAGE.GET_AICH_RESULT_FAILED);
+    }
   }
 }
