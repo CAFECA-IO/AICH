@@ -1,11 +1,12 @@
 //https://js.langchain.com/docs/integrations/chat/ollama_functions
 import { Injectable, Logger } from '@nestjs/common';
-import { IInvoice, cleanInvoice } from '@/interfaces/invoice';
+import { IInvoice } from '@/interfaces/invoice';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { GoogleVisionService } from '@/libs/google_vision/google_vision.service';
 import { LangChainService } from '@/libs/lang_chain/lang_chain.service';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
+import { cleanInvoice } from '@/libs/utils/type_cleaner/invoice';
 
 @Injectable()
 export class OcrService {
