@@ -40,7 +40,8 @@ export class ResponseFormatInterceptor<T>
       map((payload) => ({
         powerby: `powered by AICH ${version}`,
         success: true,
-        code: context.switchToHttp().getResponse().statusCode,
+        // Todo Murky (20240512): 這邊的http status 轉自訂的status code的方法還沒有想到
+        code: `${context.switchToHttp().getResponse().statusCode}AIC0001`,
         message:
           this.reflector.get<string>(
             'response_message', //
