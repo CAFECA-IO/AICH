@@ -11,7 +11,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { ResponseException } from '../response_exception';
+import { ResponseException } from '@/libs/utils/response_exception';
 import { STATUS_CODE, STATUS_MESSAGE } from '@/constants/status_code';
 
 /* Info Murky (20240515): 使用方法: 用ResponseMessage 把要回覆的資訊放在controller上
