@@ -73,7 +73,6 @@ export class AuditReportsController {
       const result =
         this.auditReportsService.getAuditReportAnalyzingResult(resultId);
 
-      // Todo Murky (20240512): need to format the response
       return result;
     } catch (error) {
       this.logger.error(error);

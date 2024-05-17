@@ -40,7 +40,7 @@ export class ResponseFormatInterceptor<T>
       map((payload) => ({
         powerby: `powered by AICH ${version}`,
         success: true,
-        // Todo Murky (20240512): 這邊的http status 轉自訂的status code的方法還沒有想到
+        // ToDo : 這邊的http status 轉自訂的status code的方法還沒有想到 (20240512 - Murky)
         code: `${context.switchToHttp().getResponse().statusCode}AIC0001`,
         message:
           this.reflector.get<string>(
