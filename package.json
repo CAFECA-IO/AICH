@@ -1,6 +1,6 @@
 {
   "name": "aich",
-  "version": "0.0.1+15",
+  "version": "0.0.1+16",
   "description": "Artificial Intelligence Computing Hub",
   "author": "",
   "private": true,
@@ -74,7 +74,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
   },
   "main": ".eslintrc.js",
   "directories": {

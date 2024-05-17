@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GoogleVisionService } from '@/libs/google_vision/google_vision.service';
 
-// Todo: Info Murky (20240429): Write the test cases for the GoogleVisionService
-
 describe('GoogleVisionService', () => {
   let service: GoogleVisionService;
 

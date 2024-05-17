@@ -5,16 +5,20 @@ import {
   Logger,
   Param,
   Post,
+  UseInterceptors,
   Version,
 } from '@nestjs/common';
 import { VouchersService } from '@/api/vouchers/vouchers.service';
-import { APIResponseType } from '@/interfaces/response';
 import { AccountResultStatus } from '@/interfaces/account';
-import { version } from '@/libs/utils/version';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { IInvoice } from '@/interfaces/invoice';
 import { IVoucher } from '@/interfaces/voucher';
+import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
+import { ResponseMessage } from '@/libs/utils/decorator/response_message.decorator';
+import { ResponseException } from '@/libs/utils/response_exception';
+import { STATUS_MESSAGE } from '@/constants/status_code';
 
+@UseInterceptors(ResponseFormatInterceptor)
 @Controller('vouchers')
 export class VouchersController {
   private readonly logger = new Logger(VouchersController.name);
@@ -23,10 +27,11 @@ export class VouchersController {
 
   @Post('upload_invoice')
   @Version('1')
+  @ResponseMessage('Invoice uploaded to voucher api successfully')
   uploadInvoice(
     @Body()
     invoices: IInvoice[],
-  ): APIResponseType<AccountResultStatus> {
+  ): AccountResultStatus {
     invoices.map((invoice) => {
       invoice.project = invoice.project || 'None';
       invoice.projectId = invoice.projectId || 'None';
@@ -34,52 +39,48 @@ export class VouchersController {
       invoice.contractId = invoice.contractId || 'None';
     });
 
-    const { id, status } =
-      this.vouchersService.generateVoucherFromInvoices(invoices);
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Invoice uploaded successfully',
-      payload: {
+    try {
+      const { id, status } =
+        this.vouchersService.generateVoucherFromInvoices(invoices);
+
+      const resultStatus = {
         resultId: id,
         status: status,
-      },
-    };
+      };
+      return resultStatus;
+    } catch (error) {
+      this.logger.error(error);
+      throw new ResponseException(
+        STATUS_MESSAGE.UPLOAD_INVOICE_JSON_TO_VOUCHER_FAILED,
+      );
+    }
   }
 
   @Get(':resultId/process_status')
   @Version('1')
-  getProcessStatus(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<PROGRESS_STATUS> {
-    const status = this.vouchersService.getVoucherAnalyzingStatus(resultId);
+  @ResponseMessage('Process status retrieved successfully')
+  getProcessStatus(@Param('resultId') resultId: string): PROGRESS_STATUS {
+    try {
+      const status = this.vouchersService.getVoucherAnalyzingStatus(resultId);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Process status retrieved successfully',
-      payload: status,
-    };
+      return status;
+    } catch (error) {
+      this.logger.error(`Error in getting process status: ${error}`);
+      throw new ResponseException(STATUS_MESSAGE.GET_PROCESS_STATUS_FAILED);
+    }
   }
 
   @Get(':resultId/result')
   @Version('1')
-  getProcessResult(
-    @Param('resultId') resultId: string,
-  ): APIResponseType<IVoucher | null> {
-    const result = this.vouchersService.getVoucherAnalyzingResult(resultId);
+  @ResponseMessage('Voucher result retrieved successfully')
+  getProcessResult(@Param('resultId') resultId: string): IVoucher {
+    try {
+      const result = this.vouchersService.getVoucherAnalyzingResult(resultId);
 
-    // Todo Murky (20240512): need to format the response
-    return {
-      powerby: `powered by AICH ${version}`,
-      success: true,
-      code: '200',
-      message: 'Process result retrieved successfully',
-      payload: result,
-    };
+      return result;
+    } catch (error) {
+      this.logger.error(`Error in getting process result: ${error}`);
+      throw new ResponseException(STATUS_MESSAGE.GET_AICH_RESULT_FAILED);
+    }
   }
 }

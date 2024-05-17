@@ -39,7 +39,6 @@ export class OcrService {
     id: string;
     status: PROGRESS_STATUS;
   }> {
-    // Todo: 把所有的回傳包成一個function
     if (!imageName || !project || !projectId || !contract || !contractId) {
       return this.returnNotSuccessStatus(PROGRESS_STATUS.INVALID_INPUT);
     }
@@ -133,7 +132,6 @@ export class OcrService {
     contractId: string,
     description: string[],
   ): Promise<void> {
-    // Todo: post to llama
     try {
       const descriptionString = description.join('\n');
 
