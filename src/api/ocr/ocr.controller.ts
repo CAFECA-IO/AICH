@@ -51,7 +51,7 @@ export class OcrController {
     image: Express.Multer.File,
     // 需要主動放入 invoiceName, project, projectId, contract, contractId
     @Body() body: any,
-  ): Promise<AccountResultStatus[]> {
+  ): Promise<AccountResultStatus> {
     const {
       imageName = 'None',
       project = 'None',
@@ -76,12 +76,11 @@ export class OcrController {
         contractId,
       );
 
-      const resultStatusArray = [
+      const resultStatusArray = 
         {
           resultId: id,
           status: status,
-        },
-      ];
+        };
       return resultStatusArray;
     } catch (error) {
       this.logger.error(`Error in uploading image to OCR: ${error}`);
