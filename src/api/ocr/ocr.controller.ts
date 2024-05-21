@@ -76,11 +76,10 @@ export class OcrController {
         contractId,
       );
 
-      const resultStatusArray = 
-        {
-          resultId: id,
-          status: status,
-        };
+      const resultStatusArray = {
+        resultId: id,
+        status: status,
+      };
       return resultStatusArray;
     } catch (error) {
       this.logger.error(`Error in uploading image to OCR: ${error}`);
