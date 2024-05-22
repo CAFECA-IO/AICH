@@ -24,7 +24,7 @@ export const EXTRACTION_TEMPLATE = `
     "eventType": "income",
     "paymentReason": "電信費",
     "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
-    "venderOrSupplyer": "中華電信",
+    "vendorOrSupplier": "中華電信",
     "payment": {{
       "price": 2310,
       "hasTax": true,

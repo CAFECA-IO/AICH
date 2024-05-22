@@ -51,7 +51,7 @@ SYSTEM """你現在是一位專業的審計員，你需要從發票的文字中�
    - 提供發票上明確的服務或產品描述，如果有多個品項，請把他們全部列出來之後用,區分，例如“書本1, 書本2”。
    - 很有可能出現在 “項目” 字樣附近，會有好幾條，把他合併成一條用逗點分開
 
-6. **供應商或銷售商(venderOrSupplyer:)**：
+6. **供應商或銷售商(vendorOrSupplier:)**：
    - 從發票上標識供應商或銷售商的名稱。
 
 7. **付款詳情(payment)**：
@@ -71,7 +71,7 @@ json格式如下：
   "EVENT_TYPE": ""income" | "payment" | "transfer"",
   "paymentReason": "string",
   "description": "string",
-  "venderOrSupplyer": "string",
+  "vendorOrSupplier": "string",
   "payment": {
     "price": "number",
     "hasTax": "boolean",
@@ -91,7 +91,7 @@ MESSAGE assistant """
     "EVENT_TYPE": "payment",
     "paymentReason": "管理費用",
     "description": "沒有國家的人(第2版): 180, 憂鬱的貓太郎: 297, 紅與黑(精裝版): 720, 誠品小紙提袋:3, 國家的品格:個人自由與公共利益": 395,
-    "venderOrSupplyer": "eslite 誠品",
+    "vendorOrSupplier": "eslite 誠品",
     "payment": {
         "price": 1500,
         "hasTax": false,
@@ -112,7 +112,7 @@ MESSAGE assistant """
   "EVENT_TYPE": "income",
   ""paymentReason": "電信費",
   "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
-  "venderOrSupplyer": "中華電信",
+  "vendorOrSupplier": "中華電信",
   "payment": {
     "price": 2310,
     "hasTax": true,
@@ -133,7 +133,7 @@ MESSAGE assistant """
   "EVENT_TYPE":"payment",
   "paymentReason":"購買軟體",
   "description":"WSTP會計師工作輔助幫手: 88725, 文中網路版主機授權費用: 8400, 文中工作站授權費用: 6300",
-  "venderOrSupplyer":"文中資訊股份有限公司",
+  "vendorOrSupplier":"文中資訊股份有限公司",
   "payment":{
     "price":109725,
     "hasTax":true,

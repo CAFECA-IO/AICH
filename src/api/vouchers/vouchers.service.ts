@@ -95,8 +95,8 @@ export class VouchersService {
         return {
           date: invoice.date,
           VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
-          companyId: invoice.venderOrSupplyer,
-          companyName: invoice.venderOrSupplyer,
+          companyId: invoice.vendorOrSupplier,
+          companyName: invoice.vendorOrSupplier,
           description: invoice.description,
           reason: invoice.paymentReason,
           projectId: invoice.projectId,

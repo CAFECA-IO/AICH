@@ -6,7 +6,7 @@ export interface IInvoice {
   eventType: EVENT_TYPE;
   paymentReason: string;
   description: string;
-  venderOrSupplyer: string;
+  vendorOrSupplier: string;
   projectId: string;
   project: string;
   contractId: string;

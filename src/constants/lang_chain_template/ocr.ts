@@ -45,7 +45,7 @@ export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
             description:
               '發票描述，請依照 項目:價格, 項目:價格, ex: 書本:100, 筆記本:200',
           },
-          venderOrSupplyer: {
+          vendorOrSupplier: {
             type: 'string',
             description: '供應商或銷售商, ex:誠品股份有限公司中山書街分公司',
           },
