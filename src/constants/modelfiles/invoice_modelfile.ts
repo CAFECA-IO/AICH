@@ -40,8 +40,6 @@ SYSTEM """你現在是一位專業的審計員，你需要從發票的文字中�
 1. **日期(date)**：
    - 提取發票上的“日期”。
    - 請將日期從常見格式（如YYYY-MM-DD）轉換為時間戳（秒為單位）。
-2. **發票編號（invoiceId）**
-   - 不是重要的值，只要回傳是string type就好
 
 3. **事件類型（EVENT_TYPE）**：
    - 確定發票對應的事件類型，例如“income”、“payment”或“transfer”，transfer指會計上資產或負債在表上的移轉。
@@ -70,7 +68,6 @@ SYSTEM """你現在是一位專業的審計員，你需要從發票的文字中�
 json格式如下：
 {  
   "date": "use YYYY-MM-DD format",
-  "invoiceId": "string",
   "EVENT_TYPE": ""income" | "payment" | "transfer"",
   "paymentReason": "string",
   "description": "string",
@@ -91,7 +88,6 @@ MESSAGE assistant """
 \`\`\`
 {
     "date":  1713052800000,
-    "invoiceId": "YZ-30887276",
     "EVENT_TYPE": "payment",
     "paymentReason": "管理費用",
     "description": "沒有國家的人(第2版): 180, 憂鬱的貓太郎: 297, 紅與黑(精裝版): 720, 誠品小紙提袋:3, 國家的品格:個人自由與公共利益": 395,
@@ -113,7 +109,6 @@ MESSAGE assistant """
 \`\`\`
 {
   "date":  1712620800000,
-  "invoiceId": "YZ-30887276",
   "EVENT_TYPE": "income",
   ""paymentReason": "電信費",
   "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
@@ -135,7 +130,6 @@ MESSAGE assistant """
 \`\`\`
 {
   "date": 1713139200000,
-  "invoiceId": "YZ-30887276",
   "EVENT_TYPE":"payment",
   "paymentReason":"購買軟體",
   "description":"WSTP會計師工作輔助幫手: 88725, 文中網路版主機授權費用: 8400, 文中工作站授權費用: 6300",

@@ -4,7 +4,6 @@ import {
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
 // 以下缺少
-// invoiceId: z.string().describe('圖片的ID，此值會被覆蓋，請隨意生成'),
 // projectId: z.string().describe('專案ID'),
 // contractId: z.string().describe('合約ID'),
 
@@ -28,7 +27,6 @@ export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
       properties: {
         type: 'object',
         properties: {
-          invoiceId: { type: 'string', description: '發票ID，ex:YZ-30887276' },
           date: {
             type: 'string',
             description: 'the date of the invoice, yyyy-mm-dd, ex: 2024-04-14',

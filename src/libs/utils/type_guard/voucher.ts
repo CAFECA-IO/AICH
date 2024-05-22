@@ -23,9 +23,6 @@ function isIVoucherMetaData(arg: IVoucherMetaData): arg is IVoucherMetaData {
 }
 
 export function isIVoucher(arg: IVoucher): arg is IVoucher {
-  if (arg.voucherIndex === undefined || arg.invoiceIndex === undefined) {
-    return false;
-  }
   const isIVoucherMetaDataReturn = arg.metadatas.every(isIVoucherMetaData);
   if (isIVoucherMetaDataReturn) {
     return false;

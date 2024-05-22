@@ -170,7 +170,6 @@ export class OcrService {
 
       if (invoiceGenerated) {
         invoiceGenerated;
-        invoiceGenerated.invoiceId = imageName;
         invoiceGenerated.project = project;
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;

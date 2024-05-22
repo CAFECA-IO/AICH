@@ -18,7 +18,6 @@ export interface IVoucherMetaData {
 
 export interface IVoucher {
   voucherIndex: string;
-  invoiceIndex: string;
   metadatas: IVoucherMetaData[];
   lineItems: ILineItem[];
 }

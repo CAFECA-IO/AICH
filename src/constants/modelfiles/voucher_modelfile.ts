@@ -98,7 +98,6 @@ MESSAGE user """\`\`\`
 [
   {
     "date": 1713052800000,
-    "invoiceId": "20240426001",
     "EVENT_TYPE": "payment",
     "paymentReason": "管理費用",
     "description": "沒有國家的人(第2版), 憂鬱的貓太郎, 紅與黑(精裝版), 誠品小紙提袋, 國家的品格:個人自由與公共利益",
@@ -144,7 +143,6 @@ MESSAGE user """\`\`\`
 [
       {
         "date": 1713052800000,
-        "invoiceId": "20240426001",
         "EVENT_TYPE": "income",
         "paymentReason": "電信費",
         "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
@@ -198,7 +196,6 @@ MESSAGE user """"\`\`\`
 [
   {
       "date": 1713052800000,
-      "invoiceId": "20240426001",
       "EVENT_TYPE": "payment",
       "paymentReason": "購買軟體",
       "description": "WSTP會計師工作輔助幫手: 88725, 文中網路版主機授權費用: 8400, 文中工作站授權費用: 6300",

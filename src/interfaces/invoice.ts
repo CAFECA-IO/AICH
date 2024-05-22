@@ -2,7 +2,6 @@ import { EVENT_TYPE } from '@/constants/account';
 import { IPayment } from '@/interfaces/payment';
 
 export interface IInvoice {
-  invoiceId: string;
   date: number; // timestamp
   eventType: EVENT_TYPE;
   paymentReason: string;

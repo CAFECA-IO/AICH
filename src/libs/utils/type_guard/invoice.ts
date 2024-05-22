@@ -4,7 +4,6 @@ import { isIPayment } from '@/libs/utils/type_guard/payment';
 
 export function isIInvoice(data: IInvoice): data is IInvoice {
   return (
-    typeof data.invoiceId === 'string' &&
     typeof data.date === 'number' &&
     isEventType(data.eventType) &&
     typeof data.paymentReason === 'string' &&

@@ -157,7 +157,6 @@ export class VouchersService {
       const voucherGenerated: IVoucher = {
         // Info Murky (20240512) this is not a good way to generate invoiceIndex
         // it should return array
-        invoiceIndex: invoices[0].invoiceId,
         voucherIndex: `${this.today.toISOString().slice(0, 10).replace('-', '')}${this.voucherIdxCounter++}`,
         metadatas,
         lineItems: lineItemsGenerated,

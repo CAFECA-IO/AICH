@@ -12,7 +12,6 @@ export function cleanInvoice(data: any): IInvoice {
 
   const result: any = {};
 
-  result.invoiceId = data.invoiceId || '';
   result.date = convertDateToTimestamp(data.date);
   result.eventType = isEventType(data.eventType)
     ? data.eventType
