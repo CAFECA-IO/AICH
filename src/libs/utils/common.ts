@@ -97,7 +97,7 @@ export function eventTypeToVoucherType(eventType: EVENT_TYPE): VOUCHER_TYPE {
 export function millisecondsToSeconds(milliseconds: number): number {
   // check if milliseconds is actually a milliseconds not second
   if (milliseconds > 10000000000) {
-    return milliseconds / 1000;
+    return Math.floor(milliseconds / 1000);
   }
   return milliseconds;
 }
