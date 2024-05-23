@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IInvoice } from '@/interfaces/invoice';
 import { ILineItem } from '@/interfaces/line_item';
-import { IVoucher, IVoucherMetaData } from '@/interfaces/voucher';
+import { IVoucher } from '@/interfaces/voucher';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { LANG_CHAIN_SERVICE_OPTIONS } from '@/constants/configs/config';
 import { LangChainService } from '@/libs/lang_chain/lang_chain.service';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
 import { isIInvoice } from '@/libs/utils/type_guard/invoice';
 import { cleanILineItem } from '@/libs/utils/type_cleaner/line_item';
-import { eventTypeToVoucherType } from '@/libs/utils/common';
 
 @Injectable()
 export class VouchersService {
@@ -91,21 +90,23 @@ export class VouchersService {
   ): Promise<void> {
     try {
       const invoiceString = JSON.stringify(invoices);
-      const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
-        return {
-          date: invoice.date,
-          VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
-          companyId: invoice.vendorOrSupplier,
-          companyName: invoice.vendorOrSupplier,
-          description: invoice.description,
-          reason: invoice.paymentReason,
-          projectId: invoice.projectId,
-          project: invoice.project,
-          contractId: invoice.contractId,
-          contract: invoice.contract,
-          payment: invoice.payment,
-        };
-      });
+
+      // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
+      // const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
+      //   return {
+      //     date: invoice.date,
+      //     VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
+      //     companyId: invoice.vendorOrSupplier,
+      //     companyName: invoice.vendorOrSupplier,
+      //     description: invoice.description,
+      //     reason: invoice.paymentReason,
+      //     projectId: invoice.projectId,
+      //     project: invoice.project,
+      //     contractId: invoice.contractId,
+      //     contract: invoice.contract,
+      //     payment: invoice.payment,
+      //   };
+      // });
 
       let lineItemsGenerated: any;
 
@@ -155,8 +156,9 @@ export class VouchersService {
         return;
       }
       const voucherGenerated: IVoucher = {
-        voucherIndex: `${this.today.toISOString().slice(0, 10).replace('-', '')}${this.voucherIdxCounter++}`,
-        metadatas,
+        // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
+        // voucherIndex: `${this.today.toISOString().slice(0, 10).replace('-', '')}${this.voucherIdxCounter++}`,
+        // metadatas,
         lineItems: lineItemsGenerated,
       };
 

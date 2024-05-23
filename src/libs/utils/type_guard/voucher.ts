@@ -23,10 +23,11 @@ function isIVoucherMetaData(arg: IVoucherMetaData): arg is IVoucherMetaData {
 }
 
 export function isIVoucher(arg: IVoucher): arg is IVoucher {
-  const isIVoucherMetaDataReturn = arg.metadatas.every(isIVoucherMetaData);
-  if (isIVoucherMetaDataReturn) {
-    return false;
-  }
+  // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
+  // const isIVoucherMetaDataReturn = arg.metadatas.every(isIVoucherMetaData);
+  // if (isIVoucherMetaDataReturn) {
+  //   return false;
+  // }
   const isILineItemReturn = arg.lineItems.every(isILineItem);
   if (!isILineItemReturn) {
     return false;

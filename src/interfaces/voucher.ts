@@ -17,7 +17,8 @@ export interface IVoucherMetaData {
 }
 
 export interface IVoucher {
-  voucherIndex: string;
-  metadatas: IVoucherMetaData[];
+  // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
+  // voucherIndex: string;
+  // metadatas: IVoucherMetaData[];
   lineItems: ILineItem[];
 }
