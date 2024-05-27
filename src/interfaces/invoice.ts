@@ -7,9 +7,9 @@ export interface IInvoice {
   paymentReason: string;
   description: string;
   vendorOrSupplier: string;
-  projectId: string;
+  projectId: number;
   project: string;
-  contractId: string;
+  contractId: number;
   contract: string;
   payment: IPayment;
 }

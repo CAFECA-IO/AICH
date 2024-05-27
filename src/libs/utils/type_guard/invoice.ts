@@ -10,9 +10,9 @@ export function isIInvoice(data: IInvoice): data is IInvoice {
     typeof data.description === 'string' &&
     typeof data.vendorOrSupplier === 'string' &&
     typeof data.project === 'string' &&
-    typeof data.projectId === 'string' &&
+    typeof data.projectId === 'number' &&
     typeof data.contract === 'string' &&
-    typeof data.contractId === 'string' &&
+    typeof data.contractId === 'number' &&
     isIPayment(data.payment)
   );
 }

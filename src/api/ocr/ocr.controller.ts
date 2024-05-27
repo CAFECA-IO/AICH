@@ -40,7 +40,7 @@ export class OcrController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({
-            // Info Murky (20240422) mime type support by google bision:
+            // Info Murky (20240422) mime type support by google vision:
             //https://cloud.google.com/vision/docs/supported-files
             fileType:
               /image\/(jpeg|png|gif|bmp|webp|x-icon|vnd\.microsoft\.icon|tiff)|application\/pdf|image\/x-raw/,
@@ -55,15 +55,15 @@ export class OcrController {
     const {
       imageName = 'None',
       project = 'None',
-      projectId = 'None',
+      projectId = -1,
       contract = 'None',
-      contractId = 'None',
+      contractId = -1,
     }: {
       imageName: string;
       project: string;
-      projectId: string;
+      projectId: number;
       contract: string;
-      contractId: string;
+      contractId: number;
     } = body;
 
     try {
