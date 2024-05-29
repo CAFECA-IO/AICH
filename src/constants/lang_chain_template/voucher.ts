@@ -3,6 +3,7 @@ import {
   FunctionCallOption,
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
+import { OllamaParams } from '@/interfaces/lang_chain';
 export const VOUCHER_LANGCHAIN_FUNCTION_NAME = 'lineitem_extraction';
 
 // Info: murky (20240512) {{ 與 }} 是為了避免 python f-string 的問題
@@ -70,6 +71,8 @@ Passage:
 Extract and save the relevant entities mentioned in the following passage together with their properties.
 Invoice json:
 {input}
+
+輸出：
 `;
 
 export const VOUCHER_LANGCHAIN_PROMPT_TEMPLATE =
@@ -124,4 +127,19 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
 
 export const VOUCHER_LANGCHAIN_FUNCTION_CALL: FunctionCallOption = {
   name: VOUCHER_LANGCHAIN_FUNCTION_NAME,
+};
+
+export const VOUCHER_OLLAMA_PARAMS: OllamaParams = {
+  mirostat: 2,
+  mirostat_eta: 0.1,
+  mirostat_tau: 5,
+  num_ctx: 4096,
+  repeat_last_n: 64,
+  repeat_penalty: 1.2,
+  temperature: 0.7,
+  seed: 845,
+  tfs_z: 1,
+  num_predict: 512,
+  top_k: 80,
+  top_p: 0.95,
 };

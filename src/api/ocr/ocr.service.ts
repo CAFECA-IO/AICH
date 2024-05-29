@@ -150,13 +150,13 @@ export class OcrService {
         console.log(JSON.stringify(invoiceGenerated, null, 2));
 
         if (!invoiceGenerated) {
-          const errorMessage = "OCR can't parse any text from LLaMA";
+          const errorMessage = `ID: ${hashedId} => OCR can't parse any text from LLaMA`;
           this.logger.error(errorMessage);
           throw new Error(errorMessage);
         }
       } catch (error) {
         this.logger.error(
-          `Error in llama generateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
+          `ID: ${hashedId} => Error in llama generateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
         );
         this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
         return;
@@ -181,8 +181,12 @@ export class OcrService {
           throw new Error('Invalid IInvoice');
         }
         this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, cleanedInvoice);
+        this.logger.log(`OCR id ${hashedId} success`);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
+        this.logger.error(
+          `OCR id ${hashedId} failed to generate invoice: LLM_ERROR`,
+        );
       }
     } catch (e) {
       this.logger.error(e);

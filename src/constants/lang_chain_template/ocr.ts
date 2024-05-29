@@ -3,6 +3,7 @@ import {
   FunctionCallOption,
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
+import { OllamaParams } from '@/interfaces/lang_chain';
 // 以下缺少
 // projectId: z.string().describe('專案ID'),
 // contractId: z.string().describe('合約ID'),
@@ -12,6 +13,8 @@ export const EXTRACTION_TEMPLATE = `
 
 Passage:
 {input}
+
+輸出：
 `;
 
 export const OCR_LANGCHAIN_FUNCTION_NAME = 'extractInvoiceInformation';
@@ -105,4 +108,19 @@ export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
 
 export const OCR_FUNCTION_CALL: FunctionCallOption = {
   name: OCR_LANGCHAIN_FUNCTION_NAME,
+};
+
+export const OCR_OLLAMA_PARAMS: OllamaParams = {
+  mirostat: 2,
+  mirostat_eta: 0.1,
+  mirostat_tau: 5,
+  num_ctx: 4096,
+  repeat_last_n: 64,
+  repeat_penalty: 1.2,
+  temperature: 0.7,
+  seed: 845,
+  tfs_z: 1,
+  num_predict: 512,
+  top_k: 80,
+  top_p: 0.95,
 };

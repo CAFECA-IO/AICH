@@ -44,7 +44,7 @@ export class VouchersService {
     }
 
     const invoiceString = JSON.stringify(invoices);
-    const hashedKey = this.cache.hashId(invoiceString);
+    let hashedKey = this.cache.hashId(invoiceString);
     if (this.cache.get(hashedKey).value) {
       return {
         id: hashedKey,
@@ -54,8 +54,9 @@ export class VouchersService {
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
-    this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
+    hashedKey = this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
+    this.logger.log(`Voucher generation started with id: ${hashedKey}`);
     return {
       id: hashedKey,
       status: PROGRESS_STATUS.IN_PROGRESS,
@@ -90,23 +91,6 @@ export class VouchersService {
   ): Promise<void> {
     try {
       const invoiceString = JSON.stringify(invoices);
-
-      // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
-      // const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
-      //   return {
-      //     date: invoice.date,
-      //     VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
-      //     companyId: invoice.vendorOrSupplier,
-      //     companyName: invoice.vendorOrSupplier,
-      //     description: invoice.description,
-      //     reason: invoice.paymentReason,
-      //     projectId: invoice.projectId,
-      //     project: invoice.project,
-      //     contractId: invoice.contractId,
-      //     contract: invoice.contract,
-      //     payment: invoice.payment,
-      //   };
-      // });
 
       let lineItemsGenerated: any;
 
@@ -164,8 +148,10 @@ export class VouchersService {
 
       if (voucherGenerated) {
         this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, voucherGenerated);
+        this.logger.log(`Voucher generation success with id: ${hashedId}`);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.NOT_FOUND, null);
+        this.logger.error(`Voucher generation failed with id: ${hashedId}`);
       }
     } catch (error) {
       this.cache.put(hashedId, PROGRESS_STATUS.SYSTEM_ERROR, null);
