@@ -13,6 +13,8 @@ export const EXTRACTION_TEMPLATE = `
 
 Passage:
 {input}
+
+輸出：
 `;
 
 export const OCR_LANGCHAIN_FUNCTION_NAME = 'extractInvoiceInformation';
@@ -110,15 +112,15 @@ export const OCR_FUNCTION_CALL: FunctionCallOption = {
 
 export const OCR_OLLAMA_PARAMS: OllamaParams = {
   mirostat: 2,
-  mirostat_eta: 10,
-  mirostat_tau: 10,
+  mirostat_eta: 0.1,
+  mirostat_tau: 5,
   num_ctx: 4096,
   repeat_last_n: 64,
-  repeat_penalty: 1.1,
-  temperature: 0.9,
+  repeat_penalty: 1.2,
+  temperature: 0.7,
   seed: 845,
   tfs_z: 1,
-  num_predict: 256,
+  num_predict: 512,
   top_k: 80,
   top_p: 0.95,
 };
