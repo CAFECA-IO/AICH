@@ -92,23 +92,6 @@ export class VouchersService {
     try {
       const invoiceString = JSON.stringify(invoices);
 
-      // Deprecated: (20240523 - Murky) New IVoucher only need lineItems
-      // const metadatas: IVoucherMetaData[] = invoices.map((invoice) => {
-      //   return {
-      //     date: invoice.date,
-      //     VOUCHER_TYPE: eventTypeToVoucherType[invoice.eventType],
-      //     companyId: invoice.vendorOrSupplier,
-      //     companyName: invoice.vendorOrSupplier,
-      //     description: invoice.description,
-      //     reason: invoice.paymentReason,
-      //     projectId: invoice.projectId,
-      //     project: invoice.project,
-      //     contractId: invoice.contractId,
-      //     contract: invoice.contract,
-      //     payment: invoice.payment,
-      //   };
-      // });
-
       let lineItemsGenerated: any;
 
       try {
@@ -165,8 +148,10 @@ export class VouchersService {
 
       if (voucherGenerated) {
         this.cache.put(hashedId, PROGRESS_STATUS.SUCCESS, voucherGenerated);
+        this.logger.log(`Voucher generation success with id: ${hashedId}`);
       } else {
         this.cache.put(hashedId, PROGRESS_STATUS.NOT_FOUND, null);
+        this.logger.error(`Voucher generation failed with id: ${hashedId}`);
       }
     } catch (error) {
       this.cache.put(hashedId, PROGRESS_STATUS.SYSTEM_ERROR, null);

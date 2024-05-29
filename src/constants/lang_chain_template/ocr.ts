@@ -109,7 +109,7 @@ export const OCR_FUNCTION_CALL: FunctionCallOption = {
 };
 
 export const OCR_OLLAMA_PARAMS: OllamaParams = {
-  mirostat: 10,
+  mirostat: 2,
   mirostat_eta: 10,
   mirostat_tau: 10,
   num_ctx: 4096,
