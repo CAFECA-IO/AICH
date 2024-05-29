@@ -44,7 +44,7 @@ export class VouchersService {
     }
 
     const invoiceString = JSON.stringify(invoices);
-    const hashedKey = this.cache.hashId(invoiceString);
+    let hashedKey = this.cache.hashId(invoiceString);
     if (this.cache.get(hashedKey).value) {
       return {
         id: hashedKey,
@@ -54,7 +54,7 @@ export class VouchersService {
 
     // Info Murky (20240423) this is async function, but we don't await
     // it will be processed in background
-    this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
+    hashedKey = this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
     this.logger.log(`Voucher generation started with id: ${hashedKey}`);
     return {
