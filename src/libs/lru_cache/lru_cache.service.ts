@@ -53,7 +53,7 @@ export class LruCacheService<T> {
   }
 
   private _isHashId(key: string): boolean {
-    const regex = `^[0-9a-f]{${this._idLength}}$`;
+    const regex = `^[0-9a-f]{${this._idLength * 2}}$`;
     return new RegExp(regex).test(key);
   }
 
