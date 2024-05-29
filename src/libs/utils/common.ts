@@ -43,7 +43,7 @@ export function convertDateToTimestamp(dateStr: string | number): number {
     return defaultDateTimestamp;
   }
 
-  return timestamp;
+  return millisecondsToSeconds(timestamp);
 }
 
 // Info Murky (20240425) - Helper function to remove special char from numbers and convert to number type
@@ -92,4 +92,12 @@ export function isZero(number: number | string): boolean {
 
 export function eventTypeToVoucherType(eventType: EVENT_TYPE): VOUCHER_TYPE {
   return EVENT_TYPE_TO_VOUCHER_TYPE_MAP[eventType];
+}
+
+export function millisecondsToSeconds(milliseconds: number): number {
+  // check if milliseconds is actually a milliseconds not second
+  if (milliseconds > 10000000000) {
+    return Math.floor(milliseconds / 1000);
+  }
+  return milliseconds;
 }

@@ -12,14 +12,13 @@ export function cleanInvoice(data: any): IInvoice {
 
   const result: any = {};
 
-  result.invoiceId = data.invoiceId || '';
   result.date = convertDateToTimestamp(data.date);
   result.eventType = isEventType(data.eventType)
     ? data.eventType
     : EVENT_TYPE.INCOME;
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';
-  result.venderOrSupplyer = data.venderOrSupplyer || '';
+  result.vendorOrSupplier = data.vendorOrSupplier || '';
   result.project = data.project || '';
   result.contract = data.contract || '';
   result.projectId = data.projectId || '';

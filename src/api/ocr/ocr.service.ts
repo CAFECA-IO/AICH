@@ -32,9 +32,9 @@ export class OcrService {
     image: Express.Multer.File,
     imageName: string | undefined,
     project: string | undefined,
-    projectId: string | undefined,
+    projectId: number | undefined,
     contract: string | undefined,
-    contractId: string | undefined,
+    contractId: number | undefined,
   ): Promise<{
     id: string;
     status: PROGRESS_STATUS;
@@ -44,13 +44,14 @@ export class OcrService {
     }
 
     // Info Murky(20240429): image Buffer is the "Buffer" type of the image file
-    let getneratedDescription: string[];
+    let generatedDescription: string[];
 
     try {
-      getneratedDescription =
-        await this.googleVisionService.generateDescription(image.buffer);
+      generatedDescription = await this.googleVisionService.generateDescription(
+        image.buffer,
+      );
 
-      if (!getneratedDescription) {
+      if (!generatedDescription) {
         throw new Error("OCR can't parse any text from the image");
       }
     } catch (error) {
@@ -64,7 +65,7 @@ export class OcrService {
 
     try {
       // Info Murky(20240429): 目前會用全部的OCR內容當成key
-      const key = getneratedDescription.join(' ');
+      const key = generatedDescription.join(' ');
       let hashedKey = this.cache.hashId(key);
 
       if (this.cache.get(hashedKey).value) {
@@ -80,12 +81,11 @@ export class OcrService {
       // it will be processed in background
       this.ocrToAccountInvoiceData(
         hashedKey,
-        imageName,
         project,
         projectId,
         contract,
         contractId,
-        getneratedDescription,
+        generatedDescription,
       );
 
       return {
@@ -125,11 +125,10 @@ export class OcrService {
 
   private async ocrToAccountInvoiceData(
     hashedId: string,
-    imageName: string,
     project: string,
-    projectId: string,
+    projectId: number,
     contract: string,
-    contractId: string,
+    contractId: number,
     description: string[],
   ): Promise<void> {
     try {
@@ -157,7 +156,7 @@ export class OcrService {
         }
       } catch (error) {
         this.logger.error(
-          `Error in llama genetateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
+          `Error in llama generateResponseLoop in OCR ocrToAccountInvoiceData: ${error}`,
         );
         this.cache.put(hashedId, PROGRESS_STATUS.LLM_ERROR, null);
         return;
@@ -170,7 +169,6 @@ export class OcrService {
 
       if (invoiceGenerated) {
         invoiceGenerated;
-        invoiceGenerated.invoiceId = imageName;
         invoiceGenerated.project = project;
         invoiceGenerated.projectId = projectId;
         invoiceGenerated.contract = contract;

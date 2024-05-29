@@ -34,9 +34,9 @@ export class VouchersController {
   ): AccountResultStatus {
     invoices.map((invoice) => {
       invoice.project = invoice.project || 'None';
-      invoice.projectId = invoice.projectId || 'None';
+      invoice.projectId = invoice.projectId || -1;
       invoice.contract = invoice.contract || 'None';
-      invoice.contractId = invoice.contractId || 'None';
+      invoice.contractId = invoice.contractId || -1;
     });
 
     try {
