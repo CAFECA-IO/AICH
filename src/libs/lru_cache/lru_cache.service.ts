@@ -82,7 +82,6 @@ export class LruCacheService<T> {
 
   public get(key: string): { status: PROGRESS_STATUS; value: T | null } {
     // Info Murky (20240423) key need to be hashed already
-    console.log(this._cache);
     if (!this._isHashId(key)) {
       key = this.hashId(key);
     }
