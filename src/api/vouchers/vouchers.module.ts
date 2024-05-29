@@ -8,6 +8,7 @@ import {
   VOUCHER_LANGCHAIN_FUNCTION_CALL,
   VOUCHER_RETURN_JSON_TEMPLATE,
   VOUCHER_LANGCHAIN_PROMPT_TEMPLATE,
+  VOUCHER_OLLAMA_PARAMS,
 } from '@/constants/lang_chain_template/voucher';
 
 @Module({
@@ -17,6 +18,7 @@ import {
       functionCallOption: VOUCHER_LANGCHAIN_FUNCTION_CALL,
       functions: VOUCHER_RETURN_JSON_TEMPLATE,
       prompt: VOUCHER_LANGCHAIN_PROMPT_TEMPLATE,
+      ollamaParams: VOUCHER_OLLAMA_PARAMS,
     }),
     LruCacheModule.forRoot({
       capacity: 10,

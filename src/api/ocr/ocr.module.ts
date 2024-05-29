@@ -8,6 +8,7 @@ import {
   OCR_FUNCTION_CALL,
   OCR_RETURN_JSON_SCHEMA,
   OCR_LANGCHAIN_PROMPT_TEMPLATE,
+  OCR_OLLAMA_PARAMS,
 } from '@/constants/lang_chain_template/ocr';
 
 @Module({
@@ -18,6 +19,7 @@ import {
       functionCallOption: OCR_FUNCTION_CALL,
       functions: OCR_RETURN_JSON_SCHEMA,
       prompt: OCR_LANGCHAIN_PROMPT_TEMPLATE,
+      ollamaParams: OCR_OLLAMA_PARAMS,
     }),
     LruCacheModule.forRoot({
       capacity: 10,

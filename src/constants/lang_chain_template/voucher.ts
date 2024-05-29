@@ -3,6 +3,7 @@ import {
   FunctionCallOption,
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
+import { OllamaParams } from '@/interfaces/lang_chain';
 export const VOUCHER_LANGCHAIN_FUNCTION_NAME = 'lineitem_extraction';
 
 // Info: murky (20240512) {{ 與 }} 是為了避免 python f-string 的問題
@@ -124,4 +125,19 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
 
 export const VOUCHER_LANGCHAIN_FUNCTION_CALL: FunctionCallOption = {
   name: VOUCHER_LANGCHAIN_FUNCTION_NAME,
+};
+
+export const VOUCHER_OLLAMA_PARAMS: OllamaParams = {
+  mirostat: 10,
+  mirostat_eta: 10,
+  mirostat_tau: 10,
+  num_ctx: 4096,
+  repeat_last_n: 64,
+  repeat_penalty: 1.1,
+  temperature: 0.9,
+  seed: 845,
+  tfs_z: 1,
+  num_predict: 256,
+  top_k: 80,
+  top_p: 0.95,
 };
