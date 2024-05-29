@@ -82,6 +82,7 @@ export class LruCacheService<T> {
 
   public get(key: string): { status: PROGRESS_STATUS; value: T | null } {
     // Info Murky (20240423) key need to be hashed already
+    console.log(this._cache);
     if (!this._isHashId(key)) {
       key = this.hashId(key);
     }
@@ -109,6 +110,11 @@ export class LruCacheService<T> {
     if (!this._isHashId(key)) {
       key = this.hashId(key);
     }
+
+    if (this._isCombinedId(key)) {
+      key = this._extractOriginalId(key);
+    }
+
     const newNode = new LRUNode<T>(key, status, value);
 
     if (this._cache.has(key)) {

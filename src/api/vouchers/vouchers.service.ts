@@ -56,6 +56,7 @@ export class VouchersService {
     // it will be processed in background
     this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
     this.invoicesToAccountVoucherData(hashedKey, invoices);
+    this.logger.log(`Voucher generation started with id: ${hashedKey}`);
     return {
       id: hashedKey,
       status: PROGRESS_STATUS.IN_PROGRESS,
