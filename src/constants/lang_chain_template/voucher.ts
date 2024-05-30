@@ -53,7 +53,8 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
               account: {
                 type: 'string',
                 description:
-                  'The accounting that the line item belongs to, e.g. 文書費用',
+                  'The accounting that the line item belongs to, e.g. 文書用品',
+                enum: ACCOUNT,
               },
               description: {
                 type: 'string',
@@ -67,7 +68,6 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
               amount: {
                 type: 'number',
                 description: 'The amount of the line item, e.g. 1500',
-                enum: ACCOUNT,
               },
             },
             required: ['account', 'description', 'debit', 'amount'],
