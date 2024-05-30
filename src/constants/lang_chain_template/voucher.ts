@@ -53,7 +53,7 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
               account: {
                 type: 'string',
                 description: `The accounting that the line item belongs to,以下的科目名稱選一個 e.g. ${ACCOUNT.join(', ')}`,
-                // enum: ACCOUNT,
+                enum: ACCOUNT,
               },
               description: {
                 type: 'string',
