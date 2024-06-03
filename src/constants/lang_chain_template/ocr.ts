@@ -67,11 +67,11 @@ export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
               },
               hasFee: { type: 'boolean', description: '是否含手續額' },
               fee: { type: 'number', description: '手續費 金額' },
-              paymentMethod: {
+              method: {
                 type: 'string',
                 description: '錢收進來會付出去的方法',
               },
-              paymentPeriod: {
+              period: {
                 type: 'string',
                 enum: ['atOnce', 'installment'],
                 description: '這份發票有分期付款嗎？，是 atOnce 或 installment',
@@ -80,11 +80,11 @@ export const OCR_RETURN_JSON_SCHEMA: FunctionDefinition[] = [
                 type: 'number',
                 description: '分期付款有幾期',
               },
-              paymentAlreadyDone: {
+              alreadyPaid: {
                 type: 'number',
                 description: '已經付了多少錢, 或是收取多少錢',
               },
-              paymentStatus: {
+              status: {
                 type: 'string',
                 enum: ['paid', 'unpaid', 'partial'],
                 description: '付款狀態, ex: paid',
