@@ -13,28 +13,26 @@ export function cleanIPayment(data: any): IPayment {
     throw new Error('Invalid IPayment data, data is empty');
   }
 
-  const result: any = {};
+  const result: IPayment = {
+    isRevenue: cleanBoolean(data.isRevenue),
+    price: cleanNumber(data.price),
+    hasTax: cleanBoolean(data.hasTax),
+    taxPercentage: cleanNumber(data.taxPercentage),
+    hasFee: cleanBoolean(data.hasFee),
+    fee: cleanNumber(data.fee),
+    method: data.method ? data.method : '',
+    period: isPaymentPeriodType(data.period)
+      ? data.period
+      : PAYMENT_PERIOD_TYPE.AT_ONCE,
+    installmentPeriod: cleanNumber(data.installmentPeriod),
+    alreadyPaid: cleanNumber(data.alreadyPaid),
+    status: isPaymentStatusType(data.status)
+      ? data.status
+      : PAYMENT_STATUS_TYPE.UNPAID,
+    progress: cleanNumber(data.progress),
+  };
 
-  result.isRevenue = cleanBoolean(data.isRevenue);
-  result.price = cleanNumber(data.price);
-  result.hasTax = cleanBoolean(data.hasTax);
-  result.taxPercentage = cleanNumber(data.taxPercentage);
-  result.hasFee = cleanBoolean(data.hasFee);
-  result.fee = cleanNumber(data.fee);
-  result.paymentMethod = data.paymentMethod ? data.paymentMethod : '';
-  result.paymentPeriod = isPaymentPeriodType(data.paymentPeriod)
-    ? data.paymentPeriod
-    : PAYMENT_PERIOD_TYPE.AT_ONCE;
-  result.installmentPeriod = cleanNumber(data.installmentPeriod);
-  result.paymentAlreadyDone = cleanNumber(data.paymentAlreadyDone);
-  result.paymentStatus = isPaymentStatusType(data.paymentStatus)
-    ? data.paymentStatus
-    : PAYMENT_STATUS_TYPE.UNPAID;
-  result.progress = cleanNumber(data.progress);
-
-  let taxPercentage = result.taxPercentage
-    ? parseFloat(result.taxPercentage)
-    : 5;
+  let taxPercentage = result.taxPercentage;
 
   if (taxPercentage > 100) {
     if (taxPercentage > result.price) {

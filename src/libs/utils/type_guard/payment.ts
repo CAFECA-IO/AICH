@@ -12,11 +12,11 @@ export function isIPayment(arg: IPayment): arg is IPayment {
     typeof arg.taxPercentage !== 'number' ||
     typeof arg.hasFee !== 'boolean' ||
     typeof arg.fee !== 'number' ||
-    typeof arg.paymentMethod !== 'string' ||
-    !isPaymentPeriodType(arg.paymentPeriod) ||
+    typeof arg.method !== 'string' ||
+    !isPaymentPeriodType(arg.period) ||
     typeof arg.installmentPeriod !== 'number' ||
-    typeof arg.paymentAlreadyDone !== 'number' ||
-    !isPaymentStatusType(arg.paymentStatus) ||
+    typeof arg.alreadyPaid !== 'number' ||
+    !isPaymentStatusType(arg.status) ||
     typeof arg.progress !== 'number'
   ) {
     return false;

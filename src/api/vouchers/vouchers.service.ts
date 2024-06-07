@@ -128,7 +128,14 @@ export class VouchersService {
       try {
         if (lineItemsGenerated?.lineItems) {
           lineItemsGenerated = lineItemsGenerated.lineItems;
+        } else if (lineItemsGenerated?.tool_input) {
+          lineItemsGenerated = lineItemsGenerated.tool_input;
         }
+        // if (!Array.isArray(lineItemsGenerated)) {
+        //   lineItemsGenerated = Object.values(lineItemsGenerated);
+        // }
+
+        console.log('lineItemsGenerated: ', lineItemsGenerated);
 
         lineItemsGenerated as ILineItem[];
 

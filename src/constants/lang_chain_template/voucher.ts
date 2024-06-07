@@ -4,6 +4,7 @@ import {
   FunctionDefinition,
 } from '@langchain/core/language_models/base';
 import { OllamaParams } from '@/interfaces/lang_chain';
+import { ACCOUNT } from '@/constants/account';
 export const VOUCHER_LANGCHAIN_FUNCTION_NAME = 'lineitem_extraction';
 
 // Info: murky (20240512) {{ 與 }} 是為了避免 python f-string 的問題
@@ -18,52 +19,6 @@ export const EXTRACTION_TEMPLATE = `
 
 請記得lineItems debit 和 credit相加的總和要相等，否則會有錯誤。
 
-下面是一個範例invoice json
-[
-  {{
-    "date": 1713052800000,
-    "eventType": "income",
-    "paymentReason": "電信費",
-    "description": "光世代電路月租費： 593, HiNet企業專案服務費: 1607",
-    "vendorOrSupplier": "中華電信",
-    "payment": {{
-      "price": 2310,
-      "hasTax": true,
-      "taxPercentage": 2200,
-      "hasFee": false,
-      "fee": 0,
-      "paymentMethod": "transfer",
-      "paymentPeriod": "atOnce",
-      "installmentPeriod": 0,
-      "paymentStatus": "unpaid",
-      "alreadyPaidAmount": 0
-    }}
-  }}
-]
-下面是一個範例回答，但要記得這只是範例，請依照LangChain格式做回答
-[
-  {{
-    lineItemIndex: '20240426001',
-    account: '電信費',
-    particular: '光世代電路月租費： 593, HiNet企業專案服務費: 1607',
-    debit: true,
-    amount: 2210
-  }},
-  {{
-    lineItemIndex: '20240325002',
-    account: '進項稅額',
-    particular: 'WSTP會計師工作輔助幫手: 88,725, 文中網路版主機授權費用: 8,400, 文中工作站授權費用: 6,300',
-    debit: true,
-    amount: 110
-  }},
-  {{
-    lineItemIndex: '20240426003',
-    account: '銀行存款',
-    particular: '合庫銀行',
-    debit: false,
-    amount: 2310
-  }},
-]
 
 請務必依照LangChain提供給你的格式回答，但不是要你直接回傳zod的schema，如果格式正確就會世界和平，另外你可以得到餅乾作為回報，這個世界就靠你了
 
@@ -97,8 +52,8 @@ export const VOUCHER_RETURN_JSON_TEMPLATE: FunctionDefinition[] = [
               },
               account: {
                 type: 'string',
-                description:
-                  'The accounting that the line item belongs to, e.g. 文書費用',
+                description: `The accounting that the line item belongs to,以下的科目名稱選一個 e.g. ${ACCOUNT.join(', ')}`,
+                enum: ACCOUNT,
               },
               description: {
                 type: 'string',
@@ -131,15 +86,15 @@ export const VOUCHER_LANGCHAIN_FUNCTION_CALL: FunctionCallOption = {
 
 export const VOUCHER_OLLAMA_PARAMS: OllamaParams = {
   mirostat: 2,
-  mirostat_eta: 0.1,
-  mirostat_tau: 5,
+  mirostat_eta: 0.5,
+  mirostat_tau: 3.0,
   num_ctx: 4096,
   repeat_last_n: 64,
   repeat_penalty: 1.2,
   temperature: 0.7,
-  seed: 845,
+  seed: 8,
   tfs_z: 1,
   num_predict: 512,
-  top_k: 80,
-  top_p: 0.95,
+  top_k: 20,
+  top_p: 0.5,
 };
