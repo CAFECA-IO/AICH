@@ -5,7 +5,7 @@ import { OcrModule } from '@/api/ocr/ocr.module';
 import { VouchersModule } from '@/api/vouchers/vouchers.module';
 import { AuditReportsModule } from '@/api/audit_reports/audit_reports.module';
 import { AuditReportModule } from '@/api/audit_report/audit_report.module';
-import { EmbeddingModule } from './api/embedding/embedding.module';
+import { EmbeddingModule } from '@/api/embedding/embedding.module';
 
 @Module({
   imports: [

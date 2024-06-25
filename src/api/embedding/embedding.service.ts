@@ -1,31 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { CreateEmbeddingDto } from './dto/create-embedding.dto';
-import { UpdateEmbeddingDto } from './dto/update-embedding.dto';
+import { UpdateEmbeddingDto } from '@/api/embedding/dto/update-embedding.dto';
 import { processPDF } from '@/libs/lang_chain/data_loader';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama';
 import { ConfigService } from '@nestjs/config';
 import { QdrantVectorStore } from '@langchain/qdrant';
+import {
+  EMBEDDING_MODEL,
+  MAX_CONCURRENCY,
+  QDRANT_COLLECTION_NAME,
+} from '@/constants/configs/config';
 
 @Injectable()
 export class EmbeddingService {
   private readonly nomicEmbedding: OllamaEmbeddings;
+  private QDRANT_HOST = process.env.QDRANT_HOST;
   constructor(private configService: ConfigService) {
     this.nomicEmbedding = new OllamaEmbeddings({
-      baseUrl: this.configService.get<string>('QDRANT_HOST'), // Default value
-      model: 'nomic-embed-text', // Can be extracted from the model list
-      maxConcurrency: 5,
+      baseUrl: this.QDRANT_HOST, // Default value
+      model: EMBEDDING_MODEL, // Can be extracted from the model list
+      maxConcurrency: MAX_CONCURRENCY,
     });
   }
-  async create(createEmbeddingDto: CreateEmbeddingDto) {
-    console.log(
-      '🚀 ~ EmbeddingService ~ create ~ createEmbeddingDto:',
-      createEmbeddingDto,
-    );
+  async create(filePath: string) {
     // should be a upload file
-    const docs = await processPDF(
-      'src/docs/TSMC 2024Q1 Consolidatd Financial Statements_C.pdf',
-    );
+    const docs = await processPDF(filePath);
     // store the file in temp
     // split text should be optimized
     const splitter = new RecursiveCharacterTextSplitter();
@@ -34,9 +33,9 @@ export class EmbeddingService {
 
     // store in qdrant
     await QdrantVectorStore.fromDocuments(splitDocs, this.nomicEmbedding, {
-      url: this.configService.get<string>('QDRANT_HOST'),
+      url: this.QDRANT_HOST,
       // should change to a unique name
-      collectionName: 'a_test_collection',
+      collectionName: QDRANT_COLLECTION_NAME,
     });
     return 'This action store a new embedding';
   }

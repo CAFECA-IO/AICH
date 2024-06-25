@@ -1,15 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EmbeddingService } from './embedding.service';
-import { CreateEmbeddingDto } from './dto/create-embedding.dto';
-import { UpdateEmbeddingDto } from './dto/update-embedding.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { EmbeddingService } from '@/api/embedding/embedding.service';
+import { UpdateEmbeddingDto } from '@/api/embedding/dto/update-embedding.dto';
 
 @Controller('embedding')
 export class EmbeddingController {
   constructor(private readonly embeddingService: EmbeddingService) {}
 
   @Post()
-  create(@Body() createEmbeddingDto: CreateEmbeddingDto) {
-    return this.embeddingService.create(createEmbeddingDto);
+  create(@Body() { input: input }) {
+    return this.embeddingService.create(input);
   }
 
   @Get()
@@ -23,7 +30,10 @@ export class EmbeddingController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmbeddingDto: UpdateEmbeddingDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateEmbeddingDto: UpdateEmbeddingDto,
+  ) {
     return this.embeddingService.update(+id, updateEmbeddingDto);
   }
 

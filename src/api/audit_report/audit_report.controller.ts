@@ -7,7 +7,7 @@ import {
   // Param,
   // Delete,
 } from '@nestjs/common';
-import { AuditReportService } from './audit_report.service';
+import { AuditReportService } from '@/api/audit_report/audit_report.service';
 // import { CreateAuditReportDto } from './dto/create-audit_report.dto';
 // import { UpdateAuditReportDto } from './dto/update-audit_report.dto';
 
