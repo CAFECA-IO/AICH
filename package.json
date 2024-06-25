@@ -23,6 +23,7 @@
     "@google-cloud/vision": "^4.2.1",
     "@langchain/community": "^0.0.55",
     "@langchain/core": "^0.1.62",
+    "@langchain/qdrant": "^0.0.5",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
@@ -32,6 +33,7 @@
     "class-validator": "^0.14.1",
     "langchain": "^0.1.36",
     "ollama": "^0.5.0",
+    "pdf-parse": "^1.1.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   },

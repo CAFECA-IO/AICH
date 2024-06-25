@@ -9,3 +9,13 @@ export const LANG_CHAIN_SERVICE_OPTIONS = {
   MODEL: 'llama3',
   RECURSIVE_LIMIT: 1,
 };
+
+export const CHAT_MODEL = 'llama3';
+
+export const EMBEDDING_MODEL = 'nomic-embed-text';
+
+export const QDRANT_COLLECTION_NAME = 'a_test_collection';
+
+export const OUTPUT_FORMAT = 'json';
+
+export const MAX_CONCURRENCY = 5;
