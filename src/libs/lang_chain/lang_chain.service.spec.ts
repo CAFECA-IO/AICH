@@ -2,51 +2,31 @@ import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama';
 import { ChatOllama } from '@langchain/community/chat_models/ollama';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { Document } from '@langchain/core/documents';
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
+import { AUDIT_REPORT_TEMPLATE } from '../../constants/lang_chain_template/audit_report';
+import { processPDF } from './data_loader';
 
 describe('LangChainService', () => {
   beforeEach(async () => {});
 
   it('should be defined', async () => {
     const embeddings = new OllamaEmbeddings({
-      model: 'llama3', // default value
-      baseUrl: 'http://211.22.118.150:11434', // default value
-      requestOptions: {
-        useMMap: true,
-        numThread: 6,
-        numGpu: 1,
-      },
+      baseUrl: 'http://211.22.118.150:11434', // Default value
+      model: 'llama3',
+      maxConcurrency: 5,
     });
-    const prompt =
-      ChatPromptTemplate.fromTemplate(`Answer the following question based only on the provided context:
+    const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
 
-      <context>
-      {context}
-      </context>
-
-      Question: {input}`);
-
-    const documents = ['我最喜歡喝珍珠奶茶', 'Bye Bye'];
-
-    const documentEmbeddings = await embeddings.embedDocuments(documents);
+    const docs = await processPDF(
+      'src/docs/TSMC 2024Q1 Consolidatd Financial Statements_C.pdf',
+    );
 
     const model = new ChatOllama({
       baseUrl: 'http://211.22.118.150:11434', // Default value
       model: 'llama3', // Default value
     });
-
-    // const messages = [
-    //   new SystemMessage("You're a helpful assistant"),
-    //   new HumanMessage('我最喜歡喝什麼'),
-    // ];
-    const docs = [
-      new Document({
-        pageContent: '夏天我最喜歡喝珍珠奶茶，冬天喜歡喝美噗茶',
-      }),
-    ];
 
     const documentChain = await createStuffDocumentsChain({
       llm: model,
@@ -70,10 +50,8 @@ describe('LangChainService', () => {
     });
 
     const result = await retrievalChain.invoke({
-      input: '我冬天最喜歡喝什麼?',
+      input: '幫我寫一份審計報告',
     });
     console.log(result.answer);
-
-    console.log(documentEmbeddings);
   }, 10000000);
 });
