@@ -49,7 +49,7 @@ export class EmbeddingService {
   }
 
   update(id: number, updateEmbeddingDto: UpdateEmbeddingDto) {
-    // Info: (20240625 - Jacky): updateEmbeddingDto is a DTO that contains the new data to update the embedding with
+    // Depreciate: (20240625 - Jacky): updateEmbeddingDto is a DTO that contains the new data to update the embedding with
     console.log(
       '🚀 ~ EmbeddingService ~ update ~ updateEmbeddingDto:',
       updateEmbeddingDto,
