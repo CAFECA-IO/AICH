@@ -11,4 +11,9 @@ export class RagController {
     const answer = await this.ragService.generateReport(question);
     return { answer };
   }
+  @Post('chat-with-history')
+  async chatWithHistory(@Body('question') question: string): Promise<any> {
+    const answer = await this.ragService.chatWithHistory(question);
+    return { answer };
+  }
 }

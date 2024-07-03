@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { FileProcessService } from '@/api/file_process/file_process.service';
-import { QDRANT_COLLECTION_NAME } from '@/constants/configs/config';
 import { OllamaService } from '@/api/ollama/ollama.service';
 
 @Injectable()
 export class QdrantService {
   private QDRANT_HOST = process.env.QDRANT_HOST; // 需更換為您的 Qdrant 主機地址
+  private collectionName = process.env.QDRANT_COLLECTION_NAME; // 從環境變量中讀取集合名稱
   public vectorStore: QdrantVectorStore;
 
   constructor(
@@ -23,14 +23,20 @@ export class QdrantService {
       this.vectorStore = await QdrantVectorStore.fromExistingCollection(
         this.ollamaService.nomicEmbedding,
         {
-          url: this.QDRANT_HOST, // 需更換為您的 Qdrant 主機地址
-          collectionName: QDRANT_COLLECTION_NAME, // 集合名稱
+          url: this.QDRANT_HOST,
+          collectionName: this.collectionName, // 使用從環境變量中讀取的集合名稱
         },
       );
       return this.vectorStore;
     } catch (error) {
       return null;
     }
+  }
+
+  // 新增方法以允許更新 collectionName
+  public async updateCollectionName(newCollectionName: string) {
+    this.collectionName = newCollectionName;
+    await this.initializeVectorStore(); // 重新初始化 vectorStore 以使用新的 collectionName
   }
 
   async create(filePath: string) {

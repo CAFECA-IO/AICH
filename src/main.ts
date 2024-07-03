@@ -24,6 +24,7 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: ['1'],
   });
+  app.enableCors();
 
   await app.listen(port);
 }
