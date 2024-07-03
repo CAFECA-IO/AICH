@@ -67,7 +67,7 @@ export class RagService {
       retriever: historyAwareRetrieverChain,
       combineDocsChain: historyAwareCombineDocsChain,
     });
-    let answer: string;
+    let answer;
     const maxRetries = 3;
     for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
       try {
@@ -79,7 +79,12 @@ export class RagService {
         break; // Exit the loop if successful
       } catch (error) {
         if (retryCount === maxRetries - 1) {
-          answer = 'I am sorry, I am unable to answer your question.';
+          answer = JSON.stringify({
+            question: 'Unable to parse the answer.',
+            answer:
+              'I am sorry, I am unable to answer your question. Please try again later.',
+            reference: 'default',
+          });
         }
       }
     }
