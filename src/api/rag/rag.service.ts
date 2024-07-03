@@ -67,11 +67,22 @@ export class RagService {
       retriever: historyAwareRetrieverChain,
       combineDocsChain: historyAwareCombineDocsChain,
     });
-    const result = await conversationalRetrievalChain.invoke({
-      chat_history: chatHistory,
-      input: question,
-    });
-    const { answer } = result;
+    let answer: string;
+    const maxRetries = 3;
+    for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
+      try {
+        const result = await conversationalRetrievalChain.invoke({
+          chat_history: chatHistory,
+          input: question,
+        });
+        answer = result.answer;
+        break; // Exit the loop if successful
+      } catch (error) {
+        if (retryCount === maxRetries - 1) {
+          answer = 'I am sorry, I am unable to answer your question.';
+        }
+      }
+    }
     return answer;
   }
 }
