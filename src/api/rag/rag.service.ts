@@ -75,16 +75,17 @@ export class RagService {
           chat_history: chatHistory,
           input: question,
         });
-        answer = result.answer;
+        answer = JSON.parse(result.answer);
         break; // Exit the loop if successful
       } catch (error) {
         if (retryCount === maxRetries - 1) {
-          answer = JSON.stringify({
+          const defalutAnswer = JSON.stringify({
             question: 'Unable to parse the answer.',
             answer:
               'I am sorry, I am unable to answer your question. Please try again later.',
             reference: 'default',
           });
+          answer = JSON.parse(defalutAnswer);
         }
       }
     }
