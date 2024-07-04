@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // rag.service.ts
 import { Injectable } from '@nestjs/common';
 import { QdrantService } from '@/api/qdrant/qdrant.service';
@@ -12,6 +13,7 @@ import {
   HISTORY_AWARE_PROMPT,
   HISTORY_AWARE_RETRIEVAL_PROMPT,
 } from '@/constants/lang_chain_template/chat';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 
 @Injectable()
 export class RagService {
@@ -37,7 +39,7 @@ export class RagService {
     const { answer } = result;
     return answer;
   }
-  async chatWithHistory(question: string): Promise<string> {
+  async chatWithHistory(question: string) {
     const retriever = this.qdrantService.vectorStore.asRetriever();
     const historyAwarePrompt =
       ChatPromptTemplate.fromTemplate(HISTORY_AWARE_PROMPT);
@@ -67,10 +69,12 @@ export class RagService {
       retriever: historyAwareRetrieverChain,
       combineDocsChain: historyAwareCombineDocsChain,
     });
-    const result = await conversationalRetrievalChain.invoke({
+    const stream = await conversationalRetrievalChain
+      .stream({
       chat_history: chatHistory,
       input: question,
     });
-    return result.answer;
+    
+    return stream;
   }
 }
