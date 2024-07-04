@@ -10,15 +10,21 @@ import {
 
 @Injectable()
 export class OllamaService {
-  public llama3: ChatOllama;
+  public llama3Chat: ChatOllama;
+  public llama3Report: ChatOllama;
   public nomicEmbedding: OllamaEmbeddings;
   private readonly OLLAMA_HOST = process.env.OLLAMA_HOST;
 
   constructor() {
-    this.llama3 = new ChatOllama({
+    this.llama3Report = new ChatOllama({
       baseUrl: this.OLLAMA_HOST, // 默認值
       model: CHAT_MODEL, // 默認值
       format: OUTPUT_FORMAT, // 輸出格式
+    });
+
+    this.llama3Chat = new ChatOllama({
+      baseUrl: this.OLLAMA_HOST, // 默認值
+      model: CHAT_MODEL, // 默認值
     });
 
     this.nomicEmbedding = new OllamaEmbeddings({

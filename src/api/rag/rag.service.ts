@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // rag.service.ts
 import { Injectable } from '@nestjs/common';
 import { QdrantService } from '@/api/qdrant/qdrant.service';
@@ -12,6 +13,7 @@ import {
   HISTORY_AWARE_PROMPT,
   HISTORY_AWARE_RETRIEVAL_PROMPT,
 } from '@/constants/lang_chain_template/chat';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 
 @Injectable()
 export class RagService {
@@ -24,7 +26,7 @@ export class RagService {
     const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
     const retriever = await this.qdrantService.vectorStore.asRetriever();
     const documentChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.llama3,
+      llm: this.ollamaService.llama3Report,
       prompt,
     });
     const retrievalChain = await createRetrievalChain({
@@ -37,13 +39,13 @@ export class RagService {
     const { answer } = result;
     return answer;
   }
-  async chatWithHistory(question: string): Promise<string> {
+  async chatWithHistory(question: string) {
     const retriever = this.qdrantService.vectorStore.asRetriever();
     const historyAwarePrompt =
       ChatPromptTemplate.fromTemplate(HISTORY_AWARE_PROMPT);
 
     const historyAwareRetrieverChain = await createHistoryAwareRetriever({
-      llm: this.ollamaService.llama3,
+      llm: this.ollamaService.llama3Chat,
       retriever,
       rephrasePrompt: historyAwarePrompt,
     });
@@ -59,7 +61,7 @@ export class RagService {
     );
 
     const historyAwareCombineDocsChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.llama3,
+      llm: this.ollamaService.llama3Chat,
       prompt: historyAwareRetrievalPrompt,
     });
 
@@ -67,28 +69,12 @@ export class RagService {
       retriever: historyAwareRetrieverChain,
       combineDocsChain: historyAwareCombineDocsChain,
     });
-    let answer;
-    const maxRetries = 3;
-    for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
-      try {
-        const result = await conversationalRetrievalChain.invoke({
-          chat_history: chatHistory,
-          input: question,
-        });
-        answer = JSON.parse(result.answer);
-        break; // Exit the loop if successful
-      } catch (error) {
-        if (retryCount === maxRetries - 1) {
-          const defalutAnswer = JSON.stringify({
-            question: 'Unable to parse the answer.',
-            answer:
-              'I am sorry, I am unable to answer your question. Please try again later.',
-            reference: 'default',
-          });
-          answer = JSON.parse(defalutAnswer);
-        }
-      }
-    }
-    return answer;
+    const stream = await conversationalRetrievalChain
+      .stream({
+      chat_history: chatHistory,
+      input: question,
+    });
+    
+    return stream;
   }
 }
