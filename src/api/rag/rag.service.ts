@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-// rag.service.ts
 import { Injectable } from '@nestjs/common';
 import { QdrantService } from '@/api/qdrant/qdrant.service';
 import { OllamaService } from '@/api/ollama/ollama.service';
@@ -13,7 +11,7 @@ import {
   HISTORY_AWARE_PROMPT,
   HISTORY_AWARE_RETRIEVAL_PROMPT,
 } from '@/constants/lang_chain_template/chat';
-import { StringOutputParser } from '@langchain/core/output_parsers';
+import { processChatStream } from '@/libs/utils/stream';
 
 @Injectable()
 export class RagService {
@@ -69,12 +67,12 @@ export class RagService {
       retriever: historyAwareRetrieverChain,
       combineDocsChain: historyAwareCombineDocsChain,
     });
-    const stream = await conversationalRetrievalChain
-      .stream({
+    const stream = await conversationalRetrievalChain.stream({
       chat_history: chatHistory,
       input: question,
     });
-    
-    return stream;
+    const processedStream = processChatStream(stream);
+
+    return processedStream;
   }
 }
