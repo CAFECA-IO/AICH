@@ -20,11 +20,13 @@ export class OllamaService {
       baseUrl: this.OLLAMA_HOST, // 默認值
       model: CHAT_MODEL, // 默認值
       format: OUTPUT_FORMAT, // 輸出格式
+      maxConcurrency: MAX_CONCURRENCY,
     });
 
     this.llama3Chat = new ChatOllama({
       baseUrl: this.OLLAMA_HOST, // 默認值
       model: CHAT_MODEL, // 默認值
+      maxConcurrency: MAX_CONCURRENCY,
     });
 
     this.nomicEmbedding = new OllamaEmbeddings({
