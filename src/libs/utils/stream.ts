@@ -27,4 +27,3 @@ export async function processChatStream(stream) {
   const streamableFile = new StreamableFile(processedStream);
   return streamableFile;
 }
-
