@@ -12,7 +12,7 @@ export const LANG_CHAIN_SERVICE_OPTIONS = {
 
 export const CHAT_LLAMA3 = 'llama3';
 
-export const CHAT_TAIDE = 'taide/Llama3-TAIDE-LX-8B-Chat-Alpha1-4bit';
+export const CHAT_TAIDE = 'Llama3-TAIDE-LX-8B-Chat-Alpha1-F16';
 
 export const EMBEDDING_MODEL = 'nomic-embed-text';
 

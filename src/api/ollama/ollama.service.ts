@@ -12,6 +12,7 @@ import {
 export class OllamaService {
   public taideChat: ChatOllama;
   public taideReport: ChatOllama;
+  public llama3Chat: ChatOllama;
   public nomicEmbedding: OllamaEmbeddings;
   private readonly OLLAMA_HOST = process.env.OLLAMA_HOST;
 
@@ -23,7 +24,7 @@ export class OllamaService {
       maxConcurrency: MAX_CONCURRENCY,
     });
 
-    this.taideChat = new ChatOllama({
+    this.llama3Chat = new ChatOllama({
       baseUrl: this.OLLAMA_HOST, // 默認值
       model: CHAT_TAIDE, // 默認值
       maxConcurrency: MAX_CONCURRENCY,
