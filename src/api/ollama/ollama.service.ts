@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatOllama } from '@langchain/community/chat_models/ollama';
 import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama';
 import {
-  CHAT_MODEL,
+  CHAT_TAIDE,
   EMBEDDING_MODEL,
   MAX_CONCURRENCY,
   OUTPUT_FORMAT,
@@ -10,22 +10,29 @@ import {
 
 @Injectable()
 export class OllamaService {
+  public taideChat: ChatOllama;
+  public taideReport: ChatOllama;
   public llama3Chat: ChatOllama;
-  public llama3Report: ChatOllama;
   public nomicEmbedding: OllamaEmbeddings;
   private readonly OLLAMA_HOST = process.env.OLLAMA_HOST;
 
   constructor() {
-    this.llama3Report = new ChatOllama({
+    this.taideReport = new ChatOllama({
       baseUrl: this.OLLAMA_HOST, // 默認值
-      model: CHAT_MODEL, // 默認值
+      model: CHAT_TAIDE, // 默認值
       format: OUTPUT_FORMAT, // 輸出格式
       maxConcurrency: MAX_CONCURRENCY,
     });
 
     this.llama3Chat = new ChatOllama({
       baseUrl: this.OLLAMA_HOST, // 默認值
-      model: CHAT_MODEL, // 默認值
+      model: CHAT_TAIDE, // 默認值
+      maxConcurrency: MAX_CONCURRENCY,
+    });
+
+    this.taideChat = new ChatOllama({
+      baseUrl: this.OLLAMA_HOST, // 默認值
+      model: CHAT_TAIDE, // 默認值
       maxConcurrency: MAX_CONCURRENCY,
     });
 

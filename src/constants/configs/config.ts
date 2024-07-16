@@ -10,7 +10,9 @@ export const LANG_CHAIN_SERVICE_OPTIONS = {
   RECURSIVE_LIMIT: 1,
 };
 
-export const CHAT_MODEL = 'llama3';
+export const CHAT_LLAMA3 = 'llama3';
+
+export const CHAT_TAIDE = 'Llama3-TAIDE-LX-8B-Chat-Alpha1-F16';
 
 export const EMBEDDING_MODEL = 'nomic-embed-text';
 

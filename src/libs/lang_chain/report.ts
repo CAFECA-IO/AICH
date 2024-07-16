@@ -6,7 +6,7 @@ import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
 import { AUDIT_REPORT_TEMPLATE } from '@/constants/lang_chain_template/audit_report';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import {
-  CHAT_MODEL,
+  CHAT_LLAMA3,
   EMBEDDING_MODEL,
   MAX_CONCURRENCY,
   OUTPUT_FORMAT,
@@ -19,7 +19,7 @@ export async function generateReport(input: string): Promise<any> {
   const QDRANT_HOST = process.env.QDRANT_HOST;
   const chatOllama = new ChatOllama({
     baseUrl: OLLAMA_HOST, // Default value
-    model: CHAT_MODEL, // Default value
+    model: CHAT_LLAMA3, // Default value
     format: OUTPUT_FORMAT,
   });
 
