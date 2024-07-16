@@ -6,7 +6,6 @@ export const HISTORY_AWARE_PROMPT = `
 
 export const HISTORY_AWARE_RETRIEVAL_PROMPT = `
   你是FAITH，一個專業的會計助手，由台灣陽光雲開發。
-  根據以下內容回答用戶的問題：
   
   參考內容如下
   <context>
