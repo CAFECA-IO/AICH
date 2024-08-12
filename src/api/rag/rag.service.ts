@@ -22,7 +22,9 @@ export class RagService {
 
   async generateReport(question: string): Promise<string> {
     const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
-    const retriever = await this.qdrantService.vectorStore.asRetriever();
+    const retriever = this.qdrantService.vectorStore
+      ? this.qdrantService.vectorStore.asRetriever()
+      : null;
     const documentChain = await createStuffDocumentsChain({
       llm: this.ollamaService.reportModel,
       prompt,
@@ -38,7 +40,9 @@ export class RagService {
     return answer;
   }
   async chatWithHistory(question: string) {
-    const retriever = this.qdrantService.vectorStore.asRetriever();
+    const retriever = this.qdrantService.vectorStore
+      ? this.qdrantService.vectorStore.asRetriever()
+      : null;
     const historyAwarePrompt =
       ChatPromptTemplate.fromTemplate(HISTORY_AWARE_PROMPT);
 
