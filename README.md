@@ -35,6 +35,25 @@ Artificial Intelligence Computing Hub
 $ npm install
 ```
 
+## Setup
+
+1. Create a `.env` file in the root directory of the project.
+2. Start the qdrant server. [Qdrant](https://github.com/qdrant/qdrant)
+3. Start the ollama server. [Ollama](https://github.com/ollama/ollama)
+4. Donwload the chat-model, embedding model you want in ollama. 
+5. Create the google project and get the Google Vision API credential and add it to the `.env` file as `GOOGLE_PROJECT_ID` and `GOOGLE_CREDENTIALS_BASE64`.
+6. Final `.env` file should look like this:
+```
+GOOGLE_PROJECT_ID=your-google-project-id
+GOOGLE_CREDENTIALS_BASE64=your-google-credentials-base64
+OLLAMA_HOST=http://localhost:11434
+REPORT_MODEL=your-report-model
+EMBEDDING_MODEL=your-embedding-model
+CHAT_MODEL=your-chat-model
+QDRANT_HOST=http://localhost:6333
+QDRANT_COLLECTION_NAME=your-collection-name
+```
+
 ## Running the app
 
 ```bash
