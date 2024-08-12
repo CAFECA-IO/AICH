@@ -6,20 +6,25 @@ import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
 import { AUDIT_REPORT_TEMPLATE } from '@/constants/lang_chain_template/audit_report';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import {
-  CHAT_LLAMA3,
-  EMBEDDING_MODEL,
+  DEFAULT_EMBEDDING_MODEL,
+  DEFAULT_QDRANT_COLLECTION_NAME,
+  DEFAULT_REPORT_MODEL,
   MAX_CONCURRENCY,
   OUTPUT_FORMAT,
-  QDRANT_COLLECTION_NAME,
 } from '@/constants/configs/config';
 
 export async function generateReport(input: string): Promise<any> {
   const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
   const OLLAMA_HOST = process.env.OLLAMA_HOST;
   const QDRANT_HOST = process.env.QDRANT_HOST;
+  const REPORT_MODEL = process.env.REPORT_MODEL ?? DEFAULT_REPORT_MODEL;
+  const EMBEDDING_MODEL =
+    process.env.EMBEDDING_MODEL ?? DEFAULT_EMBEDDING_MODEL;
+  const collectionName =
+    process.env.QDRANT_COLLECTION_NAME ?? DEFAULT_QDRANT_COLLECTION_NAME;
   const chatOllama = new ChatOllama({
     baseUrl: OLLAMA_HOST, // Default value
-    model: CHAT_LLAMA3, // Default value
+    model: REPORT_MODEL, // Default value
     format: OUTPUT_FORMAT,
   });
 
@@ -28,7 +33,7 @@ export async function generateReport(input: string): Promise<any> {
     prompt,
   });
 
-  const nomicEmbedding = new OllamaEmbeddings({
+  const embeddingModel = new OllamaEmbeddings({
     baseUrl: OLLAMA_HOST, // Default value
     model: EMBEDDING_MODEL, // Can be extracted from the model list
     maxConcurrency: MAX_CONCURRENCY,
@@ -36,10 +41,10 @@ export async function generateReport(input: string): Promise<any> {
 
   const vectorStore = await QdrantVectorStore.fromExistingCollection(
     // splitDocs,
-    nomicEmbedding,
+    embeddingModel,
     {
       url: QDRANT_HOST,
-      collectionName: QDRANT_COLLECTION_NAME,
+      collectionName: collectionName,
     },
   );
 

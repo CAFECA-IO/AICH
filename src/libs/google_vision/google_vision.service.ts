@@ -21,12 +21,16 @@ export class GoogleVisionService {
       'GOOGLE_CREDENTIALS_BASE64',
     );
 
-    this.client = new ImageAnnotatorClient({
-      projectId: googleProjectId,
-      credentials: JSON.parse(
-        Buffer.from(googleCredentialsBase64, 'base64').toString('ascii'),
-      ),
-    });
+    if (googleProjectId && googleCredentialsBase64) {
+      this.client = new ImageAnnotatorClient({
+        projectId: googleProjectId,
+        credentials: JSON.parse(
+          Buffer.from(googleCredentialsBase64, 'base64').toString('ascii'),
+        ),
+      });
+    } else {
+      this.client = null; // or handle the error case accordingly
+    }
   }
 
   // Info Murky (20240429): This method returns the text description in the image, separated by lines.

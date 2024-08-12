@@ -24,7 +24,7 @@ export class RagService {
     const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
     const retriever = await this.qdrantService.vectorStore.asRetriever();
     const documentChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.taideReport,
+      llm: this.ollamaService.reportModel,
       prompt,
     });
     const retrievalChain = await createRetrievalChain({
@@ -43,7 +43,7 @@ export class RagService {
       ChatPromptTemplate.fromTemplate(HISTORY_AWARE_PROMPT);
 
     const historyAwareRetrieverChain = await createHistoryAwareRetriever({
-      llm: this.ollamaService.taideChat,
+      llm: this.ollamaService.chatModel,
       retriever,
       rephrasePrompt: historyAwarePrompt,
     });
@@ -59,7 +59,7 @@ export class RagService {
     );
 
     const historyAwareCombineDocsChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.taideChat,
+      llm: this.ollamaService.chatModel,
       prompt: historyAwareRetrievalPrompt,
     });
 
