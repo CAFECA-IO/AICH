@@ -6,7 +6,9 @@ import {
 } from '@/constants/account';
 
 export const GEMINI_MODE = {
-  INVOICE: 'gemini-1.5-pro',
+  // Deprecate: (2024814 - Murky)  flash is cheaper.
+  // INVOICE: 'gemini-1.5-pro',
+  INVOICE: 'gemini-1.5-flash',
 };
 
 export const GEMINI_PROMPT = {
