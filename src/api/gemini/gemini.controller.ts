@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Body,
   Version,
   UseInterceptors,
   UploadedFile,
@@ -9,7 +8,6 @@ import {
   FileTypeValidator,
 } from '@nestjs/common';
 import { GeminiService } from '@/api/gemini/gemini.service';
-import { ImagePostGeminiDto } from '@/api/gemini/dto/image_post_gemini.dto';
 import { Logger } from '@nestjs/common';
 import { ResponseMessage } from '@/libs/utils/decorator/response_message.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,15 +31,15 @@ export class GeminiController {
           new FileTypeValidator({
             // Info Murky (20240422) mime type support by google vision:
             //https://cloud.google.com/vision/docs/supported-files
-            fileType:
-              /image\/(jpeg|png|gif|bmp|webp|x-icon|vnd\.microsoft\.icon|tiff)|application\/pdf|image\/x-raw/,
+            fileType: /image\/(jpeg|png|webp|heic|heif)/,
           }),
         ],
       }),
     )
     image: Express.Multer.File,
-    @Body() imagePostGeminiDto: ImagePostGeminiDto,
+    // Info: (20240429) Will be use in next pr.
+    // @Body() imagePostGeminiDto: ImagePostGeminiDto,
   ) {
-    return this.geminiService.uploadImageToGemini(image, imagePostGeminiDto);
+    return this.geminiService.uploadImageToGemini(image);
   }
 }
