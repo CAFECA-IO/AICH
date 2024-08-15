@@ -79,4 +79,10 @@ export class RagService {
 
     return processedStream;
   }
+  async chat(question: string) {
+    const stream = await this.ollamaService.chatModel.stream(question);
+    const processedStream = processChatStream(stream);
+
+    return processedStream;
+  }
 }
