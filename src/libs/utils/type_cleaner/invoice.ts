@@ -19,10 +19,10 @@ export function cleanInvoice(data: any): IInvoice {
   result.paymentReason = data.paymentReason || '';
   result.description = data.description || '';
   result.vendorOrSupplier = data.vendorOrSupplier || '';
-  result.project = data.project || '';
-  result.contract = data.contract || '';
-  result.projectId = data.projectId || '';
-  result.contractId = data.contractId || '';
+  result.project = data.project || null;
+  result.contract = data.contract || null;
+  result.projectId = data.projectId || null;
+  result.contractId = data.contractId || null;
   result.payment = cleanIPayment(data.payment);
 
   if (!isIInvoice(result)) {
