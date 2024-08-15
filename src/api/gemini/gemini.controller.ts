@@ -54,9 +54,16 @@ export class GeminiController {
     // Info: (20240429) Will be use in next pr.
     // @Body() imagePostGeminiDto: ImagePostGeminiDto,
   ) {
-    const resultStatus: AccountResultStatus =
-      this.geminiService.startGenerateInvoice(image);
-    return resultStatus;
+    try {
+      const resultStatus: AccountResultStatus =
+        this.geminiService.startGenerateInvoice(image);
+      return resultStatus;
+    } catch (error) {
+      this.logger.error(`Error in uploading image to gemini: ${error}`);
+      throw new ResponseException(
+        STATUS_MESSAGE.EXTRACT_INVOICE_FROM_OCR_FAILED,
+      );
+    }
   }
 
   @Get(':resultId/process_status')
