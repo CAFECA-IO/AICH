@@ -23,8 +23,8 @@ export async function generateReport(input: string): Promise<any> {
   const collectionName =
     process.env.QDRANT_COLLECTION_NAME ?? DEFAULT_QDRANT_COLLECTION_NAME;
   const chatOllama = new ChatOllama({
-    baseUrl: OLLAMA_HOST, // Default value
-    model: REPORT_MODEL, // Default value
+    baseUrl: OLLAMA_HOST,
+    model: REPORT_MODEL,
     format: OUTPUT_FORMAT,
   });
 
@@ -34,13 +34,12 @@ export async function generateReport(input: string): Promise<any> {
   });
 
   const embeddingModel = new OllamaEmbeddings({
-    baseUrl: OLLAMA_HOST, // Default value
-    model: EMBEDDING_MODEL, // Can be extracted from the model list
+    baseUrl: OLLAMA_HOST,
+    model: EMBEDDING_MODEL,
     maxConcurrency: MAX_CONCURRENCY,
   });
 
   const vectorStore = await QdrantVectorStore.fromExistingCollection(
-    // splitDocs,
     embeddingModel,
     {
       url: QDRANT_HOST,

@@ -1,29 +1,32 @@
-import { StreamableFile } from '@nestjs/common';
+import { Logger, StreamableFile } from '@nestjs/common';
 import { PassThrough } from 'stream';
 
-export async function processChatStream(stream) {
-  const processedStream = new PassThrough(); // 使用 PassThrough 來處理和轉發數據
+export async function processChatStream(
+  stream: ReadableStream,
+): Promise<StreamableFile> {
+  const processedStream = new PassThrough();
+  const logger = new Logger('processChatStream');
 
+  // Info (20240815 - Jacky) 使用 async generator 來處理 stream
   (async () => {
-    for await (const chunk of stream) {
-      try {
-        // 假设 chunk 是一个包含 answer 属性的对象
-        if (chunk.answer) {
-          const canContinue = processedStream.write(chunk.answer);
+    try {
+      for await (const chunk of stream) {
+        const data = chunk.answer || chunk.content;
+        if (data) {
+          const canContinue = processedStream.write(data);
           if (!canContinue) {
             await new Promise((resolve) =>
               processedStream.once('drain', resolve),
             );
           }
         }
-      } catch (error) {
-        this.logger.warn(`Error in chatWithHistory: ${error}`);
-        processedStream.end();
-        throw error; // 或处理错误
       }
+      processedStream.end(); // Info (20240815 - Jacky) 結束 stream
+    } catch (error) {
+      logger.error(`Error in processing stream: ${error}`);
+      processedStream.destroy(error); // Info (20240815 - Jacky) 遇到錯誤時，銷毀 stream
     }
-    processedStream.end();
   })();
-  const streamableFile = new StreamableFile(processedStream);
-  return streamableFile;
+
+  return new StreamableFile(processedStream);
 }
