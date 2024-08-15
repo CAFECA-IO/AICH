@@ -8,6 +8,7 @@ import {
   FileTypeValidator,
   Get,
   Param,
+  Body,
 } from '@nestjs/common';
 import { GeminiService } from '@/api/gemini/gemini.service';
 import { Logger } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { ResponseException } from '@/libs/utils/response_exception';
 import { STATUS_MESSAGE } from '@/constants/status_code';
 import { IInvoice } from '@/interfaces/invoice';
 import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
+import { ImagePostGeminiDto } from '@/api/gemini/dto/image_post_gemini.dto';
 
 @Controller('gemini')
 @UseInterceptors(ResponseFormatInterceptor)
@@ -52,11 +54,11 @@ export class GeminiController {
     )
     image: Express.Multer.File,
     // Info: (20240429) Will be use in next pr.
-    // @Body() imagePostGeminiDto: ImagePostGeminiDto,
+    @Body() imagePostGeminiDto: ImagePostGeminiDto,
   ) {
     try {
       const resultStatus: AccountResultStatus =
-        this.geminiService.startGenerateInvoice(image);
+        this.geminiService.startGenerateInvoice(imagePostGeminiDto, image);
       return resultStatus;
     } catch (error) {
       this.logger.error(`Error in uploading image to gemini: ${error}`);

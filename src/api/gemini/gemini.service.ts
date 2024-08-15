@@ -16,7 +16,7 @@ import { randomUUID } from 'crypto';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { cleanInvoice } from '@/libs/utils/type_cleaner/invoice';
 import { AccountResultStatus } from '@/interfaces/account';
-
+import { ImagePostGeminiDto } from '@/api/gemini/dto/image_post_gemini.dto';
 @Injectable()
 export class GeminiService {
   private readonly geminiApiKey: string;
@@ -77,9 +77,13 @@ export class GeminiService {
    * @param {Express.Multer.File} image - The image file to generate invoice from
    * @returns {{ id: string; status: PROGRESS_STATUS }} - The resultId and status of the process
    */
-  public startGenerateInvoice(image: Express.Multer.File): AccountResultStatus {
+  public startGenerateInvoice(
+    imagePostGeminiDto: ImagePostGeminiDto,
+    image: Express.Multer.File,
+  ): AccountResultStatus {
     // Info (20240815 - Murky): Pipe line => startGenerateInvoice => uploadImageToGemini
-    let hashedKey = this.generateHashKey(image.originalname);
+    const imageName = imagePostGeminiDto.imageName || image.originalname;
+    let hashedKey = this.generateHashKey(imageName);
     let result: AccountResultStatus;
 
     // Info (20240815 - Murky): If the image is already uploaded and saved in the cache, return the status
