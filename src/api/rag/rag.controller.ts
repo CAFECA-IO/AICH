@@ -16,4 +16,9 @@ export class RagController {
     const processedStream = await this.ragService.chatWithHistory(question);
     return processedStream;
   }
+  @Post('chat')
+  async chat(@Body('question') question: string): Promise<any> {
+    const stream = await this.ragService.chat(question);
+    return stream;
+  }
 }

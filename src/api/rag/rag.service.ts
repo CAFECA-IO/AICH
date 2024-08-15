@@ -22,9 +22,11 @@ export class RagService {
 
   async generateReport(question: string): Promise<string> {
     const prompt = ChatPromptTemplate.fromTemplate(AUDIT_REPORT_TEMPLATE);
-    const retriever = await this.qdrantService.vectorStore.asRetriever();
+    const retriever = this.qdrantService.vectorStore
+      ? this.qdrantService.vectorStore.asRetriever()
+      : null;
     const documentChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.taideReport,
+      llm: this.ollamaService.reportModel,
       prompt,
     });
     const retrievalChain = await createRetrievalChain({
@@ -38,12 +40,14 @@ export class RagService {
     return answer;
   }
   async chatWithHistory(question: string) {
-    const retriever = this.qdrantService.vectorStore.asRetriever();
+    const retriever = this.qdrantService.vectorStore
+      ? this.qdrantService.vectorStore.asRetriever()
+      : null;
     const historyAwarePrompt =
       ChatPromptTemplate.fromTemplate(HISTORY_AWARE_PROMPT);
 
     const historyAwareRetrieverChain = await createHistoryAwareRetriever({
-      llm: this.ollamaService.taideChat,
+      llm: this.ollamaService.chatModel,
       retriever,
       rephrasePrompt: historyAwarePrompt,
     });
@@ -59,7 +63,7 @@ export class RagService {
     );
 
     const historyAwareCombineDocsChain = await createStuffDocumentsChain({
-      llm: this.ollamaService.taideChat,
+      llm: this.ollamaService.chatModel,
       prompt: historyAwareRetrievalPrompt,
     });
 
@@ -71,6 +75,12 @@ export class RagService {
       chat_history: chatHistory,
       input: question,
     });
+    const processedStream = processChatStream(stream);
+
+    return processedStream;
+  }
+  async chat(question: string) {
+    const stream = await this.ollamaService.chatModel.stream(question);
     const processedStream = processChatStream(stream);
 
     return processedStream;
