@@ -22,8 +22,6 @@ export class GeminiService {
     this.fileManager = new GoogleAIFileManager(this.geminiApiKey);
     this.invoiceModel = this.genAI.getGenerativeModel({
       model: GEMINI_MODE.INVOICE,
-      // Set the `responseMimeType` to output JSON
-      // Pass the schema object to the `responseSchema` field
       generationConfig: GEMINI_PROMPT.INVOICE,
     });
 
