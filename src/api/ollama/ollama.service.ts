@@ -24,21 +24,21 @@ export class OllamaService {
 
   constructor() {
     this.reportModel = new ChatOllama({
-      baseUrl: this.OLLAMA_HOST, // 默認值
-      model: this.REPORT_MODEL, // 默認值
-      format: OUTPUT_FORMAT, // 輸出格式
+      baseUrl: this.OLLAMA_HOST,
+      model: this.REPORT_MODEL,
+      format: OUTPUT_FORMAT,
       maxConcurrency: MAX_CONCURRENCY,
     });
 
     this.chatModel = new ChatOllama({
-      baseUrl: this.OLLAMA_HOST, // 默認值
-      model: this.CHAT_MODEL, // 默認值
+      baseUrl: this.OLLAMA_HOST,
+      model: this.CHAT_MODEL,
       maxConcurrency: MAX_CONCURRENCY,
     });
 
     this.embeddingModel = new OllamaEmbeddings({
-      baseUrl: this.OLLAMA_HOST, // 默認值
-      model: this.EMBEDDING_MODEL, // 可從模型列表中提取
+      baseUrl: this.OLLAMA_HOST,
+      model: this.EMBEDDING_MODEL,
       maxConcurrency: MAX_CONCURRENCY,
     });
   }
