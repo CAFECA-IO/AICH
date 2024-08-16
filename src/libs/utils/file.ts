@@ -7,10 +7,14 @@ import * as path from 'path';
 export async function saveTemporaryFile(
   folder: FileFolder,
   file: Express.Multer.File,
+  fileHashName?: string,
 ) {
-  const uuid = randomUUID();
-  const hash = createHash('md5');
-  const fileHashName = hash.update(uuid).digest('hex').toLocaleLowerCase();
+  if (!fileHashName) {
+    const uuid = randomUUID();
+    const hash = createHash('md5');
+    fileHashName = hash.update(uuid).digest('hex').toLocaleLowerCase();
+  }
+
   let extension = mime.extension(file.mimetype);
   if (!extension) {
     extension = 'jpg';

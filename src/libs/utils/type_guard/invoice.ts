@@ -9,10 +9,10 @@ export function isIInvoice(data: IInvoice): data is IInvoice {
     typeof data.paymentReason === 'string' &&
     typeof data.description === 'string' &&
     typeof data.vendorOrSupplier === 'string' &&
-    typeof data.project === 'string' &&
-    typeof data.projectId === 'number' &&
-    typeof data.contract === 'string' &&
-    typeof data.contractId === 'number' &&
+    (data.project === null || typeof data.project === 'string') &&
+    (data.projectId === null || typeof data.projectId === 'number') &&
+    (data.contract === null || typeof data.contract === 'string') &&
+    (data.contractId === null || typeof data.contractId === 'number') &&
     isIPayment(data.payment)
   );
 }
