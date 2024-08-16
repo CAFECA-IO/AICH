@@ -32,7 +32,7 @@ export class GeminiController {
   }
 
   /**
-   * Post image to Gemini and generate IInvoice
+   * Info (20240815 - Murky) Post image to Gemini and generate IInvoice
    * @param image - The image file to be uploaded, use form-data with key 'image' to post
    * @returns {AccountResultStatus} - The status of the gemini result
    */
@@ -45,7 +45,7 @@ export class GeminiController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({
-            // Info Murky (20240422) mime type support by google vision:
+            // Info (20240815 - Murky) mime type support by google vision:
             //https://cloud.google.com/vision/docs/supported-files
             fileType: /image\/(jpeg|png|webp|heic|heif)/,
           }),
@@ -53,7 +53,6 @@ export class GeminiController {
       }),
     )
     image: Express.Multer.File,
-    // Info: (20240429) Will be use in next pr.
     @Body() imagePostGeminiDto: ImagePostGeminiDto,
   ) {
     try {
@@ -68,6 +67,11 @@ export class GeminiController {
     }
   }
 
+  /**
+   * Info (20240815 - Murky) Get the process status of the gemini result
+   * @param { string }resultId - The ID of the gemini result
+   * @returns {PROGRESS_STATUS} - The status of the gemini result
+   */
   @Get(':resultId/process_status')
   @Version('1')
   @ResponseMessage('Return process status successfully')
@@ -84,6 +88,11 @@ export class GeminiController {
     }
   }
 
+  /**
+   * Info (20240815 - Murky) Get the process result of the gemini result
+   * @param { string } resultId - The ID of the gemini result
+   * @returns {IInvoice} - The invoice JSON from gemini
+   */
   @Get(':resultId/result')
   @Version('1')
   @ResponseMessage('return Invoice JSON from Gemini Successfully ')

@@ -42,7 +42,7 @@ export class GeminiService {
   }
 
   /**
-   * Get the status of the gemini result by resultId
+   * Info (20240815 - Murky): Get the status of the gemini result by resultId
    * @param {string} resultId - The resultId of the gemini result
    * @returns {PROGRESS_STATUS} - The status of the gemini result
    */
@@ -58,7 +58,7 @@ export class GeminiService {
   }
 
   /**
-   * Get the gemini result by resultId
+   * Info (20240815 - Murky): Get the gemini result by resultId
    * @param {string} resultId - The resultId of the gemini result
    * @returns {IInvoice | null} - The gemini result, which is an invoice object
    */
@@ -73,7 +73,7 @@ export class GeminiService {
   }
 
   /**
-   * Start the process of generating invoice from the image, it will return the resultId and status of the process immediately
+   *  Info (20240815 - Murky): Start the process of generating invoice from the image, it will return the resultId and status of the process immediately
    * @param {Express.Multer.File} image - The image file to generate invoice from
    * @returns {{ id: string; status: PROGRESS_STATUS }} - The resultId and status of the process
    */
@@ -108,7 +108,7 @@ export class GeminiService {
   }
 
   /**
-   * Generate a hashed key for the image file, it combines the file name (or random uuid) and a combined timestamp
+   *  Info (20240815 - Murky): Generate a hashed key for the image file, it combines the file name (or random uuid) and a combined timestamp
    * @param {string} fileName - The file name of the image
    * @returns {string} - The hashed key from fileName (or random uuid) and timestamp
    */
@@ -121,7 +121,7 @@ export class GeminiService {
   }
 
   /**
-   * save the image file to local storage and upload it to the google file manager
+   *  Info (20240815 - Murky): save the image file to local storage and upload it to the google file manager
    * @param {string} hashedKey - The hashed key of the image file
    * @param  {Express.Multer.File} image - The image file to upload
    * @returns {Promise<UploadFileResponse>} - The UploadFileResponse of the uploaded file
@@ -173,7 +173,7 @@ export class GeminiService {
   }
 
   /**
-   * save the image file to local storage and upload it to the google file manager
+   *  Info (20240815 - Murky): save the image file to local storage and upload it to the google file manager
    * @param {string} hashedKey - The hashed key of the image file
    * @param  {Express.Multer.File} image - The image file to upload
    * @returns {Promise<UploadFileResponse>} - The UploadFileResponse of the uploaded file

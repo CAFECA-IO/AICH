@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GeminiService } from './gemini.service';
-import { GeminiController } from './gemini.controller';
+import { GeminiService } from '@/api/gemini/gemini.service';
+import { GeminiController } from '@/api/gemini/gemini.controller';
 import { ConfigModule } from '@nestjs/config';
 import { LruCacheModule } from '@/libs/lru_cache/lru_cache.module';
 @Module({

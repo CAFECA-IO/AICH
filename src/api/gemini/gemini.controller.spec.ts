@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GeminiController } from './gemini.controller';
-import { GeminiService } from './gemini.service';
+import { GeminiController } from '@/api/gemini/gemini.controller';
+import { GeminiService } from '@/api/gemini/gemini.service';
 
 describe('GeminiController', () => {
   let controller: GeminiController;
