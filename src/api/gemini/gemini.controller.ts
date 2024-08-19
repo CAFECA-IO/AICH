@@ -47,7 +47,7 @@ export class GeminiController {
           new FileTypeValidator({
             // Info (20240815 - Murky) mime type support by google vision:
             //https://cloud.google.com/vision/docs/supported-files
-            fileType: /image\/(jpeg|png|webp|heic|heif)/,
+            fileType: /image\/(jpeg|png|webp|heic|heif)|application\/pdf/,
           }),
         ],
       }),
@@ -55,6 +55,8 @@ export class GeminiController {
     image: Express.Multer.File,
     @Body() imagePostGeminiDto: ImagePostGeminiDto,
   ) {
+    // Delete Me
+    console.log('image', image);
     try {
       const resultStatus: AccountResultStatus =
         this.geminiService.startGenerateInvoice(imagePostGeminiDto, image);
