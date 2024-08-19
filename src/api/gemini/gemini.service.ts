@@ -30,6 +30,7 @@ export class GeminiService {
     private cache: LruCacheService<IInvoice>,
   ) {
     this.geminiApiKey = this.configService.get<string>('GOOGLE_GEMINI_API_KEY');
+    console.log('API key', this.geminiApiKey);
     this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
     this.fileManager = new GoogleAIFileManager(this.geminiApiKey);
     this.invoiceModel = this.genAI.getGenerativeModel({
@@ -136,7 +137,9 @@ export class GeminiService {
     let uploadFile: UploadFileResponse;
 
     try {
+      console.log('uploadImageToGemini hashedKey', hashedKey);
       uploadFile = await this.uploadImageToFileManager(hashedKey, image);
+      console.log('uploadImageToGemini uploadFile', uploadFile);
     } catch (error) {
       this.logger.error(
         `Invoice ID: ${hashedKey} System Error in uploadImageToGemini in gemini.service: ${error}`,
@@ -148,6 +151,7 @@ export class GeminiService {
     let result: any;
 
     try {
+      console.log('before generateContent');
       result = await this.invoiceModel.generateContent([
         {
           fileData: {
@@ -157,6 +161,8 @@ export class GeminiService {
         },
         { text: prompt },
       ]);
+      // Delete Me
+      console.log('result', JSON.stringify(result, null, 2));
     } catch (error) {
       this.logger.error(
         `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service: ${error}`,
@@ -188,6 +194,9 @@ export class GeminiService {
         image,
         hashedKey,
       );
+
+      console.log('tmpFile', tmpFile);
+      console.log('mimetype', image.mimetype);
       const uploadResult = await this.fileManager.uploadFile(
         tmpFile.folderPath,
         {
@@ -196,6 +205,7 @@ export class GeminiService {
         },
       );
 
+      console.log('uploadResultAAA', uploadResult);
       this.logger.log(
         `Uploaded file ${uploadResult.file.name} as: ${uploadResult.file.uri}`,
       );
