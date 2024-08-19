@@ -16,38 +16,37 @@ import { randomUUID } from 'crypto';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { cleanInvoice } from '@/libs/utils/type_cleaner/invoice';
 import { AccountResultStatus } from '@/interfaces/account';
-import { ImagePostGeminiDto } from '@/api/gemini/dto/image_post_gemini.dto';
+import { ImagePostInvoiceDto } from '@/api/invoices/dto/image_post_invoice.dto';
 @Injectable()
-export class GeminiService {
+export class InvoiceService {
   private readonly geminiApiKey: string;
   private readonly genAI: GoogleGenerativeAI;
   private readonly fileManager: GoogleAIFileManager;
   private readonly logger;
-  private readonly invoiceModel;
+  private readonly geminiModel;
 
   constructor(
     private configService: ConfigService,
     private cache: LruCacheService<IInvoice>,
   ) {
     this.geminiApiKey = this.configService.get<string>('GOOGLE_GEMINI_API_KEY');
-    console.log('API key', this.geminiApiKey);
     this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
     this.fileManager = new GoogleAIFileManager(this.geminiApiKey);
-    this.invoiceModel = this.genAI.getGenerativeModel({
+    this.geminiModel = this.genAI.getGenerativeModel({
       model: GEMINI_MODE.INVOICE,
       generationConfig: GEMINI_PROMPT.INVOICE,
     });
 
-    this.logger = new Logger(GeminiService.name);
-    this.logger.log('GeminiService initialized');
+    this.logger = new Logger(InvoiceService.name);
+    this.logger.log('invoiceService initialized');
   }
 
   /**
-   * Info (20240815 - Murky): Get the status of the gemini result by resultId
-   * @param {string} resultId - The resultId of the gemini result
-   * @returns {PROGRESS_STATUS} - The status of the gemini result
+   * Info (20240815 - Murky): Get the status of the invoice result by resultId
+   * @param {string} resultId - The resultId of the invoice result
+   * @returns {PROGRESS_STATUS} - The status of the invoice result
    */
-  public getGeminiStatus(resultId: string): PROGRESS_STATUS {
+  public getInvoiceStatus(resultId: string): PROGRESS_STATUS {
     let status = PROGRESS_STATUS.NOT_FOUND;
     const result = this.cache.get(resultId);
 
@@ -59,11 +58,11 @@ export class GeminiService {
   }
 
   /**
-   * Info (20240815 - Murky): Get the gemini result by resultId
-   * @param {string} resultId - The resultId of the gemini result
-   * @returns {IInvoice | null} - The gemini result, which is an invoice object
+   * Info (20240815 - Murky): Get the invoice result by resultId
+   * @param {string} resultId - The resultId of the invoice result
+   * @returns {IInvoice | null} - The invoice result, which is an invoice object
    */
-  public getGeminiResult(resultId: string): IInvoice | null {
+  public getInvoiceResult(resultId: string): IInvoice | null {
     const result = this.cache.get(resultId);
     let value = null;
     if (result && result.status === PROGRESS_STATUS.SUCCESS) {
@@ -79,11 +78,11 @@ export class GeminiService {
    * @returns {{ id: string; status: PROGRESS_STATUS }} - The resultId and status of the process
    */
   public startGenerateInvoice(
-    imagePostGeminiDto: ImagePostGeminiDto,
+    imagePostInvoiceDto: ImagePostInvoiceDto,
     image: Express.Multer.File,
   ): AccountResultStatus {
-    // Info (20240815 - Murky): Pipe line => startGenerateInvoice => uploadImageToGemini
-    const imageName = imagePostGeminiDto.imageName || image.originalname;
+    // Info (20240815 - Murky): Pipe line => startGenerateInvoice => uploadImageToinvoice
+    const imageName = imagePostInvoiceDto.imageName || image.originalname;
     let hashedKey = this.generateHashKey(imageName);
     let result: AccountResultStatus;
 
@@ -97,7 +96,7 @@ export class GeminiService {
       hashedKey = this.cache.put(hashedKey, PROGRESS_STATUS.IN_PROGRESS, null);
 
       // Info (20240815 - Murky): Pipeline start here
-      this.uploadImageToGemini(hashedKey, image);
+      this.uploadImageToInvoice(hashedKey, image);
 
       result = {
         resultId: hashedKey,
@@ -127,7 +126,7 @@ export class GeminiService {
    * @param  {Express.Multer.File} image - The image file to upload
    * @returns {Promise<UploadFileResponse>} - The UploadFileResponse of the uploaded file
    */
-  private async uploadImageToGemini(
+  private async uploadImageToInvoice(
     hashedKey: string,
     image: Express.Multer.File,
   ) {
@@ -137,12 +136,10 @@ export class GeminiService {
     let uploadFile: UploadFileResponse;
 
     try {
-      console.log('uploadImageToGemini hashedKey', hashedKey);
       uploadFile = await this.uploadImageToFileManager(hashedKey, image);
-      console.log('uploadImageToGemini uploadFile', uploadFile);
     } catch (error) {
       this.logger.error(
-        `Invoice ID: ${hashedKey} System Error in uploadImageToGemini in gemini.service: ${error}`,
+        `Invoice ID: ${hashedKey} System Error in uploadImageToinvoice in invoice.service: ${error}`,
       );
       this.cache.put(hashedKey, PROGRESS_STATUS.SYSTEM_ERROR, null);
       return;
@@ -151,8 +148,7 @@ export class GeminiService {
     let result: any;
 
     try {
-      console.log('before generateContent');
-      result = await this.invoiceModel.generateContent([
+      result = await this.geminiModel.generateContent([
         {
           fileData: {
             mimeType: uploadFile.file.mimeType,
@@ -161,19 +157,17 @@ export class GeminiService {
         },
         { text: prompt },
       ]);
-      // Delete Me
-      console.log('result', JSON.stringify(result, null, 2));
     } catch (error) {
       this.logger.error(
-        `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service: ${error}`,
+        `Invoice ID: ${hashedKey} LLM Error in generateContent in invoice.service: ${error}`,
       );
       this.cache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
       return;
     }
 
-    const invoiceFromGemini = JSON.parse(result.response.text());
+    const invoiceFromInvoice = JSON.parse(result.response.text());
 
-    const invoice: IInvoice = cleanInvoice(invoiceFromGemini);
+    const invoice: IInvoice = cleanInvoice(invoiceFromInvoice);
     this.cache.put(hashedKey, PROGRESS_STATUS.SUCCESS, invoice);
     return;
   }
@@ -195,8 +189,6 @@ export class GeminiService {
         hashedKey,
       );
 
-      console.log('tmpFile', tmpFile);
-      console.log('mimetype', image.mimetype);
       const uploadResult = await this.fileManager.uploadFile(
         tmpFile.folderPath,
         {
@@ -205,7 +197,6 @@ export class GeminiService {
         },
       );
 
-      console.log('uploadResultAAA', uploadResult);
       this.logger.log(
         `Uploaded file ${uploadResult.file.name} as: ${uploadResult.file.uri}`,
       );
@@ -215,7 +206,7 @@ export class GeminiService {
       return uploadResult;
     } catch (error) {
       this.logger.error(
-        `Error in uploadImageToFileManager in gemini.service: ${error}`,
+        `Error in uploadImageToFileManager in invoice.service: ${error}`,
       );
       throw error;
     }

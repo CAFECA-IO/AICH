@@ -146,9 +146,6 @@ export class OcrService {
           { recursionLimit: LANG_CHAIN_SERVICE_OPTIONS.RECURSIVE_LIMIT },
         );
 
-        // Depreciate Murky (20240429): debug
-        console.log(JSON.stringify(invoiceGenerated, null, 2));
-
         if (!invoiceGenerated) {
           const errorMessage = `ID: ${hashedId} => OCR can't parse any text from LLaMA`;
           this.logger.error(errorMessage);

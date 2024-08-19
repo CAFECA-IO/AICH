@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GeminiService } from '@/api/gemini/gemini.service';
-import { GeminiController } from '@/api/gemini/gemini.controller';
+import { InvoiceService } from '@/api/invoices/invoice.service';
+import { InvoiceController } from '@/api/invoices/invoice.controller';
 import { ConfigModule } from '@nestjs/config';
 import { LruCacheModule } from '@/libs/lru_cache/lru_cache.module';
 @Module({
@@ -11,7 +11,7 @@ import { LruCacheModule } from '@/libs/lru_cache/lru_cache.module';
       idLength: 10,
     }),
   ],
-  controllers: [GeminiController],
-  providers: [GeminiService],
+  controllers: [InvoiceController],
+  providers: [InvoiceService],
 })
-export class GeminiModule {}
+export class InvoiceModule {}

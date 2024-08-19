@@ -85,12 +85,9 @@ export class LlamaService<T> {
 
       try {
         // Validate JSON by parsing
-
-        console.log('jsonStringBeforeParse', jsonString);
         if (this.options.typeCleaner) {
           JSON.parse(jsonString);
         }
-        console.log('jsonStringAfterParse', jsonString);
         return jsonString;
       } catch (e) {
         // If parsing fails, return null
@@ -128,14 +125,10 @@ export class LlamaService<T> {
       return null;
     }
 
-    // Deprecated: Murky(20240429): Debug
-    console.log('llama response', response.message.content);
-
     const data = !this.options.typeCleaner
       ? response.message.content
       : this.extractJSONFromText(response.message.content);
 
-    console.log('llama data', data);
     if (!data) {
       return null;
     }
