@@ -22,7 +22,7 @@ import { IInvoice } from '@/interfaces/invoice';
 import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
 import { ImagePostInvoiceDto } from '@/api/invoices/dto/image_post_invoice.dto';
 
-@Controller('invoice')
+@Controller('invoices')
 @UseInterceptors(ResponseFormatInterceptor)
 export class InvoiceController {
   private readonly logger = new Logger(InvoiceController.name);
