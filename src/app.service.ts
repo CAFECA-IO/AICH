@@ -3,7 +3,7 @@ import { version } from '@/libs/utils/version';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
+  getVersion(): string {
     return `AICH Version ${version}`;
   }
 }
