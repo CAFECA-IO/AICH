@@ -38,6 +38,11 @@ export class LruCacheService<T> {
     return hash.substring(0, this._idLength);
   }
 
+  public hashIdWithTimestamp(inputString: string): string {
+    const hash = this.hashId(inputString);
+    return this._combineIdWithTimestampHash(hash);
+  }
+
   private _generateTimestampHash(): string {
     const timestamp = new Date().getTime().toString();
     return this.hashId(timestamp);
