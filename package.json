@@ -3,7 +3,7 @@
   "version": "0.8.2+test.1437",
   "description": "Artificial Intelligence Computing Hub",
   "author": "",
-  "private": true
+  "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
