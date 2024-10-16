@@ -1,8 +1,8 @@
 {
   "name": "aich",
-  "version": "0.8.2+test.1425",
+  "version": "0.8.2+test.1425-1",
   "description": "Artificial Intelligence Computing Hub",
-  "author": "",
+  "author": ""
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
