@@ -165,10 +165,19 @@ export class InvoiceService {
       return;
     }
 
-    const invoiceFromInvoice = JSON.parse(result.response.text());
+    try {
+      const invoiceFromInvoice = JSON.parse(result.response.text());
 
-    const invoice: IInvoice = cleanInvoice(invoiceFromInvoice);
-    this.cache.put(hashedKey, PROGRESS_STATUS.SUCCESS, invoice);
+      const invoice: IInvoice = cleanInvoice(invoiceFromInvoice);
+      this.cache.put(hashedKey, PROGRESS_STATUS.SUCCESS, invoice);
+    } catch (error) {
+      this.logger.error(
+        `Invoice ID: ${hashedKey} LLM Error in generateContent in invoice.service due to parsing gemini output failed or gemini not return correct json: ${error}`,
+      );
+      this.cache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
+      return;
+    }
+
     return;
   }
 
