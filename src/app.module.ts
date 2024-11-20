@@ -7,7 +7,7 @@ import { AuditReportsModule } from '@/api/audit_reports/audit_reports.module';
 import { RagModule } from '@/api/rag/rag.module';
 import { BeforeAppStartService } from '@/libs/before_app_start/before_app_start.service';
 import { AiModule } from '@/api/ai/ai.module';
-import { GeminiService } from '@/api/gemini/gemini.service';
+import { GeminiModule } from '@/api/gemini/gemini.module';
 
 @Module({
   imports: [
@@ -16,8 +16,9 @@ import { GeminiService } from '@/api/gemini/gemini.service';
     AuditReportsModule,
     RagModule,
     AiModule,
+    GeminiModule,
   ],
   controllers: [AppController],
-  providers: [AppService, BeforeAppStartService, GeminiService],
+  providers: [AppService, BeforeAppStartService],
 })
 export class AppModule {}

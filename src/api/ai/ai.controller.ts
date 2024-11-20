@@ -3,24 +3,22 @@ import {
   Post,
   Version,
   UseInterceptors,
-  UploadedFile,
   ParseFilePipe,
   FileTypeValidator,
   Get,
   Param,
-  Body,
+  UploadedFiles,
 } from '@nestjs/common';
 import { AIService } from '@/api/ai/ai.service';
 import { Logger } from '@nestjs/common';
 import { ResponseMessage } from '@/libs/utils/decorator/response_message.decorator';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { AccountResultStatus } from '@/interfaces/account';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { ResponseException } from '@/libs/utils/response_exception';
 import { STATUS_MESSAGE } from '@/constants/status_code';
 import { IInvoice } from '@/interfaces/invoice';
 import { ResponseFormatInterceptor } from '@/libs/utils/interceptor/response_format.interceptor';
-import { ImagePostInvoiceDto } from '@/api/invoices/dto/image_post_invoice.dto';
 
 @Controller('ai')
 @UseInterceptors(ResponseFormatInterceptor)
@@ -31,12 +29,12 @@ export class AIController {
     this.logger.log('AIController initialized');
   }
 
-  @Post('upload')
-  @Version('1')
+  @Post('certificate')
+  @Version('2')
   @ResponseMessage('Image uploaded to AI successfully')
-  @UseInterceptors(FileInterceptor('image'))
-  uploadImageToInvoice(
-    @UploadedFile(
+  @UseInterceptors(FilesInterceptor('image'))
+  async uploadImageToInvoice(
+    @UploadedFiles(
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({
@@ -45,12 +43,11 @@ export class AIController {
         ],
       }),
     )
-    image: Express.Multer.File,
-    @Body() imagePostInvoiceDto: ImagePostInvoiceDto,
+    imageList: Array<Express.Multer.File>,
   ) {
     try {
       const resultStatus: AccountResultStatus =
-        this.aiService.startGenerateInvoice(imagePostInvoiceDto, image);
+        await this.aiService.startGenerateInvoice(imageList);
       return resultStatus;
     } catch (error) {
       this.logger.error(`Error in uploading image to invoice: ${error}`);
@@ -60,12 +57,14 @@ export class AIController {
     }
   }
 
-  @Get(':resultId/process_status')
-  @Version('1')
+  @Get('certificate/:resultId/process_status')
+  @Version('2')
   @ResponseMessage('Return process status successfully')
-  getProcessStatus(@Param('resultId') resultId: string): PROGRESS_STATUS {
+  async getProcessStatus(
+    @Param('resultId') resultId: string,
+  ): Promise<PROGRESS_STATUS> {
     try {
-      const result = this.aiService.getInvoiceStatus(resultId);
+      const result = await this.aiService.getInvoiceStatus(resultId);
       return result;
     } catch (error) {
       this.logger.error(
@@ -75,8 +74,8 @@ export class AIController {
     }
   }
 
-  @Get(':resultId/result')
-  @Version('1')
+  @Get('certificate/:resultId')
+  @Version('2')
   @ResponseMessage('return Invoice JSON from invoice Successfully ')
   getProcessResult(@Param('resultId') resultId: string): IInvoice {
     try {

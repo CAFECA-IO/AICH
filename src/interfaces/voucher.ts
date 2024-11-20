@@ -22,3 +22,11 @@ export interface IVoucher {
   // metadatas: IVoucherMetaData[];
   lineItems: ILineItem[];
 }
+
+export interface IAIVoucher {
+  voucherDate: number;
+  type: string;
+  note: string;
+  counterPartyName: string;
+  lineItems: ILineItem[];
+}

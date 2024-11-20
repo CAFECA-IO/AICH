@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@google-cloud/vision": "^4.2.1",
-    "@google/generative-ai": "^0.17.0",
+    "@google/generative-ai": "^0.17.2",
     "@langchain/community": "^0.0.55",
     "@langchain/core": "^0.1.62",
     "@langchain/qdrant": "^0.0.5",

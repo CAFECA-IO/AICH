@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '@/api/gemini/gemini.service';
-import { ImagePostInvoiceDto } from '@/api/invoices/dto/image_post_invoice.dto';
 import { AccountResultStatus } from '@/interfaces/account';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { IInvoice } from '@/interfaces/invoice';
@@ -16,12 +15,11 @@ export class AIService {
   }
 
   public async startGenerateInvoice(
-    imagePostInvoiceDto: ImagePostInvoiceDto,
-    image: Express.Multer.File,
+    imageList: Express.Multer.File[],
   ): Promise<AccountResultStatus> {
     try {
       const resultStatus: AccountResultStatus =
-        await this.geminiService.startGenerateInvoice(imagePostInvoiceDto, image);
+        this.geminiService.startGenerateInvoice(imageList);
       return resultStatus;
     } catch (error) {
       this.logger.error(`Error in starting invoice generation: ${error}`);
@@ -41,9 +39,9 @@ export class AIService {
     }
   }
 
-  public async getInvoiceResult(resultId: string): Promise<IInvoice> {
+  public getInvoiceResult(resultId: string): IInvoice {
     try {
-      const result = await this.geminiService.getInvoiceResult(resultId);
+      const result = this.geminiService.getInvoiceResult(resultId);
       return result;
     } catch (error) {
       this.logger.error(`Error in getting invoice result: ${error}`);
