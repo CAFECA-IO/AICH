@@ -5,8 +5,9 @@ import { OcrModule } from '@/api/ocr/ocr.module';
 import { VouchersModule } from '@/api/vouchers/vouchers.module';
 import { AuditReportsModule } from '@/api/audit_reports/audit_reports.module';
 import { RagModule } from '@/api/rag/rag.module';
-import { InvoiceModule } from '@/api/invoices/invoice.module';
 import { BeforeAppStartService } from '@/libs/before_app_start/before_app_start.service';
+import { AiModule } from '@/api/ai/ai.module';
+import { GeminiService } from '@/api/gemini/gemini.service';
 
 @Module({
   imports: [
@@ -14,9 +15,9 @@ import { BeforeAppStartService } from '@/libs/before_app_start/before_app_start.
     VouchersModule,
     AuditReportsModule,
     RagModule,
-    InvoiceModule,
+    AiModule,
   ],
   controllers: [AppController],
-  providers: [AppService, BeforeAppStartService],
+  providers: [AppService, BeforeAppStartService, GeminiService],
 })
 export class AppModule {}
