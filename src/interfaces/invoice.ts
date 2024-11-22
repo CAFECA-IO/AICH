@@ -21,11 +21,7 @@ export interface IInvoice {
 }
 
 export interface IAIInvoice {
-  /**
-   * Info: (20241024 - Murky)
-   * @description id in database, 0 if not yet saved in database
-   */
-  id: number;
+  resultId: string;
 
   /**
    * Info: (20241024 - Murky)
@@ -97,5 +93,4 @@ export interface IAIInvoice {
   deductible: boolean;
 
   counterPartyName: string;
-  // ToDo: (20241024 - Murky) Certificate
 }

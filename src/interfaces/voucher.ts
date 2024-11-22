@@ -24,6 +24,7 @@ export interface IVoucher {
 }
 
 export interface IAIVoucher {
+  resultId: string;
   voucherDate: number;
   type: string;
   note: string;

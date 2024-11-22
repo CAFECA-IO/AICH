@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AiInvoice {
+  id                Int      @id @default(autoincrement())
+  resultId          String
+  inputOrOutput     String
+  date              Int
+  no                String
+  currencyAlias     String
+  priceBeforeTax    Float
+  taxType           String
+  taxRatio          Int
+  taxPrice          Int
+  totalPrice        Float
+  type              String
+  deductible        Boolean
+  counterPartyName  String
+  createdAt         Int
+  updatedAt         Int
+}
+
+model AiVoucher {
+  id               Int      @id @default(autoincrement())
+  voucherDate      Int
+  type             String
+  note             String
+  counterPartyName String
+  createdAt        Int
+  updatedAt        Int
+
+  lineItems LineItem[]
+}
+
+model LineItem {
+  id          Int      @id @default(autoincrement())
+  voucherId   Int
+  lineItemIndex String
+  account     String
+  description String
+  debit       Boolean
+  amount      Float
+  createdAt   Int
+  updatedAt   Int
+
+  voucher     AiVoucher @relation(fields: [voucherId], references: [id])
+}
