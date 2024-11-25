@@ -21,17 +21,18 @@ model AiInvoice {
   totalPrice        Float
   type              String
   deductible        Boolean
-  counterPartyName  String
+  counterpartyName  String
   createdAt         Int
   updatedAt         Int
 }
 
 model AiVoucher {
   id               Int      @id @default(autoincrement())
+  resultId         String
   voucherDate      Int
   type             String
   note             String
-  counterPartyName String
+  counterpartyName String
   createdAt        Int
   updatedAt        Int
 

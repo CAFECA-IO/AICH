@@ -20,11 +20,6 @@ export const GEMINI_PROMPT = {
     responseSchema: {
       type: SchemaType.OBJECT,
       properties: {
-        id: {
-          description: 'ID in database, 0 if not yet saved in database',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
         inputOrOutput: {
           description: 'Is invoice caused by input or output of money',
           enum: Object.values(InvoiceTransactionDirection),
@@ -33,7 +28,7 @@ export const GEMINI_PROMPT = {
         },
         date: {
           description:
-            'Date of invoice, selected by user timestamp in seconds 10 digits',
+            'Date of invoice, transfer to timestamp in seconds with 10 digits',
           nullable: false,
           type: SchemaType.NUMBER,
         },
@@ -86,7 +81,7 @@ export const GEMINI_PROMPT = {
           nullable: false,
           type: SchemaType.BOOLEAN,
         },
-        counterPartyName: {
+        counterpartyName: {
           description: 'Name of the counterparty',
           nullable: false,
           type: SchemaType.STRING,
@@ -100,9 +95,10 @@ export const GEMINI_PROMPT = {
       type: SchemaType.OBJECT,
       properties: {
         voucherDate: {
-          description: 'The date of the voucher in the format YYYY-MM-DD',
+          description:
+            'The date of the voucher, , transfer to timestamp in seconds with 10 digits',
           nullable: false,
-          type: SchemaType.STRING,
+          type: SchemaType.INTEGER,
         },
         type: {
           description: 'The type of the voucher',

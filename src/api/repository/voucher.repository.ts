@@ -10,20 +10,19 @@ export class VoucherRepository {
   async create(data: IAIVoucher) {
     const { lineItems, ...rest } = data;
     const now = getTimestampNow();
-    const voucherInDB = {
-      ...rest,
-      createdAt: now,
-      updatedAt: now,
-      lineItems: {
-        create: lineItems.map((lineItem) => ({
-          ...lineItem,
-          createdAt: now,
-          updatedAt: now,
-        })),
-      },
-    };
     const aiVoucher = await this.prismaService.aiVoucher.create({
-      data: voucherInDB,
+      data: {
+        ...rest,
+        createdAt: now,
+        updatedAt: now,
+        lineItems: {
+          create: lineItems.map((lineItem) => ({
+            ...lineItem,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        },
+      },
     });
     return aiVoucher;
   }

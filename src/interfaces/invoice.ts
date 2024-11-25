@@ -92,5 +92,5 @@ export interface IAIInvoice {
    */
   deductible: boolean;
 
-  counterPartyName: string;
+  counterpartyName: string;
 }

@@ -28,6 +28,6 @@ export interface IAIVoucher {
   voucherDate: number;
   type: string;
   note: string;
-  counterPartyName: string;
+  counterpartyName: string;
   lineItems: ILineItem[];
 }

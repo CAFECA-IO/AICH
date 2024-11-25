@@ -152,7 +152,7 @@ export class GeminiService {
     try {
       const contentFromGemini = JSON.parse(result.response.text());
       this.logger.log(
-        `${type.charAt(0).toUpperCase() + type.slice(1)} ID: ${hashedKey} successfully generated content ${contentFromGemini}`,
+        `${type.charAt(0).toUpperCase() + type.slice(1)} ID: ${hashedKey} successfully generated content ${JSON.stringify(contentFromGemini)}`,
       );
       const content = {
         ...contentFromGemini,
