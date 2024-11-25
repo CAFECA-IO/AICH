@@ -23,6 +23,9 @@ export class VoucherRepository {
           })),
         },
       },
+      include: {
+        lineItems: true,
+      },
     });
     return aiVoucher;
   }
