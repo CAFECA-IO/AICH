@@ -1,13 +1,16 @@
 import { SchemaType } from '@google/generative-ai';
+import { EventType } from '@/constants/voucher';
 import {
-  EVENT_TYPE,
-  PAYMENT_PERIOD_TYPE,
-  PAYMENT_STATUS_TYPE,
-} from '@/constants/account';
+  InvoiceTransactionDirection,
+  CurrencyType,
+  InvoiceTaxType,
+  InvoiceType,
+} from '@/constants/invoice';
 
 export const GEMINI_MODE = {
   // Deprecate: (2024814 - Murky)  flash is cheaper but pro is better.
-  INVOICE: 'gemini-1.5-pro',
+  INVOICE: 'gemini-1.5-flash',
+  VOUCHER: 'gemini-1.5-pro',
   // INVOICE: 'gemini-1.5-flash',
 };
 
@@ -17,107 +20,134 @@ export const GEMINI_PROMPT = {
     responseSchema: {
       type: SchemaType.OBJECT,
       properties: {
+        inputOrOutput: {
+          description: 'Is invoice caused by input or output of money',
+          enum: Object.values(InvoiceTransactionDirection),
+          nullable: false,
+          type: SchemaType.STRING,
+        },
         date: {
           description:
-            'The payment date (not expense happen day) of the invoice in the format YYYY-MM-DD, 民國100年是從2011開始',
+            'Date of invoice, transfer to timestamp in seconds with 10 digits',
+          nullable: false,
+          type: SchemaType.NUMBER,
+        },
+        no: {
+          description: 'Invoice number',
           nullable: false,
           type: SchemaType.STRING,
         },
-        eventType: {
+        currencyAlias: {
+          description: 'Currency type',
+          enum: Object.values(CurrencyType),
+          nullable: false,
+          type: SchemaType.STRING,
+        },
+        priceBeforeTax: {
+          description: 'Price before tax',
+          nullable: false,
+          type: SchemaType.NUMBER,
+        },
+        taxType: {
           description:
-            'What business activity is this invoice invoice , it might be receive, expense or transfer between accounts',
-          enum: Object.values(EVENT_TYPE),
+            'Tax type, taxable or tax-exempt, zero tax rate included in taxable',
+          enum: Object.values(InvoiceTaxType),
           nullable: false,
           type: SchemaType.STRING,
         },
-        paymentReason: {
+        taxRatio: {
+          description: 'Tax ratio, 5% will be written as 5',
+          nullable: false,
+          type: SchemaType.NUMBER,
+        },
+        taxPrice: {
+          description: 'Amount of consumption tax',
+          nullable: false,
+          type: SchemaType.NUMBER,
+        },
+        totalPrice: {
+          description: 'Total price after tax',
+          nullable: false,
+          type: SchemaType.NUMBER,
+        },
+        type: {
+          description: 'Invoice type from the tax bureau',
+          enum: Object.values(InvoiceType),
+          nullable: false,
+          type: SchemaType.STRING,
+        },
+        deductible: {
+          description: 'Is this invoice deductible',
+          nullable: false,
+          type: SchemaType.BOOLEAN,
+        },
+        counterpartyName: {
+          description: 'Name of the counterparty',
+          nullable: false,
+          type: SchemaType.STRING,
+        },
+      },
+    },
+  },
+  VOUCHER: {
+    responseMimeType: 'application/json',
+    responseSchema: {
+      type: SchemaType.OBJECT,
+      properties: {
+        voucherDate: {
           description:
-            'The reason for the payment or the receive, what business activity is this invoice for, use Traditional Chinese if possible',
+            'The date of the voucher, , transfer to timestamp in seconds with 10 digits',
+          nullable: false,
+          type: SchemaType.INTEGER,
+        },
+        type: {
+          description: 'The type of the voucher',
+          enum: Object.values(EventType),
           nullable: false,
           type: SchemaType.STRING,
         },
-        description: {
-          description:
-            'The description of the invoice, in more detail, like each item invoice buy, use Traditional Chinese if possible',
+        note: {
+          description: 'Additional notes for the voucher',
           nullable: false,
           type: SchemaType.STRING,
         },
-        validatorOrSupplier: {
-          description:
-            'The vendor or supplier of the invoice, who is the invoice from or sales to, use Traditional Chinese if possible',
+        counterpartyName: {
+          description: 'The name of the counterparty involved in the voucher',
           nullable: false,
           type: SchemaType.STRING,
         },
-        payment: {
-          description: 'The payment (or receive) detail of the invoice',
+        lineItems: {
+          description: 'The line items included in the voucher',
           nullable: false,
-          type: SchemaType.OBJECT,
-          properties: {
-            isRevenue: {
-              description: 'Is this invoice causing revenue or not',
-              nullable: false,
-              type: SchemaType.BOOLEAN,
-            },
-            price: {
-              description: 'The sum of price or amount of money this invoice',
-              nullable: false,
-              type: SchemaType.NUMBER,
-            },
-            hasTax: {
-              description: 'Does this invoice include tax or not',
-              nullable: false,
-              type: SchemaType.BOOLEAN,
-            },
-            taxPercentage: {
-              description: 'The tax rate of this invoice',
-              nullable: false,
-              type: SchemaType.NUMBER,
-            },
-            hasFee: {
-              description: 'Does this invoice include fee or not (例如手續費)',
-              nullable: false,
-              type: SchemaType.BOOLEAN,
-            },
-            fee: {
-              description: 'The fee of this invoice',
-              nullable: false,
-              type: SchemaType.NUMBER,
-            },
-            method: {
-              description:
-                'The method of payment or receive, like cash, credit card, bank transfer, etc.',
-              nullable: false,
-              type: SchemaType.STRING,
-            },
-            period: {
-              description: 'The period of payment, at once or installment',
-              enum: Object.values(PAYMENT_PERIOD_TYPE),
-              nullable: false,
-              type: SchemaType.STRING,
-            },
-            installmentPeriod: {
-              description:
-                'The period of installment payment, how many installment, 0 if at once',
-              nullable: false,
-              type: SchemaType.NUMBER,
-            },
-            alreadyPaid: {
-              description:
-                'The amount of money already paid or received, 0 if none',
-              nullable: false,
-              type: SchemaType.NUMBER,
-            },
-            status: {
-              description: 'The status of payment, paid, unpaid or partial',
-              enum: Object.values(PAYMENT_STATUS_TYPE),
-              nullable: false,
-              type: SchemaType.STRING,
-            },
-            process: {
-              description:
-                'The progress of the payment, 0-100, 0 if none, 100 if completed',
-              nullable: false,
-              type: SchemaType.NUMBER,
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              id: {
+                description: 'The unique identifier for the line item',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              amount: {
+                description: 'The amount of money for the line item',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              description: {
+                description: 'The description of the line item',
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+              debit: {
+                description: 'Indicates if the line item is a debit',
+                nullable: true,
+                type: SchemaType.BOOLEAN,
+              },
+              account: {
+                description: 'The account name associated with the line item',
+                nullable: false,
+                type: SchemaType.STRING,
+              },
             },
           },
         },
