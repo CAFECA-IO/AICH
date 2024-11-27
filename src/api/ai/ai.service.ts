@@ -59,7 +59,7 @@ export class AIService {
     }
   }
 
-  public getInvoiceResult(resultId: string): IAIInvoice {
+  public getInvoiceResult(resultId: string): IAIInvoice[] {
     try {
       const result = this.geminiService.getInvoiceResult(resultId);
       if (!result) {

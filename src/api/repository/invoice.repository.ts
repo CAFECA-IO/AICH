@@ -20,6 +20,19 @@ export class InvoiceRepository {
     return aiInvoice;
   }
 
+  async createMany(data: IAIInvoice[]) {
+    const now = getTimestampNow();
+    const invoicesInDB = data.map((invoice) => ({
+      ...invoice,
+      createdAt: now,
+      updatedAt: now,
+    }));
+    const aiInvoices = await this.prismaService.aiInvoice.createManyAndReturn({
+      data: invoicesInDB,
+    });
+    return aiInvoices;
+  }
+
   async list() {
     return this.prismaService.aiInvoice.findMany();
   }

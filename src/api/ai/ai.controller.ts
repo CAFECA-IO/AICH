@@ -78,7 +78,9 @@ export class AIController {
   @Get('certificate/:resultId')
   @Version('2')
   @ResponseMessage('Return Invoice JSON from invoice Successfully')
-  getCertificateProcessResult(@Param('resultId') resultId: string): IAIInvoice {
+  getCertificateProcessResult(
+    @Param('resultId') resultId: string,
+  ): IAIInvoice[] {
     try {
       const result = this.aiService.getInvoiceResult(resultId);
       return result;
