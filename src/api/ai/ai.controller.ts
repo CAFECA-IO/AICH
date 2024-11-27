@@ -78,9 +78,10 @@ export class AIController {
   @Get('certificate/:resultId')
   @Version('2')
   @ResponseMessage('Return Invoice JSON from invoice Successfully')
-  getCertificateProcessResult(
-    @Param('resultId') resultId: string,
-  ): IAIInvoice[] {
+  getCertificateProcessResult(@Param('resultId') resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIInvoice[] | null;
+  } {
     try {
       const result = this.aiService.getInvoiceResult(resultId);
       return result;
@@ -140,7 +141,10 @@ export class AIController {
   @Get('voucher/:resultId')
   @Version('2')
   @ResponseMessage('Return Voucher JSON from voucher Successfully')
-  getVoucherProcessResult(@Param('resultId') resultId: string): IAIVoucher {
+  getVoucherProcessResult(@Param('resultId') resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIVoucher | null;
+  } {
     try {
       const result = this.aiService.getVoucherResult(resultId);
       return result;

@@ -59,7 +59,10 @@ export class AIService {
     }
   }
 
-  public getInvoiceResult(resultId: string): IAIInvoice[] {
+  public getInvoiceResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIInvoice[] | null;
+  } {
     try {
       const result = this.geminiService.getInvoiceResult(resultId);
       if (!result) {
@@ -72,7 +75,10 @@ export class AIService {
     }
   }
 
-  public getVoucherResult(resultId: string): IAIVoucher {
+  public getVoucherResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIVoucher | null;
+  } {
     try {
       const result = this.geminiService.getVoucherResult(resultId);
       if (!result) {

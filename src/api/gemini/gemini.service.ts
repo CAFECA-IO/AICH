@@ -49,18 +49,20 @@ export class GeminiService {
     return result ? result.status : PROGRESS_STATUS.NOT_FOUND;
   }
 
-  public getInvoiceResult(resultId: string): IAIInvoice[] | null {
+  public getInvoiceResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIInvoice[] | null;
+  } {
     const result = this.invoiceListCache.get(resultId);
-    return result && result.status === PROGRESS_STATUS.SUCCESS
-      ? result.value
-      : null;
+    return result;
   }
 
-  public getVoucherResult(resultId: string): IAIVoucher | null {
+  public getVoucherResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIVoucher | null;
+  } {
     const result = this.voucherCache.get(resultId);
-    return result && result.status === PROGRESS_STATUS.SUCCESS
-      ? result.value
-      : null;
+    return result;
   }
 
   public startGenerateInvoice(
@@ -192,7 +194,7 @@ export class GeminiService {
         );
       } else {
         this.logger.warn(`Invoice ID: ${hashedKey} LLM returned empty content`);
-        this.invoiceListCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
+        this.invoiceListCache.put(hashedKey, PROGRESS_STATUS.SUCCESS, null);
       }
     } catch (error) {
       this.logger.error(
