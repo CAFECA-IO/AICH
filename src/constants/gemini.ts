@@ -20,71 +20,70 @@ export const GEMINI_PROMPT = {
     responseSchema: {
       type: SchemaType.OBJECT,
       properties: {
-        inputOrOutput: {
-          description: 'Is invoice caused by input or output of money',
-          enum: Object.values(InvoiceTransactionDirection),
+        invoiceList: {
+          description: 'The list of invoices',
           nullable: false,
-          type: SchemaType.STRING,
-        },
-        date: {
-          description:
-            'Date of invoice, transfer to timestamp in seconds with 10 digits',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
-        no: {
-          description: 'Invoice number',
-          nullable: false,
-          type: SchemaType.STRING,
-        },
-        currencyAlias: {
-          description: 'Currency type',
-          enum: Object.values(CurrencyType),
-          nullable: false,
-          type: SchemaType.STRING,
-        },
-        priceBeforeTax: {
-          description: 'Price before tax',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
-        taxType: {
-          description:
-            'Tax type, taxable or tax-exempt, zero tax rate included in taxable',
-          enum: Object.values(InvoiceTaxType),
-          nullable: false,
-          type: SchemaType.STRING,
-        },
-        taxRatio: {
-          description: 'Tax ratio, 5% will be written as 5',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
-        taxPrice: {
-          description: 'Amount of consumption tax',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
-        totalPrice: {
-          description: 'Total price after tax',
-          nullable: false,
-          type: SchemaType.NUMBER,
-        },
-        type: {
-          description: 'Invoice type from the tax bureau',
-          enum: Object.values(InvoiceType),
-          nullable: false,
-          type: SchemaType.STRING,
-        },
-        deductible: {
-          description: 'Is this invoice deductible',
-          nullable: false,
-          type: SchemaType.BOOLEAN,
-        },
-        counterpartyName: {
-          description: 'Name of the counterparty',
-          nullable: false,
-          type: SchemaType.STRING,
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              date: {
+                description:
+                  'The date of the invoice in timestamp with 10 digits',
+                nullable: false,
+                type: SchemaType.INTEGER,
+              },
+              no: {
+                description: 'The invoice number',
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+              currencyAlias: {
+                description: 'The currency of the invoice',
+                enum: Object.values(CurrencyType),
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+              priceBeforeTax: {
+                description: 'The price before tax',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              taxType: {
+                description: 'The type of tax',
+                enum: Object.values(InvoiceTaxType),
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+              taxRatio: {
+                description: 'The ratio of tax',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              taxPrice: {
+                description: 'The price of tax',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              totalPrice: {
+                description: 'The total price after tax',
+                nullable: false,
+                type: SchemaType.NUMBER,
+              },
+              type: {
+                description: 'The type of the invoice',
+                enum: Object.values(InvoiceType),
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+              transactionDirection: {
+                description: 'The direction of the transaction',
+                enum: Object.values(InvoiceTransactionDirection),
+                nullable: false,
+                type: SchemaType.STRING,
+              },
+            },
+          },
         },
       },
     },
