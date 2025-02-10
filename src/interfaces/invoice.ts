@@ -1,10 +1,4 @@
 import { EVENT_TYPE } from '@/constants/account';
-import {
-  InvoiceTransactionDirection,
-  CurrencyType,
-  InvoiceTaxType,
-  InvoiceType,
-} from '@/constants/invoice';
 import { IPayment } from '@/interfaces/payment';
 
 export interface IInvoice {
@@ -21,17 +15,13 @@ export interface IInvoice {
 }
 
 export interface IAIInvoice {
-  /**
-   * Info: (20241024 - Murky)
-   * @description id in database, 0 if not yet saved in database
-   */
-  id: number;
+  resultId: string;
 
   /**
    * Info: (20241024 - Murky)
    * @description is invoice caused by input or output of money
    */
-  inputOrOutput: InvoiceTransactionDirection;
+  inputOrOutput: string;
 
   /**
    * Info: (20241024 - Murky)
@@ -49,7 +39,7 @@ export interface IAIInvoice {
    * Info: (20241024 - Murky)
    * @description 貨幣別
    */
-  currencyAlias: CurrencyType;
+  currencyAlias: string;
 
   /**
    * Info: (20241024 - Murky)
@@ -61,7 +51,7 @@ export interface IAIInvoice {
    * Info: (20241024 - Murky)
    * @description 應稅或免稅，零稅率包含在應稅
    */
-  taxType: InvoiceTaxType;
+  taxType: string;
 
   /**
    * Info: (20241024 - Murky)
@@ -88,7 +78,7 @@ export interface IAIInvoice {
    * Info: (20241024 - Murky)
    * @description 發票種類 來源於國稅局
    */
-  type: InvoiceType;
+  type: string;
 
   /**
    * Info: (20241024 - Murky)
@@ -96,6 +86,5 @@ export interface IAIInvoice {
    */
   deductible: boolean;
 
-  counterPartyName: string;
-  // ToDo: (20241024 - Murky) Certificate
+  counterpartyName: string;
 }
