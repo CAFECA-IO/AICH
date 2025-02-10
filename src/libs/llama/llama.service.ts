@@ -43,7 +43,6 @@ export class LlamaService<T> {
       try {
         await this.ollama.create({
           model: this.options.modelName,
-          modelfile: this.options.modelfile,
           stream: false,
         });
       } catch (error) {
