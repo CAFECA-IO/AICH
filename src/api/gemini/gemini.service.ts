@@ -4,13 +4,21 @@ import {
   GenerateContentResult,
   GoogleGenerativeAI,
 } from '@google/generative-ai';
-import { GEMINI_MODE, GEMINI_PROMPT } from '@/constants/gemini';
 import { LruCacheService } from '@/libs/lru_cache/lru_cache.service';
-import { IAIInvoice, IInvoice } from '@/interfaces/invoice';
+import { IAIInvoice } from '@/interfaces/invoice';
 import { randomUUID } from 'crypto';
 import { PROGRESS_STATUS } from '@/constants/common';
 import { AccountResultStatus } from '@/interfaces/account';
 import { IAIVoucher } from '@/interfaces/voucher';
+import { VoucherRepository } from '@/api/repository/voucher.repository';
+import { InvoiceRepository } from '@/api/repository/invoice.repository';
+import {
+  CurrencyType,
+  InvoiceTaxType,
+  InvoiceTransactionDirection,
+  InvoiceType,
+} from '@/constants/invoice';
+import { GEMINI_MODE, GEMINI_PROMPT } from '@/constants/gemini';
 
 @Injectable()
 export class GeminiService {
@@ -20,8 +28,10 @@ export class GeminiService {
 
   constructor(
     private configService: ConfigService,
-    private invoiceCache: LruCacheService<IAIInvoice>,
+    private invoiceListCache: LruCacheService<IAIInvoice[]>,
     private voucherCache: LruCacheService<IAIVoucher>,
+    private voucherRepository: VoucherRepository,
+    private invoiceRepository: InvoiceRepository,
   ) {
     this.geminiApiKey = this.configService.get<string>('GOOGLE_GEMINI_API_KEY');
     this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
@@ -30,39 +40,44 @@ export class GeminiService {
   }
 
   public getInvoiceStatus(resultId: string): PROGRESS_STATUS {
-    let status = PROGRESS_STATUS.NOT_FOUND;
-    const result = this.invoiceCache.get(resultId);
-
-    if (result) {
-      status = result.status;
-    }
-
-    return status;
+    const result = this.invoiceListCache.get(resultId);
+    return result ? result.status : PROGRESS_STATUS.NOT_FOUND;
   }
 
-  public getInvoiceResult(resultId: string): IInvoice | null {
-    const result = this.invoiceCache.get(resultId);
-    let value = null;
-    if (result && result.status === PROGRESS_STATUS.SUCCESS) {
-      value = result.value;
-    }
+  public getVoucherStatus(resultId: string): PROGRESS_STATUS {
+    const result = this.voucherCache.get(resultId);
+    return result ? result.status : PROGRESS_STATUS.NOT_FOUND;
+  }
 
-    return value;
+  public getInvoiceResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIInvoice[] | null;
+  } {
+    const result = this.invoiceListCache.get(resultId);
+    return result;
+  }
+
+  public getVoucherResult(resultId: string): {
+    status: PROGRESS_STATUS;
+    value: IAIVoucher | null;
+  } {
+    const result = this.voucherCache.get(resultId);
+    return result;
   }
 
   public startGenerateInvoice(
     imageList: Express.Multer.File[],
   ): AccountResultStatus {
-    let hashedKey = this.generateHashKey(this.invoiceCache);
+    let hashedKey = this.generateHashKey(this.invoiceListCache);
     let result: AccountResultStatus;
 
-    if (this.invoiceCache.get(hashedKey).value) {
+    if (this.invoiceListCache.get(hashedKey)?.value) {
       result = {
         resultId: hashedKey,
         status: PROGRESS_STATUS.ALREADY_UPLOAD,
       };
     } else {
-      hashedKey = this.invoiceCache.put(
+      hashedKey = this.invoiceListCache.put(
         hashedKey,
         PROGRESS_STATUS.IN_PROGRESS,
         null,
@@ -77,73 +92,13 @@ export class GeminiService {
     return result;
   }
 
-  private generateHashKey<T>(cache: LruCacheService<T>, fileName?: string) {
-    if (!fileName) {
-      fileName = randomUUID();
-    }
-    const hashedId = cache.hashIdWithTimestamp(fileName);
-    return hashedId;
-  }
-
-  private async generateInvoiceContent(
-    hashedKey: string,
-    imageList: Express.Multer.File[],
-  ) {
-    const prompt =
-      "You're a professional accountant, please help me to fill in the invoice information below based on the provided invoice image";
-
-    let result: GenerateContentResult;
-
-    // Info: (20241120 - Jacky) Convert to GoogleGenerativeAI.Part object
-
-    const imageParts = imageList.map((image) => {
-      return {
-        inlineData: {
-          mimeType: image.mimetype,
-          data: image.buffer.toString('base64'),
-        },
-      };
-    });
-
-    try {
-      const geminiModel = this.genAI.getGenerativeModel({
-        model: GEMINI_MODE.INVOICE,
-        generationConfig: GEMINI_PROMPT.INVOICE,
-      });
-      result = await geminiModel.generateContent([prompt, ...imageParts]);
-    } catch (error) {
-      this.logger.error(
-        `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service: ${error}`,
-      );
-      this.invoiceCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
-      return;
-    }
-
-    try {
-      const invoiceFromGemini = JSON.parse(result.response.text());
-      this.logger.log(
-        `Invoice ID: ${hashedKey} successfully generated content ${invoiceFromGemini}`,
-      );
-      const invoice: IAIInvoice = invoiceFromGemini;
-      this.invoiceCache.put(hashedKey, PROGRESS_STATUS.SUCCESS, invoice);
-    } catch (error) {
-      this.logger.error(
-        `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service due to parsing gemini output failed or gemini not returning correct json: ${error}`,
-      );
-      this.invoiceCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
-      return;
-    }
-
-    return;
-  }
-
   public startGenerateVoucher(
     imageList: Express.Multer.File[],
   ): AccountResultStatus {
     let hashedKey = this.generateHashKey(this.voucherCache);
     let result: AccountResultStatus;
 
-    if (this.voucherCache.get(hashedKey).value) {
+    if (this.voucherCache.get(hashedKey)?.value) {
       result = {
         resultId: hashedKey,
         status: PROGRESS_STATUS.ALREADY_UPLOAD,
@@ -164,23 +119,105 @@ export class GeminiService {
     return result;
   }
 
+  private generateHashKey(
+    cache: LruCacheService<IAIInvoice[] | IAIVoucher>,
+    fileName?: string,
+  ) {
+    if (!fileName) {
+      fileName = randomUUID();
+    }
+    const hashedId = cache.hashIdWithTimestamp(fileName);
+    return hashedId;
+  }
+
+  private async generateInvoiceContent(
+    hashedKey: string,
+    imageList: Express.Multer.File[],
+  ) {
+    const prompt = `You're a professional accountant, please help me to fill in the invoice information list below based on the provided invoice images`;
+
+    let result: GenerateContentResult;
+    const imageParts = imageList.map((image) => ({
+      inlineData: {
+        mimeType: image.mimetype,
+        data: image.buffer.toString('base64'),
+      },
+    }));
+
+    try {
+      const geminiModel = this.genAI.getGenerativeModel({
+        model: GEMINI_MODE.INVOICE,
+        generationConfig: GEMINI_PROMPT.INVOICE,
+      });
+      result = await geminiModel.generateContent([prompt, ...imageParts]);
+    } catch (error) {
+      this.logger.error(
+        `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service: ${error}`,
+      );
+      this.invoiceListCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
+      return;
+    }
+
+    try {
+      const contentFromGemini = JSON.parse(result.response.text());
+      this.logger.log(
+        `Invoice ID: ${hashedKey} successfully generated content ${JSON.stringify(contentFromGemini)}`,
+      );
+
+      if (contentFromGemini && contentFromGemini.invoiceList.length > 0) {
+        const contentList: IAIInvoice[] = contentFromGemini.invoiceList.map(
+          (invoice: IAIInvoice) => ({
+            resultId: hashedKey,
+            inputOrOutput:
+              invoice.inputOrOutput ?? InvoiceTransactionDirection.INPUT,
+            date: invoice.date,
+            no: invoice.no ?? '',
+            currencyAlias: invoice.currencyAlias ?? CurrencyType.TWD,
+            priceBeforeTax: invoice.priceBeforeTax ?? 0,
+            taxType: invoice.taxType ?? InvoiceTaxType.TAXABLE,
+            taxRatio: invoice.taxRatio ?? 0,
+            taxPrice: invoice.taxPrice ?? 0,
+            totalPrice: invoice.totalPrice ?? 0,
+            type:
+              invoice.type ?? InvoiceType.PURCHASE_TRIPLICATE_AND_ELECTRONIC,
+            deductible: invoice.deductible ?? false,
+            counterpartyName: invoice.counterpartyName ?? '',
+          }),
+        );
+
+        const invoiceList =
+          await this.invoiceRepository.createMany(contentList);
+        this.invoiceListCache.put(
+          hashedKey,
+          PROGRESS_STATUS.SUCCESS,
+          invoiceList,
+        );
+      } else {
+        this.logger.warn(`Invoice ID: ${hashedKey} LLM returned empty content`);
+        this.invoiceListCache.put(hashedKey, PROGRESS_STATUS.SUCCESS, null);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Invoice ID: ${hashedKey} LLM Error in generateContent in gemini.service due to parsing gemini output failed or gemini not returning correct json: ${error}`,
+      );
+      this.invoiceListCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
+      return;
+    }
+  }
+
   private async generateVoucherContent(
     hashedKey: string,
     imageList: Express.Multer.File[],
   ) {
-    const prompt =
-      "You're a professional accountant, please help me to fill in the voucher information below based on the provided invoice image";
+    const prompt = `You're a professional accountant, please help me to fill in the voucher information below based on the provided invoice image`;
 
     let result: GenerateContentResult;
-
-    const imageParts = imageList.map((image) => {
-      return {
-        inlineData: {
-          mimeType: image.mimetype,
-          data: image.buffer.toString('base64'),
-        },
-      };
-    });
+    const imageParts = imageList.map((image) => ({
+      inlineData: {
+        mimeType: image.mimetype,
+        data: image.buffer.toString('base64'),
+      },
+    }));
 
     try {
       const geminiModel = this.genAI.getGenerativeModel({
@@ -197,15 +234,22 @@ export class GeminiService {
     }
 
     try {
-      const voucherFromGemini = JSON.parse(result.response.text());
+      const contentFromGemini = JSON.parse(result.response.text());
       this.logger.log(
-        `Voucher ID: ${hashedKey} successfully generated content ${voucherFromGemini}`,
+        `Voucher ID: ${hashedKey} successfully generated content ${JSON.stringify(contentFromGemini)}`,
       );
-      this.voucherCache.put(
-        hashedKey,
-        PROGRESS_STATUS.SUCCESS,
-        voucherFromGemini,
-      );
+      const content: IAIVoucher = {
+        resultId: hashedKey,
+        voucherDate: contentFromGemini.voucherDate,
+        type:
+          contentFromGemini.type ??
+          InvoiceType.PURCHASE_TRIPLICATE_AND_ELECTRONIC,
+        note: contentFromGemini.note ?? '',
+        counterpartyName: contentFromGemini.counterpartyName ?? '',
+        lineItems: contentFromGemini.lineItems ?? [],
+      };
+      const voucher = await this.voucherRepository.create(content);
+      this.voucherCache.put(hashedKey, PROGRESS_STATUS.SUCCESS, voucher);
     } catch (error) {
       this.logger.error(
         `Voucher ID: ${hashedKey} LLM Error in generateContent in gemini.service due to parsing gemini output failed or gemini not returning correct json: ${error}`,
@@ -213,29 +257,5 @@ export class GeminiService {
       this.voucherCache.put(hashedKey, PROGRESS_STATUS.LLM_ERROR, null);
       return;
     }
-
-    return;
-  }
-
-  public getVoucherAnalyzingStatus(resultId: string): PROGRESS_STATUS {
-    const result = this.voucherCache.get(resultId);
-    if (!result) {
-      return PROGRESS_STATUS.NOT_FOUND;
-    }
-
-    return result.status;
-  }
-
-  public getVoucherAnalyzingResult(resultId: string): IAIVoucher | null {
-    const result = this.voucherCache.get(resultId);
-    if (!result) {
-      return null;
-    }
-
-    if (result.status !== PROGRESS_STATUS.SUCCESS) {
-      return null;
-    }
-
-    return result.value;
   }
 }
