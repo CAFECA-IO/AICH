@@ -37,9 +37,9 @@ const contentSchema = z.object({
 });
 
 // Info: (20251117 - Luphia) 最終的 Contents 陣列 (完整的對話歷史)
-export const contentsSchema = z.array(contentSchema);
+const contentsSchema = z.array(contentSchema);
 // Info: (20251117 - Luphia) 定義 TypeScript 類型
-export type AiContents = z.infer<typeof contentsSchema>;
+type AiContents = z.infer<typeof contentsSchema>;
 
 /**
  * Info: (20251118 - Luphia) 定義整個 request body 的 schema
@@ -50,7 +50,7 @@ const requestBodySchema = z.object({
   contents: contentsSchema,
 });
 
-export async function POST(request: NextRequest) {
+const POST = async (request: NextRequest) => {
   let body: z.infer<typeof requestBodySchema>;
 
   try {
@@ -88,3 +88,6 @@ export async function POST(request: NextRequest) {
   work(taskDecomposed);
   return result;
 };
+
+export { contentsSchema, POST };
+export type { AiContents };

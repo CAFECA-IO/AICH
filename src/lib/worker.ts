@@ -87,9 +87,14 @@ const assignTask = async (task: ITask, dir = tasksDir) => {
 
 const getTask = async (taskId: string): Promise<ITask | null> => {
   try {
-    const taskFilePath = path.join(tasksDir, taskId, 'task.json');
-    const taskData = await fs.readFile(taskFilePath, 'utf-8');
-    return JSON.parse(taskData) as ITask;
+    const taskDataFilePath = path.join(tasksDir, taskId, 'task.json');
+    const taskResultFilePath = path.join(tasksDir, taskId, 'result.json');
+    const taskData = await fs.readFile(taskDataFilePath, 'utf-8');
+    const taskResult = await fs.readFile(taskResultFilePath, 'utf-8');
+    const data = JSON.parse(taskData) as ITask;
+    const result = JSON.parse(taskResult);
+    data.result = result;
+    return data;
   } catch (error) {
     (error as Error).message += ` (while getting task ID: ${taskId})`;
     return null;
