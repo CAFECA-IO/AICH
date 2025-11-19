@@ -1,0 +1,42 @@
+name: Unit & Integration Tests
+
+on:
+  push:
+    branches:
+      - feature/*
+      - fix/*
+      - hotfix/*
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  # Your job configurations here
+  # Label of the container job
+  backend-unit-tests:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: node:20-slim
+
+    steps:
+      - name: Set up openssl
+        run: apt-get update -y && apt-get install -y openssl
+      # Downloads a copy of the code in your repository before running CI tests
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # Performs a clean installation of all dependencies in the `package.json` file
+      # For more information, see https://docs.npmjs.com/cli/ci.html
+      - name: Install dependencies
+        run: npm i
+
+      - name: Run unit tests & integration tests
+        run: npm run test
+        env:
+          # The database URL to connect to the PostgreSQL database
+          DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+
+      - name: Build next.js service
+        run: npm run build
