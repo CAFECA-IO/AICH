@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "09:00"
+      timezone: "Asia/Taipei"
+    target-branch: "develop"
+    open-pull-requests-limit: 5
+    groups:
+      typescript-core:
+        patterns: ["typescript", "@types/*"]
+        update-types: ["minor", "patch", "major"]
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      runtime-minor-patch:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
