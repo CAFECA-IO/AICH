@@ -5,6 +5,9 @@ import { JSONValue } from "@/interfaces/json";
 import { taskDecompose } from "@/lib/task_decomposer";
 import * as agent from "@/lib/agent";
 import { mergeReplace } from "@/lib/merge_replace";
+import { postprocessAgent } from "@/lib/agent";
+import { cleanTask } from "@/lib/common";
+import { error } from "console";
 
 const BASE_STORAGE_PATH = process.env.BASE_STORAGE_PATH || '/tmp/AICH';
 const tasksDir = path.join(BASE_STORAGE_PATH, 'tasks');
@@ -46,13 +49,16 @@ const assignTask = async (task: ITask, dir = tasksDir) => {
     await fs.mkdir(taskPath, { recursive: true });
 
     // Info: (20251117 - Luphia) 準備所有檔案寫入的 Promise
+    const now = new Date().getTime();
+    taskDecomposed.createdAt = now;
     const taskFilePath = path.join(taskPath, 'task.json');
     const writeTaskPromise = fs.writeFile(taskFilePath, JSON.stringify(taskDecomposed, null, 2));
 
     // Info: (20251117 - Luphia) 建立任務狀態檔案
     const status = {
       status: TASK_STATUS.PENDING,
-      progress: 0
+      progress: 0,
+      updatedAt: now
     };
     const statusFilePath = path.join(taskPath, 'status.json');
     const writeStatusPromise = fs.writeFile(statusFilePath, JSON.stringify(status, null, 2));
@@ -89,12 +95,19 @@ const getTask = async (taskId: string): Promise<ITask | null> => {
   try {
     const taskDataFilePath = path.join(tasksDir, taskId, 'task.json');
     const taskResultFilePath = path.join(tasksDir, taskId, 'result.json');
+    const taskStatusFilePath = path.join(tasksDir, taskId, 'status.json');
     const taskData = await fs.readFile(taskDataFilePath, 'utf-8');
     const taskResult = await fs.readFile(taskResultFilePath, 'utf-8');
+    const taskStatus = await fs.readFile(taskStatusFilePath, 'utf-8');
     const data = JSON.parse(taskData);
     const result = JSON.parse(taskResult);
+    const status = JSON.parse(taskStatus);
     data.result = result;
-    return data;
+    data.status = status.status;
+    data.progress = status.progress;
+    data.updatedAt = status.updatedAt;
+    const cleanData = cleanTask(data);
+    return cleanData;
   } catch (error) {
     (error as Error).message += ` (while getting task ID: ${taskId})`;
     return null;
@@ -103,8 +116,9 @@ const getTask = async (taskId: string): Promise<ITask | null> => {
 
 // Info: (20251118 - Luphia) 更新狀態的輔助函式
 const updateStatus = async (taskPath: string, status: TASK_STATUS, progress: number) => {
+  const updatedAt = new Date().getTime();
   const statusFilePath = path.join(taskPath, 'status.json');
-  await fs.writeFile(statusFilePath, JSON.stringify({ status, progress }, null, 2));
+  await fs.writeFile(statusFilePath, JSON.stringify({ status, progress, updatedAt }, null, 2));
 };
 
 // Info: (20251118 - Luphia) 寫入結果的輔助函式
@@ -134,6 +148,7 @@ const work = async (task: ITask, baseDir: string = tasksDir) => {
       // Info: (20251118 - Luphia) 序列執行所有子任務並更新進度
       for (const subTask of task.tasks) {
         try {
+          // Info: (20251118 - Luphia) 處理單一子任務前，先合併替換內容
           const mergeReplacedSubTask = (mergeReplace(subTask as unknown as JSONValue, subTaskResults)) as unknown as ITask;
           // Info: (20251118 - Luphia) 遞迴呼叫 work，傳入當前路徑作為 baseDir
           const result = await work(mergeReplacedSubTask, currentTaskPath);
@@ -148,7 +163,7 @@ const work = async (task: ITask, baseDir: string = tasksDir) => {
 
         } catch (err) {
           // Info: (20251118 - Luphia) 1.3. 如果子任務失敗，更新主任務狀態為 failed 並停止後續子任務執行
-          console.error(`[Work] Subtask ${subTask.id} failed within parent ${task.id}`, err);
+          (err as Error).message += ` (while working on sub-task ID: ${subTask.id})`;
           await updateStatus(currentTaskPath, TASK_STATUS.FAILED, Math.floor((completedCount / totalSubTasks) * 100));
           throw err; // Info: (20251118 - Luphia) 向上拋出錯誤以停止流程
         }
@@ -160,7 +175,8 @@ const work = async (task: ITask, baseDir: string = tasksDir) => {
       // Info: (20251118 - Luphia) 1.4. 所有子任務完成後，更新主任務狀態為 completed
       await updateStatus(currentTaskPath, TASK_STATUS.COMPLETED, 100);
 
-      return subTaskResults; // Info: (20251118 - Luphia) 返回結果供上層使用
+      // Info: (20251118 - Luphia) 返回結果供上層使用
+      return subTaskResults;
 
     } else {
       // Info: (20251118 - Luphia) 2. 如果沒有子任務，則執行單一任務的工作流程
@@ -168,13 +184,15 @@ const work = async (task: ITask, baseDir: string = tasksDir) => {
       // Info: (20251118 - Luphia) 2.2. 根據任務內容呼叫 agent 執行
       const result = await agent.execute(task);
 
-      // Info: (20251118 - Luphia) 2.3. 將結果寫入任務的 result 欄位
-      await updateResult(currentTaskPath, result);
+      // Info: (20251118 - Luphia) 如果任務有 postprocess，則依序執行
+      const postprocessResult = await postprocessAgent.execute(result, task.postprocess || []);
 
+      // Info: (20251118 - Luphia) 2.3. 將結果寫入任務的 result 欄位
+      await updateResult(currentTaskPath, postprocessResult);
       // Info: (20251118 - Luphia) 2.4. 更新任務狀態為 completed
       await updateStatus(currentTaskPath, TASK_STATUS.COMPLETED, 100);
 
-      return result;
+      return postprocessResult;
     }
 
   } catch (err) {

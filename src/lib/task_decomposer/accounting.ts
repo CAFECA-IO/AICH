@@ -96,6 +96,7 @@ const accountingTaskDecompose = (task: ITask): ITask => {
       },
     ],
     description: 'Generate accounting vouchers and journal entries in JSON format.',
+    postprocess: ['toJSONValue'],
   };
 
   const newTask: ITask = {
