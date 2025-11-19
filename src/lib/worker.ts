@@ -91,7 +91,7 @@ const getTask = async (taskId: string): Promise<ITask | null> => {
     const taskResultFilePath = path.join(tasksDir, taskId, 'result.json');
     const taskData = await fs.readFile(taskDataFilePath, 'utf-8');
     const taskResult = await fs.readFile(taskResultFilePath, 'utf-8');
-    const data = JSON.parse(taskData) as ITask;
+    const data = JSON.parse(taskData);
     const result = JSON.parse(taskResult);
     data.result = result;
     return data;

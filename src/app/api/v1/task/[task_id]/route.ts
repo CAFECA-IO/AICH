@@ -4,9 +4,7 @@ import { jsonFail, jsonOk } from '@/lib/response';
 import { ApiCode } from '@/lib/status';
 
 interface RouteContext {
-  params: {
-    task_id: string // 必須與動態路由資料夾名稱 [task_id] 匹配
-  };
+  params: Promise<{ task_id: string; }>
 }
 
 const GET = async (req: NextRequest, context: RouteContext) => {
