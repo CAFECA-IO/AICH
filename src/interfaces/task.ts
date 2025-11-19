@@ -24,8 +24,11 @@ export interface ITask {
   description: string;
   model?: string;
   status?: TASK_STATUS;
+  progress?: number;
   createdAt?: number;
   updatedAt?: number;
   tasks?: ITask[];
+  steps?: string[];
+  postprocess?: string[];
   result?: JSONValue;
 }
