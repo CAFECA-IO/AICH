@@ -3,6 +3,7 @@
 pub mod app;
 pub mod auth;
 pub mod billing;
+pub mod cafeca;
 pub mod catalog;
 pub mod config;
 pub mod crypto;

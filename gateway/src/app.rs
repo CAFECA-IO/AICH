@@ -17,7 +17,7 @@ use uuid::Uuid;
 use crate::catalog;
 use crate::config::Config;
 use crate::crypto;
-use crate::handlers::{admin, chat, portal};
+use crate::handlers::{admin, cafeca_auth, chat, portal};
 use crate::kv::Kv;
 use crate::logging::Logger;
 use crate::routing::health::Health;
@@ -65,11 +65,19 @@ pub fn router(state: AppState) -> Router {
 
     let auth = Router::new()
         .route("/register", post(portal::register))
-        .route("/login", post(portal::login));
+        .route("/login", post(portal::login))
+        .route("/cafeca/config", get(cafeca_auth::config))
+        .route("/cafeca/nonce", post(cafeca_auth::nonce))
+        .route("/cafeca/login", post(cafeca_auth::login));
 
     let api = Router::new()
         .route("/me", get(portal::me).patch(portal::update_me))
         .route("/plans", get(portal::plans))
+        .route("/me/cafeca/nonce", post(cafeca_auth::link_nonce))
+        .route(
+            "/me/cafeca",
+            post(cafeca_auth::link).delete(cafeca_auth::unlink),
+        )
         .route("/subscription", post(portal::change_plan))
         .route("/models", get(portal::models))
         .route("/keys", get(portal::list_keys).post(portal::create_key))
@@ -171,6 +179,10 @@ pub async fn build_state(cfg: Config) -> anyhow::Result<AppState> {
 
     let catalog = catalog::load(&db, &cfg.master_key).await?;
     let logger = Logger::spawn(db.clone());
+    let cafeca = cfg.cafeca_wallet.clone().map(|w| {
+        tracing::info!(wallet = %w, origins = ?cfg.cafeca_site_origins, "Sign in with CAFECA enabled");
+        crate::cafeca::Cafeca::new(w, cfg.cafeca_site_origins.clone(), cfg.cafeca_rpc.clone(), http.clone())
+    });
     let state = Arc::new(AppStateInner {
         cfg,
         db,
@@ -180,6 +192,7 @@ pub async fn build_state(cfg: Config) -> anyhow::Result<AppState> {
         health: Health::default(),
         keypool: KeyPool::default(),
         logger,
+        cafeca,
     });
     bootstrap_admin(&state).await?;
     Ok(state)

@@ -103,6 +103,48 @@ check "admin overview" '[ "$(j "${AA[@]}" $GW/admin/overview | jq .totals.reques
 check "admin health has targets" '[ "$(j "${AA[@]}" $GW/admin/health | jq ".targets | length")" -gt 0 ]'
 check "admin models lists routes" '[ "$(j "${AA[@]}" $GW/admin/models | jq "[.data[] | select(.id==\"hub-mock\")][0].routes | length")" -ge 1 ]'
 
+if [ "${CAFECA_MOCK:-0}" = 1 ]; then
+  echo "== sign in with CAFECA (fake wallet from scripts/fake_upstreams.py)"
+  ORIGIN="${CAFECA_ORIGIN:-http://localhost:3000}"
+  ACCOUNT="0x$(openssl rand -hex 20)"
+  cafeca_resp() { # $1 nonce  $2 signature
+    local now; now=$(date +%s)
+    jq -nc --arg a "$ACCOUNT" --arg o "$ORIGIN" --arg n "$1" --arg s "$2" --argjson i "$now" \
+      '{v:1,type:"cafeca:auth",account:$a,chainId:8018,signature:$s,
+        message:{domain:$o,uri:($o+"/login"),nonce:$n,issuedAt:$i,expiresAt:($i+300),statement:"登入 AICH",claims:"handle",channel:""}}'
+  }
+  check "config endpoint" '[ "$(j $GW/auth/cafeca/config | jq .enabled)" = true ]'
+  check "foreign origin refused" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/cafeca/nonce -H "content-type: application/json" -d "{\"domain\":\"https://evil.example\"}")" = 403 ]'
+  N=$(j -X POST $GW/auth/cafeca/nonce -H 'content-type: application/json' -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce); TICKET=$(echo "$N" | jq -r .ticket)
+  check "bad signature rejected" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/cafeca/login -H "content-type: application/json" -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0xbad0)}")" = 401 ]'
+  check "nonce is single-use" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/cafeca/login -H "content-type: application/json" -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}")" = 401 ]'
+  N=$(j -X POST $GW/auth/cafeca/nonce -H 'content-type: application/json' -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce)
+  check "wrong ticket rejected" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/cafeca/login -H "content-type: application/json" -d "{\"ticket\":\"stolen\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}")" = 401 ]'
+  N=$(j -X POST $GW/auth/cafeca/nonce -H 'content-type: application/json' -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce); TICKET=$(echo "$N" | jq -r .ticket)
+  L=$(j -X POST $GW/auth/cafeca/login -H 'content-type: application/json' -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}")
+  CT=$(echo "$L" | jq -r .token)
+  check "valid signature creates account" '[ "$(echo "$L" | jq .created)" = true ] && [ "$(echo "$L" | jq -r .user.cafeca_handle)" = e2e_user ]'
+  check "account id is the identity contract" '[ "$(echo "$L" | jq -r .user.cafeca_account)" = "$(echo $ACCOUNT | tr A-F a-f)" ]'
+  check "CAFECA session can chat" '[ "$(j -H "authorization: Bearer $CT" -H "content-type: application/json" $GW/v1/chat/completions -d "{\"model\":\"hub-mock\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}" | jq -r .object)" = chat.completion ]'
+  N=$(j -X POST $GW/auth/cafeca/nonce -H 'content-type: application/json' -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce); TICKET=$(echo "$N" | jq -r .ticket)
+  L2=$(j -X POST $GW/auth/cafeca/login -H 'content-type: application/json' -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}")
+  check "second login reuses the account" '[ "$(echo "$L2" | jq .created)" = false ] && [ "$(echo "$L2" | jq -r .user.id)" = "$(echo "$L" | jq -r .user.id)" ]'
+  check "CAFECA-only account cannot unlink" '[ "$(j -o /dev/null -w "%{http_code}" -X DELETE -H "authorization: Bearer $CT" $GW/api/me/cafeca)" = 400 ]'
+  # link an existing email account to another CAFECA identity
+  ACCOUNT="0x$(openssl rand -hex 20)"
+  N=$(j -X POST "${AU[@]}" $GW/api/me/cafeca/nonce -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce); TICKET=$(echo "$N" | jq -r .ticket)
+  check "link nonce cannot be used to sign in" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/cafeca/login -H "content-type: application/json" -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}")" = 400 ]'
+  N=$(j -X POST "${AU[@]}" $GW/api/me/cafeca/nonce -d "{\"domain\":\"$ORIGIN\"}")
+  NONCE=$(echo "$N" | jq -r .nonce); TICKET=$(echo "$N" | jq -r .ticket)
+  check "link CAFECA to email account" '[ "$(j -X POST "${AU[@]}" $GW/api/me/cafeca -d "{\"ticket\":\"$TICKET\",\"response\":$(cafeca_resp $NONCE 0x6f6b)}" | jq -r .cafeca_account)" = "$(echo $ACCOUNT | tr A-F a-f)" ]'
+  check "email account can unlink" '[ "$(j -X DELETE "${AU[@]}" $GW/api/me/cafeca | jq -r .cafeca_account)" = null ]'
+fi
+
 echo
 echo "passed: $PASS  failed: $FAIL"
 [ "$FAIL" -eq 0 ]

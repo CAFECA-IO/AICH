@@ -8,8 +8,10 @@ import type { Plan } from "@/lib/types";
 
 interface AdminUserRow {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
+  cafeca_account: string | null;
+  cafeca_handle: string | null;
   role: string;
   status: string;
   plan_id: string;
@@ -54,17 +56,24 @@ export default function UsersAdmin() {
 
   return (
     <>
-      <PageHeader title="用戶管理" description="調整方案（會發放該方案的當月點數）、角色、停權與點數加減。" actions={<Input placeholder="搜尋 email / 名稱" value={q} onChange={(e) => setQ(e.target.value)} className="w-60" />} />
+      <PageHeader title="用戶管理" description="調整方案（會發放該方案的當月點數）、角色、停權與點數加減。" actions={<Input placeholder="搜尋 email / 名稱 / CAFECA" value={q} onChange={(e) => setQ(e.target.value)} className="w-60" />} />
       <ErrorNote error={error} />
       <Table head={["用戶", "方案", "角色", "狀態", "點數餘額", "30 天消耗", "金鑰", "ZDR", "註冊", ""]} empty={users.length === 0}>
         {users.map((u) => (
           <tr key={u.id}>
             <td className="px-3 py-2">
-              <div className="font-medium">{u.email}</div>
-              <div className="text-xs text-muted">{u.name}</div>
+              <div className="font-medium">{u.email ?? (u.cafeca_handle ? `@${u.cafeca_handle}` : u.name)}</div>
+              <div className="text-xs text-muted">
+                {u.name}
+                {u.cafeca_account && (
+                  <span className="ml-1 font-mono" title={u.cafeca_account}>
+                    · CAFECA {u.cafeca_account.slice(0, 6)}…{u.cafeca_account.slice(-4)}
+                  </span>
+                )}
+              </div>
             </td>
             <td className="px-3 py-2">
-              <Select value={u.plan_id} onChange={(e) => confirm(`將 ${u.email} 改為 ${e.target.value} 方案並發放點數？`) && patch(u.id, { plan_id: e.target.value })}>
+              <Select value={u.plan_id} onChange={(e) => confirm(`將 ${u.email ?? u.name} 改為 ${e.target.value} 方案並發放點數？`) && patch(u.id, { plan_id: e.target.value })}>
                 {plans.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -96,7 +105,7 @@ export default function UsersAdmin() {
           </tr>
         ))}
       </Table>
-      <Modal open={!!credit} onClose={() => setCredit(null)} title={`調整點數：${credit?.user.email}`}>
+      <Modal open={!!credit} onClose={() => setCredit(null)} title={`調整點數：${credit?.user.email ?? credit?.user.name}`}>
         {credit && (
           <div className="space-y-3">
             <div>

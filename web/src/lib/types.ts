@@ -15,13 +15,16 @@ export interface Plan {
 
 export interface User {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
   role: "user" | "admin";
   status: string;
   plan: Plan | null;
   credit_balance: number;
   zero_data_retention: boolean;
+  cafeca_account: string | null;
+  cafeca_handle: string | null;
+  has_password: boolean;
 }
 
 export interface HubModel {

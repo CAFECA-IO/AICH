@@ -41,11 +41,13 @@ fn valid_email(e: &str) -> bool {
         && !e.contains(' ')
 }
 
-fn user_json(u: &UserRow, catalog: &Catalog) -> Value {
+pub(crate) fn user_json(u: &UserRow, catalog: &Catalog) -> Value {
     json!({
         "id": u.id, "email": u.email, "name": u.name, "role": u.role, "status": u.status,
         "plan": catalog.plans.get(&u.plan_id), "credit_balance": u.credit_balance,
         "zero_data_retention": u.zero_data_retention,
+        "cafeca_account": u.cafeca_account, "cafeca_handle": u.cafeca_handle,
+        "has_password": u.has_password,
     })
 }
 
@@ -110,7 +112,7 @@ pub async fn login(State(st): State<AppState>, Json(b): Json<LoginBody>) -> ApiR
             "too many login attempts; try again in 15 minutes",
         ));
     }
-    let row: Option<(Uuid, String, String, String)> =
+    let row: Option<(Uuid, Option<String>, String, String)> =
         sqlx::query_as("SELECT id, password_hash, role, status FROM users WHERE email = $1")
             .bind(&email)
             .fetch_optional(&st.db)
@@ -118,12 +120,19 @@ pub async fn login(State(st): State<AppState>, Json(b): Json<LoginBody>) -> ApiR
     let Some((id, hash, role, status)) = row else {
         return Err(ApiError::unauthorized("invalid email or password"));
     };
+    let Some(hash) = hash else {
+        return Err(ApiError::unauthorized("this account signs in with CAFECA"));
+    };
     if !crypto::verify_password(&b.password, &hash) {
         return Err(ApiError::unauthorized("invalid email or password"));
     }
     if status != "active" {
         return Err(ApiError::forbidden("account suspended"));
     }
+    sqlx::query("UPDATE users SET last_login_at = now() WHERE id = $1")
+        .bind(id)
+        .execute(&st.db)
+        .await?;
     let user = crate::auth::load_user(&st, id).await?;
     let token = crypto::issue_jwt(&st.cfg.jwt_secret, id, &role)?;
     Ok(Json(
@@ -154,10 +163,16 @@ pub async fn update_me(
                 "password must be at least 8 characters",
             ));
         }
-        let hash: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id = $1")
-            .bind(u.id)
-            .fetch_one(&st.db)
-            .await?;
+        let hash: Option<String> =
+            sqlx::query_scalar("SELECT password_hash FROM users WHERE id = $1")
+                .bind(u.id)
+                .fetch_one(&st.db)
+                .await?;
+        let Some(hash) = hash else {
+            return Err(ApiError::bad_request(
+                "this account signs in with CAFECA and has no password",
+            ));
+        };
         if !crypto::verify_password(b.current_password.as_deref().unwrap_or(""), &hash) {
             return Err(ApiError::forbidden("current password is incorrect"));
         }

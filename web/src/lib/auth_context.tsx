@@ -11,6 +11,8 @@ interface AuthState {
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
+  /** Adopt a session issued elsewhere (e.g. Sign in with CAFECA). */
+  adopt: (token: string, user: User) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -59,7 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, register, logout, refresh }), [user, loading, login, register, logout, refresh]);
+  const adopt = useCallback((token: string, u: User) => {
+    setToken(token);
+    setUser(u);
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, refresh, adopt }),
+    [user, loading, login, register, logout, refresh, adopt],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

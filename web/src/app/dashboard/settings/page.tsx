@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { CafecaButton, CafecaMark } from "@/components/cafeca_button";
 import { Badge, Button, Card, ErrorNote, Input, Label, PageHeader, Select, Table, Toggle } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth_context";
+import { shortAccount } from "@/lib/cafeca";
 import { fmtCompact, fmtDate, fmtPrice } from "@/lib/format";
 import type { Plan } from "@/lib/types";
 
@@ -63,7 +65,7 @@ export default function SettingsPage() {
           <div className="space-y-3">
             <div>
               <Label>Email</Label>
-              <Input value={user?.email ?? ""} disabled />
+              <Input value={user?.email ?? "—（以 CAFECA 登入）"} disabled />
             </div>
             <div>
               <Label>名稱</Label>
@@ -85,6 +87,49 @@ export default function SettingsPage() {
           </p>
         </Card>
 
+        <Card>
+          <h2 className="mb-1 flex items-center gap-2 font-semibold">
+            <CafecaMark /> CAFECA 數位身分
+          </h2>
+          {user?.cafeca_account ? (
+            <>
+              <p className="mb-3 text-sm text-muted">已綁定，可用 Passkey 一鍵登入。</p>
+              <div className="rounded-lg bg-surface-2 px-3 py-2 text-sm">
+                {user.cafeca_handle && <div className="font-medium">@{user.cafeca_handle}</div>}
+                <div className="font-mono text-xs text-muted" title={user.cafeca_account}>
+                  {shortAccount(user.cafeca_account)}
+                </div>
+              </div>
+              {user.email && user.has_password ? (
+                <Button
+                  variant="ghost"
+                  className="mt-3 text-danger"
+                  onClick={() => confirm("解除綁定後將無法以 CAFECA 登入此帳號，確定？") && act(() => api("/api/me/cafeca", { method: "DELETE" }), "已解除 CAFECA 綁定")}
+                >
+                  解除綁定
+                </Button>
+              ) : (
+                <p className="mt-3 text-xs text-muted">此帳號以 CAFECA 建立，CAFECA 是唯一的登入方式。</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="mb-4 text-sm text-muted">綁定 CAFECA 後即可用 Passkey 登入，不必再輸入密碼。身分合約地址會作為你的唯一識別。</p>
+              <CafecaButton
+                purpose="link"
+                label="綁定 CAFECA"
+                next="/dashboard/settings"
+                onDone={async () => {
+                  setMsg("已綁定 CAFECA");
+                  await refresh();
+                }}
+                onError={setError}
+              />
+            </>
+          )}
+        </Card>
+
+        {user?.has_password && (
         <Card>
           <h2 className="mb-4 font-semibold">變更密碼</h2>
           <div className="space-y-3">
@@ -109,6 +154,7 @@ export default function SettingsPage() {
             </Button>
           </div>
         </Card>
+        )}
 
         <Card>
           <h2 className="mb-1 font-semibold">訂閱方案</h2>

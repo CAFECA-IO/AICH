@@ -115,6 +115,21 @@ impl Kv {
         self.memory.get(key)
     }
 
+    /// Atomically read and delete a value (one-time tokens such as login nonces).
+    pub async fn take(&self, key: &str) -> Option<String> {
+        if let Some(conn) = &self.redis {
+            let mut c = conn.clone();
+            let r: redis::RedisResult<Option<String>> =
+                redis::cmd("GETDEL").arg(key).query_async(&mut c).await;
+            if let Ok(v) = r {
+                return v;
+            }
+        }
+        let v = self.memory.get(key);
+        self.memory.values.remove(key);
+        v
+    }
+
     pub async fn set_ex(&self, key: &str, value: &str, ttl: Duration) {
         if let Some(conn) = &self.redis {
             let mut c = conn.clone();
@@ -138,6 +153,8 @@ mod tests {
         assert_eq!(kv.incr("a", 5, Duration::from_secs(60)).await, 6);
         kv.set_ex("k", "v", Duration::from_secs(60)).await;
         assert_eq!(kv.get("k").await.as_deref(), Some("v"));
+        assert_eq!(kv.take("k").await.as_deref(), Some("v"));
+        assert_eq!(kv.take("k").await, None);
         kv.set_ex("gone", "v", Duration::from_millis(1)).await;
         tokio::time::sleep(Duration::from_millis(5)).await;
         assert_eq!(kv.get("gone").await, None);

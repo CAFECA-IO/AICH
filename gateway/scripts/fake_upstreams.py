@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Fake OpenAI / Anthropic / Gemini HTTP endpoints that speak each vendor's real wire format.
-Used to exercise the gateway adapters (including SSE parsing) without real API keys.
+"""Fake OpenAI / Anthropic / Gemini HTTP endpoints that speak each vendor's real wire format,
+plus a fake CAFECA wallet (/.well-known/cafeca-configuration, /api/rpc, /api/profile).
+Used to exercise the gateway adapters (including SSE parsing) and CAFECA sign-in without real keys.
+The fake RPC treats signature 0x6f6b ("ok") as valid and anything else as invalid.
 Run: python3 scripts/fake_upstreams.py 9100
 """
 import json
+import os
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -17,9 +20,50 @@ def sse(handler, events):
         handler.wfile.flush()
 
 
+FAKE_WALLET_PAGE = """<!doctype html><meta charset=utf-8><title>Fake CAFECA</title>
+<button id=ok>Approve</button>
+<script>
+const b64d = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0)));
+const b64e = s => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+const req = JSON.parse(b64d(new URLSearchParams(location.search).get('req')));
+document.getElementById('ok').onclick = () => {
+  const res = { v: 1, type: 'cafeca:auth', account: '0x00000000000000000000000000000000000ca5ec', chainId: 8018, signature: '0x6f6b',
+    message: { domain: req.domain, uri: req.uri, nonce: req.nonce, issuedAt: req.issuedAt, expiresAt: req.expiresAt,
+               statement: req.statement || '', claims: (req.claims || []).slice().sort().join(','), channel: '' },
+    claims: { handle: 'e2e_user' } };
+  if (req.mode === 'popup') { window.opener.postMessage(res, req.domain); window.close(); }
+  else location.href = req.redirectUri + '#cafeca=' + b64e(JSON.stringify(res));
+};
+</script>"""
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
+
+    def do_GET(self):
+        port = self.server.server_address[1]
+        if self.path == "/.well-known/cafeca-configuration":
+            return self.reply({"issuer": f"http://127.0.0.1:{port}", "chain": {"id": 8018, "rpc": f"http://127.0.0.1:{port}/api/rpc"}})
+        if self.path.startswith("/api/profile"):
+            return self.reply({"handle": "e2e_user"})
+        if self.path == "/sdk/cafeca-connect.js" and os.environ.get("CAFECA_SDK_PATH"):
+            # Serve a copy of the real SDK (download it from https://cafeca.io/sdk/cafeca-connect.js).
+            data = open(os.environ["CAFECA_SDK_PATH"], "rb").read()
+            self.send_response(200)
+            self.send_header("content-type", "application/javascript")
+            self.send_header("content-length", str(len(data)))
+            self.end_headers()
+            return self.wfile.write(data)
+        if self.path.startswith("/dl/auth"):
+            # Fake wallet approval page: signs with the fake "ok" signature and returns like the real wallet.
+            html = FAKE_WALLET_PAGE.encode()
+            self.send_response(200)
+            self.send_header("content-type", "text/html; charset=utf-8")
+            self.send_header("content-length", str(len(html)))
+            self.end_headers()
+            return self.wfile.write(html)
+        self.reply({"error": {"message": "not found"}}, 404)
 
     def body(self):
         n = int(self.headers.get("content-length", 0))
@@ -35,6 +79,14 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         b = self.body()
+        if self.path == "/api/rpc":  # fake CAFECA chain: ERC-1271 isValidSignature
+            data = b["params"][0]["data"]
+            assert data.startswith("0x1626ba7e")
+            sig_len = int(data[2 + 8 + 128:2 + 8 + 192], 16)
+            sig = data[2 + 8 + 192:2 + 8 + 192 + sig_len * 2]
+            if sig == "6f6b":
+                return self.reply({"jsonrpc": "2.0", "id": b["id"], "result": "0x1626ba7e" + "0" * 56})
+            return self.reply({"jsonrpc": "2.0", "id": b["id"], "error": {"code": 3, "message": "execution reverted"}})
         if self.path.endswith("/chat/completions"):  # OpenAI-compatible
             if self.headers.get("authorization") != "Bearer good-openai":
                 return self.reply({"error": {"message": "bad key"}}, 401)

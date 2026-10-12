@@ -27,7 +27,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageHeader title={`嗨，${user?.name || user?.email}`} description="過去 30 天的使用概況" />
+      <PageHeader title={`嗨，${user?.name || user?.email || "你好"}`} description="過去 30 天的使用概況" />
       <ErrorNote error={error} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="點數餘額" value={fmtCompact(user?.credit_balance)} sub={`≈ ${creditsToUsd(user?.credit_balance)}`} />

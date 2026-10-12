@@ -7,8 +7,11 @@
 | 上游供應商金鑰 | AES-256-GCM 加密（`v1:` + base64(nonce‖ciphertext)），每筆隨機 nonce；API 只回傳末四碼 |
 | 主金鑰 `AICH_MASTER_KEY` | 32 bytes，由環境變數注入。正式環境請由 AWS KMS / GCP KMS / HashiCorp Vault 產生並以 secret 注入，勿寫入映像或版控 |
 | 用戶 API 金鑰 | `sk-hub-` + 40 字元亂數；資料庫只存 SHA-256 雜湊；明文只在建立時顯示一次 |
-| 用戶密碼 | Argon2id |
+| 用戶密碼 | Argon2id（CAFECA 使用者沒有密碼） |
+| CAFECA 登入 | Passkey 簽署的 EIP-712 訊息，以 ERC-1271 鏈上驗證；nonce 單次使用並綁定瀏覽器 ticket（見 [auth.md](auth.md)） |
 | Web Session | HS256 JWT（7 天），`AICH_JWT_SECRET` ≥ 32 字元 |
+
+`.env` 不可提交版控（已列入 `.gitignore`）；以 `./scripts/init_env.sh` 產生祕密。
 
 主金鑰輪替：以新主金鑰重新加密 `provider_keys.key_ciphertext`（roadmap 提供 CLI）；過渡期間可在後台對每把上游金鑰「重新貼上」完成輪替。
 

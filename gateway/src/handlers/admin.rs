@@ -238,7 +238,7 @@ pub async fn list_provider_keys(
     Path(id): Path<String>,
 ) -> ApiResult<Json<Value>> {
     let v: Value = sqlx::query_scalar(&as_json_array(
-        "SELECT k.id, k.provider_id, k.owner_user_id, u.email AS owner_email, k.label, k.key_last4, k.enabled, k.weight, k.created_at \
+        "SELECT k.id, k.provider_id, k.owner_user_id, COALESCE(u.email, '@' || u.cafeca_handle, u.cafeca_account) AS owner_email, k.label, k.key_last4, k.enabled, k.weight, k.created_at \
          FROM provider_keys k LEFT JOIN users u ON u.id = k.owner_user_id WHERE k.provider_id = $1 ORDER BY k.created_at",
     ))
     .bind(&id)
@@ -492,10 +492,10 @@ pub async fn list_users(
     Query(q): Query<UserQuery>,
 ) -> ApiResult<Json<Value>> {
     let v: Value = sqlx::query_scalar(&as_json_array(
-        "SELECT u.id, u.email, u.name, u.role, u.status, u.plan_id, u.plan_renews_at, u.credit_balance, u.zero_data_retention, u.created_at, \
+        "SELECT u.id, u.email, u.name, u.cafeca_account, u.cafeca_handle, u.role, u.status, u.plan_id, u.plan_renews_at, u.credit_balance, u.zero_data_retention, u.created_at, \
                 (SELECT count(*) FROM api_keys k WHERE k.user_id = u.id AND k.status = 'active') AS active_keys, \
                 (SELECT COALESCE(sum(credits), 0) FROM request_logs l WHERE l.user_id = u.id AND l.created_at >= now() - interval '30 days') AS credits_30d \
-         FROM users u WHERE ($1::TEXT IS NULL OR u.email ILIKE '%' || $1 || '%' OR u.name ILIKE '%' || $1 || '%') \
+         FROM users u WHERE ($1::TEXT IS NULL OR u.email ILIKE '%' || $1 || '%' OR u.name ILIKE '%' || $1 || '%' OR u.cafeca_account ILIKE '%' || $1 || '%' OR u.cafeca_handle ILIKE '%' || $1 || '%') \
          ORDER BY u.created_at DESC LIMIT $2 OFFSET $3",
     ))
     .bind(q.q.filter(|s| !s.is_empty()))
@@ -561,7 +561,7 @@ pub async fn update_user(
                     id,
                     c,
                     &format!("plan_start:{plan_id}"),
-                    Some(&admin.email),
+                    Some(&admin.label()),
                 )
                 .await?;
             }
@@ -591,7 +591,7 @@ pub async fn adjust_credits(
     } else {
         format!("admin: {}", b.reason.trim())
     };
-    let balance = billing::grant(&st.db, id, b.delta, &reason, Some(&admin.email)).await?;
+    let balance = billing::grant(&st.db, id, b.delta, &reason, Some(&admin.label())).await?;
     Ok(Json(json!({"credit_balance": balance})))
 }
 
@@ -652,7 +652,7 @@ pub async fn logs(
     Query(q): Query<LogQuery>,
 ) -> ApiResult<Json<Value>> {
     let v: Value = sqlx::query_scalar(&as_json_array(
-        "SELECT l.id, l.user_id, u.email, l.api_key_id, l.model, l.provider_id, l.upstream_model, l.strategy, l.intent, l.status_code, l.error, \
+        "SELECT l.id, l.user_id, COALESCE(u.email, '@' || u.cafeca_handle, u.cafeca_account) AS email, l.api_key_id, l.model, l.provider_id, l.upstream_model, l.strategy, l.intent, l.status_code, l.error, \
                 l.prompt_tokens, l.completion_tokens, l.credits, l.latency_ms, l.ttft_ms, l.attempts, l.cached, l.stream, l.created_at, \
                 (l.request_body IS NOT NULL) AS has_body \
          FROM request_logs l LEFT JOIN users u ON u.id = l.user_id \

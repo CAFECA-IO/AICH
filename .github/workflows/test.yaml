@@ -41,6 +41,8 @@ jobs:
       AICH_ADMIN_EMAIL: admin@aich.local
       AICH_ADMIN_PASSWORD: admin12345
       AICH_BIND: 127.0.0.1:8080
+      AICH_CAFECA_WALLET: http://127.0.0.1:9100   # fake wallet from scripts/fake_upstreams.py
+      AICH_CAFECA_SITE_ORIGINS: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -60,9 +62,10 @@ jobs:
       - name: End-to-end (mock providers)
         run: |
           sudo apt-get install -y jq >/dev/null
+          python3 scripts/fake_upstreams.py 9100 > fake.log 2>&1 &
           ./target/debug/aich-gateway > gateway.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/health && break; sleep 1; done
-          GW=http://127.0.0.1:8080 ./scripts/e2e.sh || (cat gateway.log; exit 1)
+          GW=http://127.0.0.1:8080 CAFECA_MOCK=1 ./scripts/e2e.sh || (cat gateway.log; exit 1)
 
   web:
     name: Web (Next.js) — lint, typecheck, build

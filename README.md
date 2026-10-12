@@ -29,12 +29,11 @@
 ## 快速開始（Docker）
 
 ```bash
-cp .env.sample .env
-# 填入 AICH_MASTER_KEY（openssl rand -hex 32）、AICH_JWT_SECRET（openssl rand -base64 48）、管理員帳密
+./scripts/init_env.sh          # 建立 .env 並自動產生 AICH_MASTER_KEY、AICH_JWT_SECRET、管理員密碼
 docker compose up -d --build
 ```
 
-- Web UI：<http://localhost:3000>（以 `.env` 的管理員帳號登入 → 管理後台 → 供應商與金鑰池，貼上各家 API Key）
+- Web UI：<http://localhost:3000>。一般使用者以 **CAFECA（Passkey）** 登入；管理員以 `.env` 的 Email/密碼登入 → 管理後台 → 供應商與金鑰池，貼上各家 API Key
 - OpenAI 相容 API：`http://localhost:8080/v1`
 
 不需要任何上游金鑰也能試用：內建 `mock` 供應商提供 `hub-mock`（回聲）與 `hub-mock-failover`（展示自動備援）兩個模型。
@@ -74,7 +73,7 @@ client.chat.completions.create(model="hub-auto", messages=[{"role": "user", "con
 
 ```bash
 cd gateway && cargo test                 # 單元測試：轉換器、SSE、路由、斷路器、金鑰池、計費…
-./scripts/e2e.sh                         # 對執行中的 gateway 跑端對端測試（mock 供應商）
+CAFECA_MOCK=1 ./scripts/e2e.sh           # 對執行中的 gateway 跑端對端測試（mock 供應商 + 假 CAFECA 錢包）
 python3 scripts/fake_upstreams.py 9100   # 模擬 OpenAI/Anthropic/Gemini 線路格式，用於驗證 adapter
 cd web && npm run lint && npm run typecheck && npm run build
 ```
@@ -84,6 +83,7 @@ CI（`.github/workflows/test.yaml`）會執行上述全部檢查。
 ## 文件
 
 - [產品規劃 PRD](docs/prd.md)
+- [登入：Sign in with CAFECA](docs/auth.md)
 - [系統架構](docs/architecture.md)
 - [API 參考](docs/api.md)
 - [智能路由引擎](docs/routing.md)

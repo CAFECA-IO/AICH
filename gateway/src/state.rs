@@ -19,6 +19,7 @@ pub struct AppStateInner {
     pub health: Health,
     pub keypool: KeyPool,
     pub logger: Logger,
+    pub cafeca: Option<crate::cafeca::Cafeca>,
 }
 
 pub type AppState = Arc<AppStateInner>;

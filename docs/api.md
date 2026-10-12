@@ -43,6 +43,9 @@ Base URL：`https://<your-hub>`。錯誤一律為 OpenAI 格式：`{"error": {"m
 | --- | --- | --- | --- |
 | POST | `/auth/register` | `{email, password(≥8), name?}` | `{token, user}`；贈送註冊點數 |
 | POST | `/auth/login` | `{email, password}` | `{token, user}`；每 email 每 15 分鐘最多 10 次 |
+| GET | `/auth/cafeca/config` | — | `{enabled, wallet, origins}` |
+| POST | `/auth/cafeca/nonce` | `{domain}` | `{nonce, ticket, wallet, expires_in}` |
+| POST | `/auth/cafeca/login` | `{response, ticket}` | `{token, user, created}`；首次登入自動建立帳號（見 [auth.md](auth.md)） |
 
 ## 3. 用戶 API（`/api`，需 JWT）
 
@@ -50,6 +53,8 @@ Base URL：`https://<your-hub>`。錯誤一律為 OpenAI 格式：`{"error": {"m
 | --- | --- | --- |
 | GET / PATCH | `/api/me` | 取得 / 更新 `name`、`zero_data_retention`、`current_password` + `new_password` |
 | GET | `/api/plans` | 方案列表（公開） |
+| POST | `/api/me/cafeca/nonce` | 綁定用 nonce `{domain}` |
+| POST / DELETE | `/api/me/cafeca` | 綁定 `{response, ticket}` / 解除綁定（需有 Email + 密碼） |
 | POST | `/api/subscription` | `{plan_id}` 切換方案（付費方案需 `AICH_SELF_SERVICE_PLANS=true`） |
 | GET | `/api/models` | 模型、等級、能力、每 1K tokens 點數、是否可用 |
 | GET / POST | `/api/keys` | 列出 / 建立金鑰 `{name, credit_limit?, allowed_models?, rpm_limit?, tpm_limit?, expires_in_days?}`（明文金鑰只回傳一次） |

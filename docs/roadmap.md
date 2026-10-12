@@ -12,7 +12,14 @@
 - Web：聊天 WebUI、開發者控制台（金鑰、用量、模型、方案、BYOK）、管理後台（監控、供應商/金鑰、模型映射、用戶、日誌、方案與風控）
 - 測試：32 個單元測試、41 項端對端測試、上游線路格式模擬器；CI；Docker Compose
 
+## v2.0.1
+
+- [x] Sign in with CAFECA（Passkey 登入、自動建立帳號、Email 帳號綁定；彈出視窗與行動版導向）
+- [x] `scripts/init_env.sh` 產生祕密；Gateway 缺少祕密時給出明確錯誤；compose 啟動前檢查
+
 ## v2.1 商業化（建議 4–6 週）
+
+- [ ] CAFECA 實名等級（kyc_level）與簽章通道付款（TWDC 儲值點數）
 
 - [ ] 金流整合（Stripe / 綠界）：Checkout、Webhook、點數加購包、發票
 - [ ] 路由進價欄位與毛利報表

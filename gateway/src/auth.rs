@@ -16,13 +16,16 @@ use crate::state::AppState;
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct UserRow {
     pub id: Uuid,
-    pub email: String,
+    pub email: Option<String>,
     pub name: String,
     pub role: String,
     pub status: String,
     pub plan_id: String,
     pub credit_balance: i64,
     pub zero_data_retention: bool,
+    pub cafeca_account: Option<String>,
+    pub cafeca_handle: Option<String>,
+    pub has_password: bool,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -47,8 +50,7 @@ pub struct Principal {
 pub struct SessionUser(pub UserRow);
 pub struct AdminUser(pub UserRow);
 
-const USER_COLS: &str =
-    "id, email, name, role, status, plan_id, credit_balance, zero_data_retention";
+const USER_COLS: &str = "id, email, name, role, status, plan_id, credit_balance, zero_data_retention, cafeca_account, cafeca_handle, (password_hash IS NOT NULL) AS has_password";
 
 fn bearer(headers: &HeaderMap) -> Option<String> {
     if let Some(v) = headers.get("authorization").and_then(|v| v.to_str().ok()) {
@@ -154,5 +156,16 @@ impl FromRequestParts<AppState> for AdminUser {
             return Err(ApiError::forbidden("admin only"));
         }
         Ok(AdminUser(user))
+    }
+}
+
+impl UserRow {
+    /// Short identifier for audit fields (email, else CAFECA handle/account, else id).
+    pub fn label(&self) -> String {
+        self.email
+            .clone()
+            .or_else(|| self.cafeca_handle.as_ref().map(|h| format!("@{h}")))
+            .or_else(|| self.cafeca_account.clone())
+            .unwrap_or_else(|| self.id.to_string())
     }
 }
