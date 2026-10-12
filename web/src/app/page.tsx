@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { TopNav } from "@/components/top_nav";
 import { Badge, Card, LinkButton } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtCompact, fmtPrice } from "@/lib/format";
+import { currency, fmtFee, fmtIsc } from "@/lib/format";
 import type { Plan } from "@/lib/types";
 
 const features = [
   { title: "統一入口", body: "完全相容 OpenAI API。只要改 Base URL 與 API Key，既有程式碼不用改就能切換 OpenAI、Anthropic、Gemini、DeepSeek、Mistral 等模型。" },
   { title: "智能路由", body: "依任務類型、預算與即時延遲，自動把請求派送到最合適的模型與節點。" },
   { title: "自動備援", body: "供應商回傳 5xx、逾時或限流時，秒級切換到備用模型；斷路器自動隔離故障節點。" },
-  { title: "通用點數", body: "1 點 = US$0.000001。所有模型的輸入/輸出 Token 統一換算成點數，一份帳單看懂全部用量。" },
+  { title: "統一 ISC 計價", body: "所有模型依官方收費比例乘上同一個費用基數，以 ISC 計價；調整基數即可一次調整整體收費，一份帳單看懂全部用量。" },
   { title: "金鑰池與輪替", body: "多把上游金鑰加權輪替，遇到限流自動冷卻；企業方案可帶自己的金鑰池（BYOK）。" },
   { title: "隱私與風控", body: "零數據留存選項、RPM/TPM 限流、異常流量自動封鎖、敏感詞與 Prompt Injection 防護。" },
 ];
@@ -95,7 +95,7 @@ resp = client.chat.completions.create(
 
         <section id="pricing" className="mx-auto max-w-6xl px-4 pb-24">
           <h2 className="mb-1 text-2xl font-semibold">方案與價格</h2>
-          <p className="mb-6 text-sm text-muted">訂閱月費 + 通用點數。1 點 = US$0.000001。</p>
+          <p className="mb-6 text-sm text-muted">訂閱月費與用量皆以 {currency()} 計價；各模型價格 = 官方收費比例 × 費用基數。</p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {plans.map((p) => (
               <Card key={p.id} className={p.id === "pro" ? "border-accent ring-2 ring-accent/20" : ""}>
@@ -104,10 +104,10 @@ resp = client.chat.completions.create(
                   {p.id === "pro" && <Badge tone="accent">最受歡迎</Badge>}
                 </div>
                 <div className="mt-3 text-3xl font-bold">
-                  {p.id === "enterprise" ? `${fmtPrice(p.monthly_price_cents)}+` : fmtPrice(p.monthly_price_cents)}
-                  {p.monthly_price_cents > 0 && <span className="text-sm font-normal text-muted"> / 月</span>}
+                  {p.id === "enterprise" ? `${fmtFee(p.monthly_fee)}+` : fmtFee(p.monthly_fee)}
+                  {p.monthly_fee > 0 && <span className="text-sm font-normal text-muted"> / 月</span>}
                 </div>
-                <div className="mt-1 text-sm text-muted">每月 {fmtCompact(p.monthly_credits)} 點</div>
+                <div className="mt-1 text-sm text-muted">每月含 {fmtIsc(p.monthly_credits)} 額度</div>
                 <ul className="mt-4 space-y-1.5 text-sm">
                   {p.features.map((f) => (
                     <li key={f} className="flex gap-2">

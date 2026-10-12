@@ -68,4 +68,4 @@ routes(model)
 
 ## 7. 預算斷路器
 
-供應商可設定 `monthly_budget_credits`。Catalog 每 30 秒彙整本月該供應商的扣點總和，超過即從候選中移除，並在後台顯示「預算斷路」。
+供應商可設定 `monthly_budget_credits`。Catalog 每 30 秒彙整本月該供應商的 ISC 營收總和，超過即從候選中移除，並在後台顯示「預算斷路」。

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, ErrorNote, Input, Label, Modal, PageHeader, Select, Table } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtDate, fmtNumber } from "@/lib/format";
+import { currency, fmtDate, fmtIsc, iscToMicro } from "@/lib/format";
 import type { Plan } from "@/lib/types";
 
 interface AdminUserRow {
@@ -56,9 +56,9 @@ export default function UsersAdmin() {
 
   return (
     <>
-      <PageHeader title="用戶管理" description="調整方案（會發放該方案的當月點數）、角色、停權與點數加減。" actions={<Input placeholder="搜尋 email / 名稱 / CAFECA" value={q} onChange={(e) => setQ(e.target.value)} className="w-60" />} />
+      <PageHeader title="用戶管理" description="調整方案（會發放該方案的當月額度）、角色、停權與餘額加減。" actions={<Input placeholder="搜尋 email / 名稱 / CAFECA" value={q} onChange={(e) => setQ(e.target.value)} className="w-60" />} />
       <ErrorNote error={error} />
-      <Table head={["用戶", "方案", "角色", "狀態", "點數餘額", "30 天消耗", "金鑰", "ZDR", "註冊", ""]} empty={users.length === 0}>
+      <Table head={["用戶", "方案", "角色", "狀態", "餘額", "30 天消耗", "金鑰", "ZDR", "註冊", ""]} empty={users.length === 0}>
         {users.map((u) => (
           <tr key={u.id}>
             <td className="px-3 py-2">
@@ -73,7 +73,7 @@ export default function UsersAdmin() {
               </div>
             </td>
             <td className="px-3 py-2">
-              <Select value={u.plan_id} onChange={(e) => confirm(`將 ${u.email ?? u.name} 改為 ${e.target.value} 方案並發放點數？`) && patch(u.id, { plan_id: e.target.value })}>
+              <Select value={u.plan_id} onChange={(e) => confirm(`將 ${u.email ?? u.name} 改為 ${e.target.value} 方案並發放當月額度？`) && patch(u.id, { plan_id: e.target.value })}>
                 {plans.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -92,25 +92,25 @@ export default function UsersAdmin() {
                 <Badge tone={u.status === "active" ? "success" : "danger"}>{u.status}</Badge>
               </button>
             </td>
-            <td className={`px-3 py-2 tabular-nums ${u.credit_balance < 0 ? "text-danger" : ""}`}>{fmtNumber(u.credit_balance)}</td>
-            <td className="px-3 py-2 tabular-nums">{fmtNumber(u.credits_30d)}</td>
+            <td className={`px-3 py-2 tabular-nums ${u.credit_balance < 0 ? "text-danger" : ""}`}>{fmtIsc(u.credit_balance)}</td>
+            <td className="px-3 py-2 tabular-nums">{fmtIsc(u.credits_30d)}</td>
             <td className="px-3 py-2 tabular-nums">{u.active_keys}</td>
             <td className="px-3 py-2">{u.zero_data_retention ? "✓" : ""}</td>
             <td className="px-3 py-2 text-xs text-muted">{fmtDate(u.created_at)}</td>
             <td className="px-3 py-2">
               <Button variant="ghost" className="text-xs" onClick={() => setCredit({ user: u, delta: "", reason: "" })}>
-                加減點數
+                加減餘額
               </Button>
             </td>
           </tr>
         ))}
       </Table>
-      <Modal open={!!credit} onClose={() => setCredit(null)} title={`調整點數：${credit?.user.email ?? credit?.user.name}`}>
+      <Modal open={!!credit} onClose={() => setCredit(null)} title={`調整餘額：${credit?.user.email ?? credit?.user.name}`}>
         {credit && (
           <div className="space-y-3">
             <div>
-              <Label hint="負數為扣除">點數</Label>
-              <Input inputMode="numeric" value={credit.delta} onChange={(e) => setCredit({ ...credit, delta: e.target.value })} placeholder="1000000" />
+              <Label hint="負數為扣除">{currency()}</Label>
+              <Input inputMode="decimal" value={credit.delta} onChange={(e) => setCredit({ ...credit, delta: e.target.value })} placeholder="100" />
             </div>
             <div>
               <Label>原因</Label>
@@ -122,10 +122,10 @@ export default function UsersAdmin() {
                 取消
               </Button>
               <Button
-                disabled={!Number(credit.delta)}
+                disabled={!iscToMicro(credit.delta)}
                 onClick={async () => {
                   try {
-                    await api(`/admin/users/${credit.user.id}/credits`, { body: { delta: Number(credit.delta), reason: credit.reason } });
+                    await api(`/admin/users/${credit.user.id}/credits`, { body: { delta: iscToMicro(credit.delta), reason: credit.reason } });
                     setCredit(null);
                     load();
                   } catch (e) {

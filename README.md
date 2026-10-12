@@ -1,6 +1,6 @@
 # AICH — AI Computing Hub
 
-**AI 算力轉接與模型路由平台。** 一把金鑰、一套 OpenAI 相容 API，即可使用 OpenAI、Anthropic、Google Gemini、DeepSeek、Mistral 等所有主流模型；平台負責智能路由、自動備援、金鑰池管理與統一的點數計費。
+**AI 算力轉接與模型路由平台。** 一把金鑰、一套 OpenAI 相容 API，即可使用 OpenAI、Anthropic、Google Gemini、DeepSeek、Mistral 等所有主流模型；平台負責智能路由、自動備援、金鑰池管理與統一的 ISC 計價（官方收費比例 × 費用基數）。
 
 ```text
 [Web UI / 第三方 App / OpenAI SDK]
@@ -10,7 +10,7 @@
    │   AICH Gateway (Rust)    │  鑑權 · RPM/TPM 限流 · Guardrails · 快取
    │   Smart Routing Engine   │  failover / cost / latency / intent
    │   Key Pool · Circuit Br. │  金鑰輪替 · 冷卻 · 斷路器 · 預算斷路
-   │   Credits · Async Logs   │  扣點 · 帳本 · 非同步日誌
+   │   ISC Billing · Logs     │  ISC 計價 · 帳本 · 非同步日誌
    └────────────┬─────────────┘
         ┌───────┼──────────┬───────────┐
         ▼       ▼          ▼           ▼
@@ -29,11 +29,11 @@
 ## 快速開始（Docker）
 
 ```bash
-./scripts/init_env.sh          # 建立 .env 並自動產生 AICH_MASTER_KEY、AICH_JWT_SECRET、管理員密碼
+./scripts/init_env.sh          # 建立 .env 並自動產生 AICH_MASTER_KEY、AICH_JWT_SECRET
 docker compose up -d --build
 ```
 
-- Web UI：<http://localhost:3000>。一般使用者以 **CAFECA（Passkey）** 登入；管理員以 `.env` 的 Email/密碼登入 → 管理後台 → 供應商與金鑰池，貼上各家 API Key
+- Web UI：<http://localhost:3000>。**第一位登入的人（CAFECA 或 Email）自動成為管理員**，並被帶到「AI Token 託管」頁貼上各家 API Key；接著到「ISC 計價」設定費用基數。之後註冊的都是一般用戶
 - OpenAI 相容 API：`http://localhost:8080/v1`
 
 不需要任何上游金鑰也能試用：內建 `mock` 供應商提供 `hub-mock`（回聲）與 `hub-mock-failover`（展示自動備援）兩個模型。
@@ -87,7 +87,7 @@ CI（`.github/workflows/test.yaml`）會執行上述全部檢查。
 - [系統架構](docs/architecture.md)
 - [API 參考](docs/api.md)
 - [智能路由引擎](docs/routing.md)
-- [點數與計費](docs/billing.md)
+- [ISC 計價](docs/billing.md)
 - [安全、風控與合規](docs/security.md)
 - [開發路線圖](docs/roadmap.md)
 

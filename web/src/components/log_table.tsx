@@ -1,11 +1,11 @@
 "use client";
 
 import { Badge, Table } from "@/components/ui";
-import { fmtDate, fmtMs, fmtNumber } from "@/lib/format";
+import { fmtDate, fmtIsc, fmtMs, fmtNumber } from "@/lib/format";
 import type { RequestLog } from "@/lib/types";
 
 export function LogTable({ logs, showUser = false }: { logs: RequestLog[]; showUser?: boolean }) {
-  const head = ["時間", ...(showUser ? ["用戶"] : []), "模型", "實際路由", "策略", "狀態", "Tokens (入/出)", "點數", "延遲 / TTFT", "嘗試"];
+  const head = ["時間", ...(showUser ? ["用戶"] : []), "模型", "實際路由", "策略", "狀態", "Tokens (入/出)", "費用", "延遲 / TTFT", "嘗試"];
   return (
     <Table head={head} empty={logs.length === 0}>
       {logs.map((l) => (
@@ -33,7 +33,7 @@ export function LogTable({ logs, showUser = false }: { logs: RequestLog[]; showU
           <td className="whitespace-nowrap px-3 py-2 tabular-nums">
             {fmtNumber(l.prompt_tokens)} / {fmtNumber(l.completion_tokens)}
           </td>
-          <td className="px-3 py-2 tabular-nums">{fmtNumber(l.credits)}</td>
+          <td className="px-3 py-2 tabular-nums">{fmtIsc(l.credits)}</td>
           <td className="whitespace-nowrap px-3 py-2 tabular-nums text-xs">
             {fmtMs(l.latency_ms)} / {fmtMs(l.ttft_ms)}
           </td>

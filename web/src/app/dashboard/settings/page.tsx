@@ -6,7 +6,7 @@ import { Badge, Button, Card, ErrorNote, Input, Label, PageHeader, Select, Table
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth_context";
 import { shortAccount } from "@/lib/cafeca";
-import { fmtCompact, fmtDate, fmtPrice } from "@/lib/format";
+import { fmtDate, fmtFee, fmtIsc } from "@/lib/format";
 import type { Plan } from "@/lib/types";
 
 interface OwnKey {
@@ -83,7 +83,7 @@ export default function SettingsPage() {
             label="零數據留存（Zero Data Retention）"
           />
           <p className="mt-3 text-sm text-muted">
-            啟用後，AICH 只做數據流轉：不記錄你的 Prompt 與回應內容、不寫入快取，也絕不用於模型訓練。用量統計（token 數、點數、延遲）仍會保留以供計費。
+            啟用後，AICH 只做數據流轉：不記錄你的 Prompt 與回應內容、不寫入快取，也絕不用於模型訓練。用量統計（token 數、費用、延遲）仍會保留以供計費。
           </p>
         </Card>
 
@@ -159,17 +159,17 @@ export default function SettingsPage() {
         <Card>
           <h2 className="mb-1 font-semibold">訂閱方案</h2>
           <p className="mb-4 text-sm text-muted">
-            目前：<b>{user?.plan?.name}</b>，餘額 {fmtCompact(user?.credit_balance)} 點。方案點數每月自動發放。
+            目前：<b>{user?.plan?.name}</b>，餘額 {fmtIsc(user?.credit_balance)}。方案額度每月自動發放。
           </p>
           <div className="space-y-2">
             {plans.map((p) => (
               <div key={p.id} className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${p.id === user?.plan?.id ? "border-accent bg-accent-soft" : "border-border"}`}>
                 <div className="flex-1">
                   <div className="text-sm font-medium">
-                    {p.name} <span className="text-muted">· {fmtPrice(p.monthly_price_cents)}{p.monthly_price_cents ? "/月" : ""}</span>
+                    {p.name} <span className="text-muted">· {fmtFee(p.monthly_fee)}{p.monthly_fee ? "/月" : ""}</span>
                   </div>
                   <div className="text-xs text-muted">
-                    每月 {fmtCompact(p.monthly_credits)} 點 · {p.allow_api ? "含 API" : "僅 Web UI"} · {p.allowed_tiers.join(" + ")} 模型
+                    每月 {fmtIsc(p.monthly_credits)} · {p.allow_api ? "含 API" : "僅 Web UI"} · {p.allowed_tiers.join(" + ")} 模型
                   </div>
                 </div>
                 {p.id === user?.plan?.id ? (

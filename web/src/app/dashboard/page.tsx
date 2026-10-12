@@ -6,7 +6,7 @@ import { BarChart } from "@/components/bar_chart";
 import { Card, ErrorNote, PageHeader, Stat } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth_context";
-import { creditsToUsd, fmtCompact, fmtMs, fmtNumber } from "@/lib/format";
+import { currency, fmtCompact, fmtIsc, fmtIscCompact, fmtMs, fmtNumber, MICRO } from "@/lib/format";
 
 interface Usage {
   daily: { day: string; requests: number; credits: number; prompt_tokens: number; completion_tokens: number }[];
@@ -30,14 +30,14 @@ export default function Overview() {
       <PageHeader title={`嗨，${user?.name || user?.email || "你好"}`} description="過去 30 天的使用概況" />
       <ErrorNote error={error} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="點數餘額" value={fmtCompact(user?.credit_balance)} sub={`≈ ${creditsToUsd(user?.credit_balance)}`} />
+        <Stat label={`${currency()} 餘額`} value={fmtIscCompact(user?.credit_balance)} sub={fmtIsc(user?.credit_balance)} />
         <Stat label="目前方案" value={user?.plan?.name ?? "—"} sub={<Link className="text-accent" href="/dashboard/settings">管理方案 →</Link>} />
         <Stat label="30 天請求數" value={fmtNumber(usage?.totals.requests)} sub={`成功率 ${usage?.totals.success_rate ?? 100}% · 快取命中 ${fmtNumber(usage?.totals.cache_hits)}`} />
-        <Stat label="30 天消耗點數" value={fmtCompact(usage?.totals.credits)} sub={`${fmtCompact(usage?.totals.tokens)} tokens`} />
+        <Stat label="30 天消耗" value={fmtIscCompact(usage?.totals.credits)} sub={`${fmtCompact(usage?.totals.tokens)} tokens`} />
       </div>
       <Card className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold">每日點數消耗</h2>
-        <BarChart data={(usage?.daily ?? []).map((d) => ({ label: d.day.slice(5), value: Number(d.credits) }))} unit=" 點" />
+        <h2 className="mb-3 text-sm font-semibold">每日消耗（{currency()}）</h2>
+        <BarChart data={(usage?.daily ?? []).map((d) => ({ label: d.day.slice(5), value: Number(d.credits) / MICRO }))} unit={` ${currency()}`} />
       </Card>
       <Card className="mt-6">
         <h2 className="mb-3 text-sm font-semibold">各模型用量</h2>
@@ -49,7 +49,7 @@ export default function Overview() {
                 <th>請求</th>
                 <th>輸入 tokens</th>
                 <th>輸出 tokens</th>
-                <th>點數</th>
+                <th>費用</th>
                 <th>平均延遲</th>
               </tr>
             </thead>
@@ -60,7 +60,7 @@ export default function Overview() {
                   <td>{fmtNumber(m.requests)}</td>
                   <td>{fmtNumber(m.prompt_tokens)}</td>
                   <td>{fmtNumber(m.completion_tokens)}</td>
-                  <td>{fmtNumber(m.credits)}</td>
+                  <td>{fmtIsc(m.credits)}</td>
                   <td>{fmtMs(m.avg_latency_ms)}</td>
                 </tr>
               ))}

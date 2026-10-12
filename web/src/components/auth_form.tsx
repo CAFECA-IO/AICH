@@ -28,9 +28,14 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setBusy(true);
     setError(null);
     try {
-      if (mode === "login") await login(email, password);
-      else await register(email, password, name);
-      router.replace(next);
+      if (mode === "login") {
+        await login(email, password);
+        router.replace(next);
+      } else {
+        const u = await register(email, password, name);
+        // The very first account becomes the administrator: start with hosting AI tokens.
+        router.replace(u.role === "admin" ? "/admin/tokens?welcome=1" : next);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -42,7 +47,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     (r: unknown) => {
       const res = r as CafecaLoginResult;
       adopt(res.token, res.user);
-      router.replace(next);
+      router.replace(res.created && res.user.role === "admin" ? "/admin/tokens?welcome=1" : next);
     },
     [adopt, router, next],
   );
@@ -54,7 +59,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <Logo />
           <h1 className="text-lg font-semibold">{mode === "login" ? "登入 AICH" : "建立帳號"}</h1>
           <p className="text-center text-xs text-muted">
-            {mode === "register" ? "註冊即贈送免費點數，可立即在網頁上使用基礎模型。" : "使用 CAFECA 數位身分，以 Passkey 一鍵登入，免帳號密碼。"}
+            {mode === "register" ? "註冊即贈送免費額度，可立即在網頁上使用基礎模型。" : "使用 CAFECA 數位身分，以 Passkey 一鍵登入，免帳號密碼。"}
           </p>
         </div>
 

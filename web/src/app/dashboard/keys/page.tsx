@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, Card, ErrorNote, Input, Label, Modal, PageHeader, Table } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth_context";
-import { fmtDate, fmtNumber } from "@/lib/format";
+import { currency, fmtDate, fmtIsc, iscToMicro } from "@/lib/format";
 import type { ApiKey, HubModel } from "@/lib/types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/v1";
@@ -37,7 +37,7 @@ export default function KeysPage() {
       const r = await api<{ key: string }>("/api/keys", {
         body: {
           name: form.name,
-          credit_limit: num(form.credit_limit),
+          credit_limit: iscToMicro(form.credit_limit),
           rpm_limit: num(form.rpm_limit),
           tpm_limit: num(form.tpm_limit),
           expires_in_days: num(form.expires_in_days),
@@ -104,7 +104,7 @@ export default function KeysPage() {
               <Badge tone={k.status === "active" ? "success" : "danger"}>{k.status}</Badge>
             </td>
             <td className="px-3 py-2 tabular-nums">
-              {fmtNumber(k.credits_used)} / {k.credit_limit ? fmtNumber(k.credit_limit) : "∞"}
+              {fmtIsc(k.credits_used)} / {k.credit_limit ? fmtIsc(k.credit_limit) : "∞"}
             </td>
             <td className="px-3 py-2 tabular-nums">
               {k.rpm_limit ?? "方案預設"} / {k.tpm_limit ?? "方案預設"}
@@ -130,8 +130,8 @@ export default function KeysPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label hint="點數，可留空">額度上限</Label>
-              <Input inputMode="numeric" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
+              <Label hint={`${currency()}，可留空`}>額度上限</Label>
+              <Input inputMode="decimal" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
             </div>
             <div>
               <Label hint="天，可留空">有效期</Label>

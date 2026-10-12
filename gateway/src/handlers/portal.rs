@@ -64,31 +64,26 @@ pub async fn register(
             "password must be at least 8 characters",
         ));
     }
-    let id = Uuid::new_v4();
     let hash = crypto::hash_password(&b.password)?;
-    sqlx::query(
-        "INSERT INTO users (id, email, password_hash, name, plan_id, plan_renews_at) VALUES ($1, $2, $3, $4, 'free', now() + interval '1 month')",
+    let created = crate::users::create_user(
+        &st.db,
+        crate::users::NewUser {
+            email: Some(&email),
+            password_hash: Some(&hash),
+            name: b.name.trim(),
+            cafeca_account: None,
+            cafeca_handle: None,
+        },
+        st.cfg.signup_bonus_credits,
     )
-    .bind(id)
-    .bind(&email)
-    .bind(&hash)
-    .bind(b.name.trim())
-    .execute(&st.db)
     .await
     .map_err(|e| match ApiError::from(e) {
-        err if err.code == "conflict" => ApiError::conflict("an account with this email already exists"),
+        err if err.code == "conflict" => {
+            ApiError::conflict("an account with this email already exists")
+        }
         err => err,
     })?;
-    if st.cfg.signup_bonus_credits > 0 {
-        billing::grant(
-            &st.db,
-            id,
-            st.cfg.signup_bonus_credits,
-            "signup_bonus",
-            None,
-        )
-        .await?;
-    }
+    let id = created.id;
     let user = crate::auth::load_user(&st, id).await?;
     let token = crypto::issue_jwt(&st.cfg.jwt_secret, id, &user.role)?;
     Ok(Json(
@@ -222,15 +217,15 @@ pub async fn change_plan(
     let current_price = catalog
         .plans
         .get(&u.plan_id)
-        .map(|p| p.monthly_price_cents)
+        .map(|p| p.monthly_fee)
         .unwrap_or(0);
-    let upgrade = plan.monthly_price_cents > current_price;
+    let upgrade = plan.monthly_fee > current_price;
     if plan.id == "enterprise" {
         return Err(ApiError::forbidden(
             "Enterprise plans are provisioned by our sales team.",
         ));
     }
-    if plan.monthly_price_cents > 0 && !st.cfg.self_service_plans {
+    if plan.monthly_fee > 0 && !st.cfg.self_service_plans {
         return Err(ApiError::new(
             axum::http::StatusCode::NOT_IMPLEMENTED,
             "invalid_request_error",
@@ -267,27 +262,40 @@ pub async fn models(State(st): State<AppState>, SessionUser(u): SessionUser) -> 
         .get(&u.plan_id)
         .map(|p| p.allowed_tiers.clone())
         .unwrap_or_default();
+    let b = &c.billing;
     let data: Vec<Value> = c
         .models_sorted()
         .into_iter()
         .map(|m| {
+            // The cheapest route is what the user pays at least; failover may use another route.
             let (min_in, min_out) = m
                 .routes
                 .iter()
-                .map(|r| (r.input_price, r.output_price))
-                .min_by_key(|(i, o)| i + o)
-                .unwrap_or((0, 0));
+                .map(|r| {
+                    (
+                        billing::isc_per_million(r.input_price, r.ratio_bp, b),
+                        billing::isc_per_million(r.output_price, r.ratio_bp, b),
+                    )
+                })
+                .min_by(|x, y| (x.0 + x.1).total_cmp(&(y.0 + y.1)))
+                .unwrap_or((0.0, 0.0));
             json!({
                 "id": m.id, "name": m.display_name, "description": m.description, "tier": m.tier,
                 "strategy": m.strategy.as_str(), "context_window": m.context_window,
                 "supports_vision": m.supports_vision, "supports_tools": m.supports_tools,
                 "available": tiers.contains(&m.tier),
-                "credits_per_1k_input": min_in as f64 / 1000.0,
-                "credits_per_1k_output": min_out as f64 / 1000.0,
+                "price_per_1m_input": min_in,
+                "price_per_1m_output": min_out,
             })
         })
         .collect();
-    Json(json!({"data": data}))
+    Json(json!({"data": data, "currency": b.currency}))
+}
+
+/// Public billing info: currency symbol and base, so clients can render prices.
+pub async fn billing_info(State(st): State<AppState>) -> Json<Value> {
+    let c = st.catalog.load();
+    Json(json!({"currency": c.billing.currency, "base": c.billing.base, "unit": 1_000_000}))
 }
 
 // ---- API keys ---------------------------------------------------------------------------------

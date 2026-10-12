@@ -45,6 +45,15 @@ class H(BaseHTTPRequestHandler):
         port = self.server.server_address[1]
         if self.path == "/.well-known/cafeca-configuration":
             return self.reply({"issuer": f"http://127.0.0.1:{port}", "chain": {"id": 8018, "rpc": f"http://127.0.0.1:{port}/api/rpc"}})
+        if self.path == "/v1/models":  # OpenAI-compatible (base .../v1) or Anthropic (base ...) model list
+            auth = self.headers.get("authorization")
+            if self.headers.get("x-api-key"):
+                return self.reply({"data": [{"id": "claude-x"}, {"id": "claude-y"}]})
+            if auth != "Bearer good-openai":
+                return self.reply({"error": {"message": "Incorrect API key provided"}}, 401)
+            return self.reply({"data": [{"id": "gpt-x"}, {"id": "gpt-y"}, {"id": "gpt-z"}]})
+        if self.path.startswith("/v1beta/models"):
+            return self.reply({"models": [{"name": "models/gemini-x"}]})
         if self.path.startswith("/api/profile"):
             return self.reply({"handle": "e2e_user"})
         if self.path == "/sdk/cafeca-connect.js" and os.environ.get("CAFECA_SDK_PATH"):

@@ -73,6 +73,7 @@ pub fn router(state: AppState) -> Router {
     let api = Router::new()
         .route("/me", get(portal::me).patch(portal::update_me))
         .route("/plans", get(portal::plans))
+        .route("/billing", get(portal::billing_info))
         .route("/me/cafeca/nonce", post(cafeca_auth::link_nonce))
         .route(
             "/me/cafeca",
@@ -118,6 +119,11 @@ pub fn router(state: AppState) -> Router {
             "/provider-keys/{id}",
             patch(admin::update_provider_key).delete(admin::delete_provider_key),
         )
+        .route(
+            "/providers/{id}/test-key",
+            post(admin::test_new_provider_key),
+        )
+        .route("/provider-keys/{id}/test", post(admin::test_provider_key))
         .route("/models", get(admin::list_models).post(admin::create_model))
         .route(
             "/models/{id}",
@@ -221,7 +227,7 @@ async fn bootstrap_admin(st: &AppState) -> anyhow::Result<()> {
         None => {
             let id = Uuid::new_v4();
             sqlx::query(
-                "INSERT INTO users (id, email, password_hash, name, role, plan_id, plan_renews_at) VALUES ($1, $2, $3, 'Administrator', 'admin', 'enterprise', now() + interval '1 month')",
+                "INSERT INTO users (id, email, password_hash, name, role, plan_id, plan_renews_at, is_bootstrap) VALUES ($1, $2, $3, 'Administrator', 'admin', 'enterprise', now() + interval '1 month', TRUE)",
             )
             .bind(id)
             .bind(&email)

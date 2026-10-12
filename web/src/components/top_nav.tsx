@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth_context";
-import { creditsToUsd, fmtCompact } from "@/lib/format";
+import { fmtIsc, fmtIscCompact } from "@/lib/format";
 
 const links = [
   { href: "/chat", label: "聊天" },
@@ -45,8 +45,8 @@ export function TopNav() {
         </nav>
         {user ? (
           <div className="flex shrink-0 items-center gap-3 text-sm">
-            <span className="hidden text-muted sm:inline" title={`${user.credit_balance.toLocaleString()} 點 ≈ ${creditsToUsd(user.credit_balance)}`}>
-              {fmtCompact(user.credit_balance)} 點 · {user.plan?.name}
+            <span className="hidden text-muted sm:inline" title={`餘額 ${fmtIsc(user.credit_balance)}`}>
+              {fmtIscCompact(user.credit_balance)} · {user.plan?.name}
             </span>
             <button onClick={logout} className="whitespace-nowrap rounded-md px-2 py-1 text-muted hover:bg-surface-2 hover:text-text">
               登出

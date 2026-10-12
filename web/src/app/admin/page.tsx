@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BarChart } from "@/components/bar_chart";
 import { Badge, Button, Card, ErrorNote, PageHeader, Select, Stat, Table } from "@/components/ui";
 import { api } from "@/lib/api";
-import { creditsToUsd, fmtCompact, fmtMs, fmtNumber } from "@/lib/format";
+import { currency, fmtCompact, fmtIsc, fmtIscCompact, fmtMs, fmtNumber } from "@/lib/format";
 
 interface Overview {
   totals: Record<string, number>;
@@ -59,10 +60,22 @@ export default function AdminOverview() {
         }
       />
       <ErrorNote error={error} />
+      {health && health.providers.filter((p) => p.provider_id !== "mock" && p.keys > 0).length === 0 && (
+        <Card className="mb-4 border-warning/40 bg-warning/5">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="font-medium">尚未託管任何 AI Token。</span>
+            <span className="text-muted">貼上 OpenAI、Anthropic、Gemini 等金鑰後，用戶才能使用對應模型。</span>
+            <span className="flex-1" />
+            <Link href="/admin/tokens" className="font-medium text-accent">
+              前往託管 →
+            </Link>
+          </div>
+        </Card>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="請求數" value={fmtNumber(t.requests)} sub={`成功率 ${t.success_rate ?? 100}% · 備援 ${fmtNumber(t.failovers)} 次`} />
         <Stat label="Tokens" value={fmtCompact(Number(t.prompt_tokens ?? 0) + Number(t.completion_tokens ?? 0))} sub={`快取命中 ${fmtNumber(t.cache_hits)}`} />
-        <Stat label="營收點數" value={fmtCompact(t.credits)} sub={`≈ ${creditsToUsd(t.credits)}`} />
+        <Stat label={`營收（${currency()}）`} value={fmtIscCompact(t.credits)} sub={fmtIsc(t.credits)} />
         <Stat label="平均延遲 / TTFT" value={fmtMs(t.avg_latency_ms)} sub={`TTFT ${fmtMs(t.avg_ttft_ms)} · 活躍用戶 ${fmtNumber(t.active_users)}`} />
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -76,7 +89,7 @@ export default function AdminOverview() {
       </Card>
 
       <h2 className="mt-8 mb-3 font-semibold">供應商表現</h2>
-      <Table head={["供應商", "請求", "成功率", "平均延遲", "P95", "TTFT", "Tokens", "點數"]} empty={!ov?.by_provider.length}>
+      <Table head={["供應商", "請求", "成功率", "平均延遲", "P95", "TTFT", "Tokens", "營收"]} empty={!ov?.by_provider.length}>
         {ov?.by_provider.map((p) => (
           <tr key={p.provider_id}>
             <td className="px-3 py-2 font-medium">{p.provider_id}</td>
@@ -88,7 +101,7 @@ export default function AdminOverview() {
             <td className="px-3 py-2 tabular-nums">{fmtMs(p.p95_latency_ms)}</td>
             <td className="px-3 py-2 tabular-nums">{fmtMs(p.avg_ttft_ms)}</td>
             <td className="px-3 py-2 tabular-nums">{fmtCompact(Number(p.prompt_tokens) + Number(p.completion_tokens))}</td>
-            <td className="px-3 py-2 tabular-nums">{fmtNumber(p.credits)}</td>
+            <td className="px-3 py-2 tabular-nums">{fmtIsc(p.credits)}</td>
           </tr>
         ))}
       </Table>
@@ -122,14 +135,14 @@ export default function AdminOverview() {
       </Table>
 
       <h2 className="mt-8 mb-3 font-semibold">本月預算與金鑰</h2>
-      <Table head={["供應商", "啟用", "共用金鑰", "本月花費（點）", "月預算", "狀態"]}>
+      <Table head={["供應商", "啟用", "共用金鑰", "本月營收", "月預算", "狀態"]}>
         {health?.providers.map((p) => (
           <tr key={p.provider_id}>
             <td className="px-3 py-2 font-medium">{p.provider_id}</td>
             <td className="px-3 py-2">{p.enabled ? "✓" : "—"}</td>
             <td className="px-3 py-2 tabular-nums">{p.keys}</td>
-            <td className="px-3 py-2 tabular-nums">{fmtNumber(p.month_spend)}</td>
-            <td className="px-3 py-2 tabular-nums">{p.monthly_budget ? fmtNumber(p.monthly_budget) : "不限"}</td>
+            <td className="px-3 py-2 tabular-nums">{fmtIsc(p.month_spend)}</td>
+            <td className="px-3 py-2 tabular-nums">{p.monthly_budget ? fmtIsc(p.monthly_budget) : "不限"}</td>
             <td className="px-3 py-2">
               {p.budget_exceeded ? <Badge tone="danger">預算斷路</Badge> : p.keys === 0 ? <Badge tone="warning">無金鑰</Badge> : <Badge tone="success">正常</Badge>}
             </td>

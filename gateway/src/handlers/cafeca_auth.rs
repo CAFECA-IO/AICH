@@ -18,7 +18,6 @@ use uuid::Uuid;
 
 use super::portal::user_json;
 use crate::auth::SessionUser;
-use crate::billing;
 use crate::cafeca::{normalize_origin, SignInResponse, VerifiedSignIn};
 use crate::crypto;
 use crate::error::{ApiError, ApiResult};
@@ -161,33 +160,24 @@ pub async fn login(
             (id, role, false)
         }
         None => {
-            let id = Uuid::new_v4();
             let name = v
                 .handle
                 .clone()
                 .unwrap_or_else(|| format!("CAFECA {}", &v.account[..8]));
-            sqlx::query(
-                "INSERT INTO users (id, email, password_hash, name, plan_id, plan_renews_at, cafeca_account, cafeca_handle, last_login_at) \
-                 VALUES ($1, NULL, NULL, $2, 'free', now() + interval '1 month', $3, $4, now())",
+            let created = crate::users::create_user(
+                &st.db,
+                crate::users::NewUser {
+                    email: None,
+                    password_hash: None,
+                    name: &name,
+                    cafeca_account: Some(&v.account),
+                    cafeca_handle: v.handle.as_deref(),
+                },
+                st.cfg.signup_bonus_credits,
             )
-            .bind(id)
-            .bind(&name)
-            .bind(&v.account)
-            .bind(&v.handle)
-            .execute(&st.db)
             .await?;
-            if st.cfg.signup_bonus_credits > 0 {
-                billing::grant(
-                    &st.db,
-                    id,
-                    st.cfg.signup_bonus_credits,
-                    "signup_bonus",
-                    Some(&v.account),
-                )
-                .await?;
-            }
-            tracing::info!(account = %v.account, "new user via Sign in with CAFECA");
-            (id, "user".to_string(), true)
+            tracing::info!(account = %v.account, role = %created.role, "new user via Sign in with CAFECA");
+            (created.id, created.role, true)
         }
     };
     let user = crate::auth::load_user(&st, id).await?;

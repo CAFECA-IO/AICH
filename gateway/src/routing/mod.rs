@@ -40,6 +40,7 @@ pub fn estimated_cost(route: &Route, prompt_tokens: u32, output_tokens: u32) -> 
     (prompt_tokens as f64 * route.input_price as f64
         + output_tokens as f64 * route.output_price as f64)
         / 1_000_000.0
+        * route.ratio_bp as f64
 }
 
 pub fn plan(input: &PlanInput<'_>, health: &Health) -> RoutePlan {
@@ -147,6 +148,7 @@ mod tests {
             input_price: inp,
             output_price: out,
             tags: tags.iter().map(|s| s.to_string()).collect(),
+            ratio_bp: 10_000,
         }
     }
 

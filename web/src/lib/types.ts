@@ -1,7 +1,9 @@
 export interface Plan {
   id: string;
   name: string;
-  monthly_price_cents: number;
+  /** micro-ISC */
+  monthly_fee: number;
+  /** micro-ISC granted every month */
   monthly_credits: number;
   allow_api: boolean;
   allowed_tiers: string[];
@@ -37,8 +39,9 @@ export interface HubModel {
   supports_vision: boolean;
   supports_tools: boolean;
   available: boolean;
-  credits_per_1k_input: number;
-  credits_per_1k_output: number;
+  /** ISC per 1M tokens (cheapest route) */
+  price_per_1m_input: number;
+  price_per_1m_output: number;
 }
 
 export interface ApiKey {

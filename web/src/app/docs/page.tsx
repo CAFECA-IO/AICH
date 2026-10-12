@@ -20,7 +20,7 @@ const headers = [
   ["X-Hub-Cache", "請求", "true / false：強制啟用或略過回應快取（預設僅 temperature=0 時啟用）"],
   ["x-hub-provider / x-hub-upstream-model", "回應", "實際處理請求的供應商與上游模型"],
   ["x-hub-attempts", "回應", "嘗試次數；大於 1 代表觸發了自動備援"],
-  ["x-hub-credits", "回應", "本次扣除點數（串流請求請看 usage 區塊）"],
+  ["x-hub-credits", "回應", "本次費用，單位為百萬分之一 ISC（串流請求請看用量日誌）"],
   ["x-hub-cache", "回應", "hit | miss | bypass"],
   ["x-hub-request-id", "回應", "請求 ID，可在用量日誌中查詢"],
 ];
@@ -28,7 +28,7 @@ const headers = [
 const errors = [
   ["400", "content_policy_violation / bad_request", "請求格式錯誤或觸發內容防護"],
   ["401", "invalid_api_key", "金鑰無效、已撤銷或過期"],
-  ["402", "insufficient_quota", "點數不足或金鑰額度用盡"],
+  ["402", "insufficient_quota", "ISC 餘額不足或金鑰額度用盡"],
   ["403", "forbidden", "方案不含此模型 / API 存取，或金鑰不允許此模型"],
   ["404", "model_not_found", "模型名稱不存在"],
   ["429", "rate_limit_exceeded", "超過 RPM / TPM 上限；持續超限的金鑰會被自動停用"],
@@ -110,10 +110,10 @@ console.log(r.choices[0].message.content);`}</Code>
           </table>
         </div>
 
-        <H2 id="billing">點數計費</H2>
+        <H2 id="billing">ISC 計價</H2>
         <p className="text-sm text-muted">
-          1 點 = US$0.000001。每個上游路由都有「每百萬 tokens 點數」的輸入與輸出價格，扣點 = ⌈(輸入 tokens × 輸入價 + 輸出 tokens × 輸出價) ÷ 1,000,000⌉。
-          例如輸入價 3,000,000（= US$3 / 1M tokens）時，輸入 1,000 tokens 扣 3,000 點。快取命中不扣點。
+          所有用量以 ISC 計價。每個模型保留各家官方收費比例（USD / 1M tokens），乘上平台統一的費用基數換算：費用 = (輸入 tokens × 輸入價 + 輸出 tokens × 輸出價) ÷ 1,000,000 × 倍率 × 基數。
+          目前基數可由 <code>GET /api/billing</code> 取得，各模型 ISC 單價見控制台「模型與價格」。快取命中與失敗的請求不收費。回應標頭 <code>x-hub-credits</code> 為本次費用（單位：百萬分之一 ISC）。
         </p>
 
         <H2 id="errors">錯誤碼</H2>

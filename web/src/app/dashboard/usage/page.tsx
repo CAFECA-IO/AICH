@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { LogTable } from "@/components/log_table";
 import { Button, ErrorNote, PageHeader, Table } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtDate, fmtNumber } from "@/lib/format";
+import { fmtDate, fmtIsc } from "@/lib/format";
 import type { RequestLog } from "@/lib/types";
 
 interface LedgerRow {
@@ -33,11 +33,11 @@ export default function UsagePage() {
 
   return (
     <>
-      <PageHeader title="用量與帳務" description="每一筆請求的路由結果與扣點明細，以及點數加值紀錄。" />
+      <PageHeader title="用量與帳務" description="每一筆請求的路由結果與扣款明細，以及餘額異動紀錄。" />
       <div className="mb-4 flex gap-1">
         {(["logs", "ledger"] as const).map((t) => (
           <Button key={t} variant={tab === t ? "primary" : "secondary"} onClick={() => { setTab(t); setOffset(0); }}>
-            {t === "logs" ? "請求日誌 / 扣點明細" : "點數異動"}
+            {t === "logs" ? "請求日誌 / 扣款明細" : "餘額異動"}
           </Button>
         ))}
       </div>
@@ -51,9 +51,9 @@ export default function UsagePage() {
               <td className="px-3 py-2 text-xs text-muted">{fmtDate(r.created_at)}</td>
               <td className={`px-3 py-2 tabular-nums ${r.delta >= 0 ? "text-success" : "text-danger"}`}>
                 {r.delta >= 0 ? "+" : ""}
-                {fmtNumber(r.delta)}
+                {fmtIsc(r.delta)}
               </td>
-              <td className="px-3 py-2 tabular-nums">{fmtNumber(r.balance_after)}</td>
+              <td className="px-3 py-2 tabular-nums">{fmtIsc(r.balance_after)}</td>
               <td className="px-3 py-2 text-xs">{r.reason}</td>
             </tr>
           ))}

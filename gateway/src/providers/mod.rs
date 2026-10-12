@@ -165,6 +165,53 @@ pub async fn chat_stream(
     }
 }
 
+/// Cheap credential check used by the admin "test key" button: lists the provider's models
+/// (no tokens are consumed). Returns model ids.
+pub async fn probe(
+    http: &reqwest::Client,
+    kind: ProviderKind,
+    base_url: &str,
+    api_key: &str,
+    timeout: Duration,
+) -> Result<Vec<String>, UpstreamError> {
+    let base = base_url.trim_end_matches('/');
+    let (rb, list_key, id_key) = match kind {
+        ProviderKind::Mock => return Ok(vec!["mock-echo".into(), "fail-500".into()]),
+        ProviderKind::OpenAi => (
+            http.get(format!("{base}/models")).bearer_auth(api_key),
+            "data",
+            "id",
+        ),
+        ProviderKind::Anthropic => (
+            http.get(format!("{base}/v1/models"))
+                .header("x-api-key", api_key)
+                .header("anthropic-version", "2023-06-01"),
+            "data",
+            "id",
+        ),
+        ProviderKind::Gemini => (
+            http.get(format!("{base}/v1beta/models?pageSize=1000"))
+                .header("x-goog-api-key", api_key),
+            "models",
+            "name",
+        ),
+    };
+    let resp = send(rb.timeout(timeout)).await?;
+    let v: Value = resp
+        .json()
+        .await
+        .map_err(|e| UpstreamError::decode(format!("unexpected response: {e}")))?;
+    Ok(v.get(list_key)
+        .and_then(Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(|m| m.get(id_key).and_then(Value::as_str))
+                .map(|s| s.trim_start_matches("models/").to_string())
+                .collect()
+        })
+        .unwrap_or_default())
+}
+
 /// Sends a request and converts non-2xx responses into `UpstreamError`.
 pub(crate) async fn send(rb: reqwest::RequestBuilder) -> Result<reqwest::Response, UpstreamError> {
     let resp = rb.send().await.map_err(UpstreamError::from_reqwest)?;

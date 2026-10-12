@@ -328,6 +328,74 @@ pub async fn update_provider_key(
     Ok(Json(json!({"ok": true})))
 }
 
+async fn run_probe(st: &AppState, provider_id: &str, secret: &str) -> ApiResult<Value> {
+    let row: Option<(String, String, i32)> =
+        sqlx::query_as("SELECT kind, base_url, timeout_ms FROM providers WHERE id = $1")
+            .bind(provider_id)
+            .fetch_optional(&st.db)
+            .await?;
+    let (kind, base_url, timeout_ms) =
+        row.ok_or_else(|| ApiError::not_found("provider not found"))?;
+    let kind =
+        ProviderKind::parse(&kind).ok_or_else(|| ApiError::bad_request("unknown provider kind"))?;
+    let t0 = std::time::Instant::now();
+    let timeout = std::time::Duration::from_millis(timeout_ms.clamp(1000, 20_000) as u64);
+    Ok(
+        match crate::providers::probe(&st.http, kind, &base_url, secret, timeout).await {
+            Ok(models) => json!({
+                "ok": true,
+                "latency_ms": t0.elapsed().as_millis() as u64,
+                "model_count": models.len(),
+                "models": models.into_iter().take(100).collect::<Vec<_>>(),
+            }),
+            Err(e) => json!({
+                "ok": false,
+                "latency_ms": t0.elapsed().as_millis() as u64,
+                "status": e.status,
+                "message": e.message,
+            }),
+        },
+    )
+}
+
+#[derive(Deserialize)]
+pub struct TestKeyBody {
+    key: String,
+}
+
+/// Test a key before saving it (paste → test → host).
+pub async fn test_new_provider_key(
+    State(st): State<AppState>,
+    _a: AdminUser,
+    Path(id): Path<String>,
+    Json(b): Json<TestKeyBody>,
+) -> ApiResult<Json<Value>> {
+    if b.key.trim().is_empty() {
+        return Err(ApiError::bad_request("key is required"));
+    }
+    Ok(Json(run_probe(&st, &id, b.key.trim()).await?))
+}
+
+/// Test a stored key (decrypts it server-side; the secret never leaves the gateway).
+pub async fn test_provider_key(
+    State(st): State<AppState>,
+    _a: AdminUser,
+    Path(id): Path<Uuid>,
+) -> ApiResult<Json<Value>> {
+    let row: Option<(String, String)> =
+        sqlx::query_as("SELECT provider_id, key_ciphertext FROM provider_keys WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&st.db)
+            .await?;
+    let (provider_id, ct) = row.ok_or_else(|| ApiError::not_found("key not found"))?;
+    let secret = crypto::decrypt_secret(&st.cfg.master_key, &ct)?;
+    let result = run_probe(&st, &provider_id, &secret).await?;
+    if result["ok"].as_bool() == Some(true) {
+        st.keypool.clear(&id);
+    }
+    Ok(Json(result))
+}
+
 pub async fn delete_provider_key(
     State(st): State<AppState>,
     _a: AdminUser,
@@ -359,7 +427,7 @@ const MODEL_FIELDS: [(&str, Field); 10] = [
     ("sort_order", Field::Int),
 ];
 
-const ROUTE_FIELDS: [(&str, Field); 7] = [
+const ROUTE_FIELDS: [(&str, Field); 8] = [
     ("provider_id", Field::Text),
     ("upstream_model", Field::Text),
     ("priority", Field::Int),
@@ -367,6 +435,7 @@ const ROUTE_FIELDS: [(&str, Field); 7] = [
     ("output_price", Field::BigInt),
     ("tags", Field::TextArray),
     ("enabled", Field::Bool),
+    ("ratio_bp", Field::Int),
 ];
 
 pub async fn list_models(State(st): State<AppState>, _a: AdminUser) -> ApiResult<Json<Value>> {
@@ -618,7 +687,7 @@ pub async fn update_plan(
         &obj(b)?,
         &[
             ("name", Field::Text),
-            ("monthly_price_cents", Field::Int),
+            ("monthly_fee", Field::BigInt),
             ("monthly_credits", Field::BigInt),
             ("allow_api", Field::Bool),
             ("allowed_tiers", Field::TextArray),
@@ -711,6 +780,19 @@ pub async fn put_setting(
         "cache" => {
             serde_json::from_value::<crate::catalog::CacheSettings>(b.clone())
                 .map_err(|e| ApiError::bad_request(format!("invalid cache settings: {e}")))?;
+        }
+        "billing" => {
+            let bs: crate::catalog::BillingSettings = serde_json::from_value(b.clone())
+                .map_err(|e| ApiError::bad_request(format!("invalid billing settings: {e}")))?;
+            if !(bs.base.is_finite() && bs.base > 0.0 && bs.base <= 1_000_000.0) {
+                return Err(ApiError::bad_request(
+                    "base must be a positive number (≤ 1,000,000)",
+                ));
+            }
+            let cur = bs.currency.trim();
+            if cur.is_empty() || cur.chars().count() > 12 {
+                return Err(ApiError::bad_request("currency must be 1–12 characters"));
+            }
         }
         _ => return Err(ApiError::not_found("unknown setting")),
     }

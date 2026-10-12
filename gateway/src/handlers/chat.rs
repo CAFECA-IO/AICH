@@ -204,14 +204,14 @@ async fn handle(
         if let Some(limit) = k.credit_limit {
             if k.credits_used >= limit {
                 return Err(ApiError::payment_required(
-                    "This API key has reached its credit limit",
+                    "This API key has reached its ISC spending limit",
                 ));
             }
         }
     }
     if p.user.credit_balance <= 0 {
         return Err(ApiError::payment_required(
-            "Insufficient credits. Top up or upgrade your plan.",
+            "Insufficient ISC balance. Top up or upgrade your plan.",
         ));
     }
 
@@ -511,7 +511,7 @@ async fn non_stream_flow(st: AppState, ctx: Ctx, headers: &HeaderMap) -> ApiResu
                             .collect();
                         Usage::new(ctx.prompt_est, tokens::estimate_text(&out))
                     });
-                let credits = billing::credits_for(&usage, &cand.route);
+                let credits = billing::credits_for(&usage, &cand.route, &ctx.catalog.billing);
                 if let Err(e) = billing::charge(
                     &st.db,
                     ctx.principal.user.id,
@@ -772,7 +772,7 @@ fn spawn_pump(
         let usage = usage
             .filter(|u| u.prompt_tokens + u.completion_tokens > 0)
             .unwrap_or_else(|| Usage::new(ctx.prompt_est, tokens::estimate_text(&content)));
-        let credits = billing::credits_for(&usage, &cand.route);
+        let credits = billing::credits_for(&usage, &cand.route, &ctx.catalog.billing);
 
         if !client_gone {
             if include_usage {

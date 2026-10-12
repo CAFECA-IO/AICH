@@ -14,12 +14,22 @@ j()    { curl -s "$@"; }
 echo "== health"
 check "gateway healthy" '[ "$(j $GW/health | jq -r .status)" = ok ]'
 
+echo "== first user becomes admin"
+FIRST=$(j -X POST $GW/auth/register -H 'content-type: application/json' -d "{\"email\":\"first-$(date +%s%N)@example.com\",\"password\":\"password123\"}")
+if [ "$(echo "$FIRST" | jq -r .user.role)" = admin ]; then
+  ok "first registered user is admin (fresh database)"
+  check "first admin is on Enterprise" '[ "$(echo "$FIRST" | jq -r .user.plan.id)" = enterprise ]'
+else
+  echo "  - database already has an admin; skipping first-admin check"
+fi
+
 echo "== auth"
 EMAIL="e2e-$(date +%s%N)@example.com"
 REG=$(j -X POST $GW/auth/register -H 'content-type: application/json' -d "{\"email\":\"$EMAIL\",\"password\":\"password123\",\"name\":\"E2E\"}")
 TOKEN=$(echo "$REG" | jq -r .token)
 check "register returns token" '[ -n "$TOKEN" ] && [ "$TOKEN" != null ]'
 check "signup bonus credited" '[ "$(echo "$REG" | jq .user.credit_balance)" -gt 0 ]'
+check "later users are not admin" '[ "$(echo "$REG" | jq -r .user.role)" = user ]'
 check "duplicate register rejected" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/register -H "content-type: application/json" -d "{\"email\":\"$EMAIL\",\"password\":\"password123\"}")" = 409 ]'
 check "bad login rejected" '[ "$(j -o /dev/null -w "%{http_code}" -X POST $GW/auth/login -H "content-type: application/json" -d "{\"email\":\"$EMAIL\",\"password\":\"wrong-pass\"}")" = 401 ]'
 ADMIN=$(j -X POST $GW/auth/login -H 'content-type: application/json' -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | jq -r .token)
@@ -82,6 +92,25 @@ KID=$(echo "$K" | jq -r .id)
 j -o /dev/null "${AU[@]}" -X DELETE $GW/api/keys/$KID
 check "revoked key rejected" '[ "$(j -o /dev/null -w "%{http_code}" "${AK[@]}" $GW/v1/models)" = 401 ]'
 check "invalid key rejected" '[ "$(j -o /dev/null -w "%{http_code}" -H "authorization: Bearer sk-hub-nope" $GW/v1/models)" = 401 ]'
+
+echo "== ISC pricing (base × model ratio)"
+check "billing info public" '[ "$(j $GW/api/billing | jq -r .currency)" = ISC ]'
+P1=$(j "${AU[@]}" $GW/api/models | jq '[.data[] | select(.id=="hub-mock")][0].price_per_1m_input')
+j -o /dev/null "${AA[@]}" -X PUT $GW/admin/settings/billing -d '{"currency":"ISC","base":30}'
+P2=$(j "${AU[@]}" $GW/api/models | jq '[.data[] | select(.id=="hub-mock")][0].price_per_1m_input')
+check "changing base re-prices models (×30)" '[ "$(echo "$P2 / $P1" | bc)" = 30 ]'
+BIG=$(printf 'pricing %.0s' $(seq 1 1000))
+BODY="{\"model\":\"hub-mock\",\"messages\":[{\"role\":\"user\",\"content\":\"$BIG\"}]}"
+H1=$(j -D - -o /dev/null "${AU[@]}" $GW/v1/chat/completions -d "$BODY" | grep -i x-hub-credits | tr -dc 0-9)
+j -o /dev/null "${AA[@]}" -X PUT $GW/admin/settings/billing -d '{"currency":"ISC","base":1}'
+H2=$(j -D - -o /dev/null "${AU[@]}" $GW/v1/chat/completions -d "$BODY" | grep -i x-hub-credits | tr -dc 0-9)
+check "charge follows base (base 30 ≈ 30× base 1)" '[ "$H2" -gt 0 ] && [ "$H1" -ge $((H2 * 20)) ] && [ "$H1" -le $((H2 * 30)) ]'
+check "invalid base rejected" '[ "$(j -o /dev/null -w "%{http_code}" "${AA[@]}" -X PUT $GW/admin/settings/billing -d "{\"currency\":\"ISC\",\"base\":0}")" = 400 ]'
+
+echo "== AI token hosting (key test)"
+check "test mock provider key" '[ "$(j -X POST "${AA[@]}" $GW/admin/providers/mock/test-key -d "{\"key\":\"anything\"}" | jq .ok)" = true ]'
+MK=$(j "${AA[@]}" $GW/admin/providers/mock/keys | jq -r '.data[0].id')
+check "test stored key" '[ "$(j -X POST "${AA[@]}" $GW/admin/provider-keys/$MK/test | jq .ok)" = true ]'
 
 echo "== guardrails"
 j -o /dev/null "${AA[@]}" -X PUT $GW/admin/settings/guardrails -d '{"mode":"block","blocked_terms":["forbidden-word"],"detect_prompt_injection":true}'

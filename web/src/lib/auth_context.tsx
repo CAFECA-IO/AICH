@@ -8,7 +8,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<User>;
   logout: () => void;
   refresh: () => Promise<void>;
   /** Adopt a session issued elsewhere (e.g. Sign in with CAFECA). */
@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const r = await api<{ token: string; user: User }>("/auth/register", { body: { email, password, name } });
     setToken(r.token);
     setUser(r.user);
+    return r.user;
   }, []);
 
   const logout = useCallback(() => {

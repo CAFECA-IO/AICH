@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create/complete .env with strong random secrets. Never overwrites a value that is already set.
+# Create/complete .env with strong random secrets (AICH_MASTER_KEY, AICH_JWT_SECRET). Never overwrites a value that is already set.
 #   ./scripts/init_env.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -8,7 +8,6 @@ cd "$(dirname "$0")/.."
 
 rand_hex()  { openssl rand -hex "$1" 2>/dev/null || head -c "$1" /dev/urandom | od -An -tx1 | tr -d ' \n'; }
 rand_b64()  { openssl rand -base64 "$1" 2>/dev/null | tr -d '\n' || head -c "$1" /dev/urandom | base64 | tr -d '\n'; }
-rand_pass() { rand_b64 18 | tr -d '/+=' | cut -c1-20; }
 
 # set_if_empty NAME VALUE — fills NAME only when it is missing or empty.
 set_if_empty() {
@@ -31,11 +30,6 @@ set_if_empty() {
 echo "Initialising .env"
 set_if_empty AICH_MASTER_KEY "$(rand_hex 32)" || true
 set_if_empty AICH_JWT_SECRET "$(rand_b64 48)" || true
-PASS="$(rand_pass)"
-if set_if_empty AICH_ADMIN_PASSWORD "$PASS"; then
-  echo
-  echo "  Admin login: $(grep -E '^AICH_ADMIN_EMAIL=' .env | cut -d= -f2-) / ${PASS}"
-  echo "  (stored in .env — change it after first login)"
-fi
 chmod 600 .env
 echo "Done. Start with: docker compose up -d --build"
+echo "The first person to sign in (CAFECA or email) becomes the administrator."

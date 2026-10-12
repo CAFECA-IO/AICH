@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, ErrorNote, Input, Label, Modal, PageHeader, Select, Table, Toggle } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtDate, fmtNumber } from "@/lib/format";
+import { currency, fmtDate, fmtIsc, iscToMicro, microToIscInput } from "@/lib/format";
 
 interface Provider {
   id: string;
@@ -79,7 +79,7 @@ export default function ProvidersPage() {
       name: f.name || f.id,
       base_url: f.base_url,
       timeout_ms: Number(f.timeout_ms) || 120000,
-      monthly_budget_credits: f.monthly_budget_credits.trim() ? Number(f.monthly_budget_credits) : null,
+      monthly_budget_credits: iscToMicro(f.monthly_budget_credits) ?? null,
       config: { stream_usage: f.stream_usage },
     };
     await run(async () => {
@@ -97,7 +97,7 @@ export default function ProvidersPage() {
         actions={<Button onClick={() => setEdit({ mode: "new", form: { ...emptyForm } })}>新增供應商</Button>}
       />
       <ErrorNote error={error} />
-      <Table head={["ID", "類型", "Base URL", "狀態", "金鑰（共用/BYOK）", "本月花費 / 預算", ""]}>
+      <Table head={["ID", "類型", "Base URL", "狀態", "金鑰（共用/BYOK）", "本月營收 / 預算", ""]}>
         {providers.map((p) => (
           <tr key={p.id}>
             <td className="px-3 py-2">
@@ -117,7 +117,7 @@ export default function ProvidersPage() {
               {p.shared_keys === 0 ? <Badge tone="warning">0</Badge> : p.shared_keys} / {p.byok_keys}
             </td>
             <td className="px-3 py-2 tabular-nums text-xs">
-              {fmtNumber(p.month_spend)} / {p.monthly_budget_credits ? fmtNumber(p.monthly_budget_credits) : "不限"}
+              {fmtIsc(p.month_spend)} / {p.monthly_budget_credits ? fmtIsc(p.monthly_budget_credits) : "不限"}
             </td>
             <td className="whitespace-nowrap px-3 py-2 text-right">
               <Button
@@ -142,7 +142,7 @@ export default function ProvidersPage() {
                       name: p.name,
                       base_url: p.base_url,
                       timeout_ms: String(p.timeout_ms),
-                      monthly_budget_credits: p.monthly_budget_credits ? String(p.monthly_budget_credits) : "",
+                      monthly_budget_credits: microToIscInput(p.monthly_budget_credits),
                       stream_usage: p.config?.stream_usage !== false,
                     },
                   })
@@ -198,8 +198,8 @@ export default function ProvidersPage() {
                 <Input inputMode="numeric" value={edit.form.timeout_ms} onChange={(e) => setEdit({ ...edit, form: { ...edit.form, timeout_ms: e.target.value } })} />
               </div>
               <div>
-                <Label hint="點數，留空不限">月預算斷路器</Label>
-                <Input inputMode="numeric" value={edit.form.monthly_budget_credits} onChange={(e) => setEdit({ ...edit, form: { ...edit.form, monthly_budget_credits: e.target.value } })} />
+                <Label hint={`${currency()}，留空不限`}>月預算斷路器</Label>
+                <Input inputMode="decimal" value={edit.form.monthly_budget_credits} onChange={(e) => setEdit({ ...edit, form: { ...edit.form, monthly_budget_credits: e.target.value } })} />
               </div>
             </div>
             {edit.form.kind === "openai" && (

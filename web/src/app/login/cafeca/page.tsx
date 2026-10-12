@@ -27,6 +27,10 @@ export default function CafecaCallback() {
         if (out.purpose === "login") {
           const r = out.result as CafecaLoginResult;
           adopt(r.token, r.user);
+          if (r.created && r.user.role === "admin") {
+            router.replace("/admin/tokens?welcome=1");
+            return;
+          }
         } else {
           await refresh();
         }

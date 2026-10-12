@@ -76,9 +76,13 @@ pub struct Route {
     pub provider_id: String,
     pub upstream_model: String,
     pub priority: i32,
+    /// Official upstream list price, micro-USD per 1M input tokens.
     pub input_price: i64,
+    /// Official upstream list price, micro-USD per 1M output tokens.
     pub output_price: i64,
     pub tags: Vec<String>,
+    /// Per-route multiplier in basis points (10000 = 1.0).
+    pub ratio_bp: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -99,7 +103,8 @@ pub struct ModelInfo {
 pub struct Plan {
     pub id: String,
     pub name: String,
-    pub monthly_price_cents: i32,
+    /// Monthly subscription fee in micro-ISC.
+    pub monthly_fee: i64,
     pub monthly_credits: i64,
     pub allow_api: bool,
     pub allowed_tiers: Vec<String>,
@@ -148,6 +153,39 @@ impl Default for GuardrailSettings {
         }
     }
 }
+/// Global pricing: every model's ISC price = official USD list price × route ratio × `base`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BillingSettings {
+    #[serde(default = "isc")]
+    pub currency: String,
+    /// 費用基數: ISC charged per 1 USD of upstream list price.
+    #[serde(default = "one")]
+    pub base: f64,
+}
+
+fn isc() -> String {
+    "ISC".into()
+}
+fn one() -> f64 {
+    1.0
+}
+
+impl Default for BillingSettings {
+    fn default() -> Self {
+        Self {
+            currency: isc(),
+            base: 1.0,
+        }
+    }
+}
+
+impl BillingSettings {
+    /// Base as an integer number of micro-ISC per USD (exact integer billing math).
+    pub fn base_micro(&self) -> i128 {
+        (self.base.max(0.0) * 1_000_000.0).round() as i128
+    }
+}
+
 impl Default for CacheSettings {
     fn default() -> Self {
         Self {
@@ -165,6 +203,7 @@ pub struct Catalog {
     pub plans: HashMap<String, Plan>,
     pub guardrails: GuardrailSettings,
     pub cache: CacheSettings,
+    pub billing: BillingSettings,
 }
 
 impl Catalog {
@@ -219,6 +258,7 @@ struct RouteRow {
     input_price: i64,
     output_price: i64,
     tags: Vec<String>,
+    ratio_bp: i32,
 }
 
 pub async fn load(db: &PgPool, master: &[u8; 32]) -> anyhow::Result<Catalog> {
@@ -281,7 +321,7 @@ pub async fn load(db: &PgPool, master: &[u8; 32]) -> anyhow::Result<Catalog> {
 
     let mut routes: HashMap<String, Vec<Route>> = HashMap::new();
     for r in sqlx::query_as::<_, RouteRow>(
-        "SELECT id, model_id, provider_id, upstream_model, priority, input_price, output_price, tags \
+        "SELECT id, model_id, provider_id, upstream_model, priority, input_price, output_price, tags, ratio_bp \
          FROM model_routes WHERE enabled ORDER BY priority, id",
     )
     .fetch_all(db)
@@ -295,6 +335,7 @@ pub async fn load(db: &PgPool, master: &[u8; 32]) -> anyhow::Result<Catalog> {
             input_price: r.input_price,
             output_price: r.output_price,
             tags: r.tags,
+            ratio_bp: r.ratio_bp,
         });
     }
 
@@ -345,6 +386,11 @@ pub async fn load(db: &PgPool, master: &[u8; 32]) -> anyhow::Result<Catalog> {
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_default();
 
+    let billing = settings
+        .get("billing")
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+
     Ok(Catalog {
         providers,
         keys,
@@ -352,5 +398,6 @@ pub async fn load(db: &PgPool, master: &[u8; 32]) -> anyhow::Result<Catalog> {
         plans,
         guardrails,
         cache,
+        billing,
     })
 }

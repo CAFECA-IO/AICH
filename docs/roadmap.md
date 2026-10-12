@@ -17,6 +17,12 @@
 - [x] Sign in with CAFECA（Passkey 登入、自動建立帳號、Email 帳號綁定；彈出視窗與行動版導向）
 - [x] `scripts/init_env.sh` 產生祕密；Gateway 缺少祕密時給出明確錯誤；compose 啟動前檢查
 
+## v2.0.2
+
+- [x] 第一位登入者自動成為管理員（advisory lock 防競爭；env 備援管理員不佔位）
+- [x] AI Token 託管頁：各家一鍵貼上金鑰、儲存前測試（列出模型、不產生費用）、已託管金鑰測試/停用/移除
+- [x] ISC 計價：官方收費比例 × 全域費用基數（可預覽、即時生效）＋個別路由倍率；全站金額改以 ISC 顯示
+
 ## v2.1 商業化（建議 4–6 週）
 
 - [ ] CAFECA 實名等級（kyc_level）與簽章通道付款（TWDC 儲值點數）

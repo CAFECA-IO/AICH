@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, Card, ErrorNote, Input, Label, Modal, PageHeader, Select, Textarea, Toggle } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtNumber } from "@/lib/format";
 
 interface Route {
   id: string;
@@ -14,6 +13,7 @@ interface Route {
   output_price: number;
   tags: string[];
   enabled: boolean;
+  ratio_bp: number;
 }
 
 interface Model {
@@ -32,9 +32,9 @@ interface Model {
 
 const TAGS = ["code", "long_context", "reasoning", "vision", "simple", "general"];
 const emptyModel = { id: "", display_name: "", description: "", tier: "basic", strategy: "failover", context_window: "128000", supports_vision: false, supports_tools: true, sort_order: "100" };
-const emptyRoute = { provider_id: "", upstream_model: "", priority: "0", input_usd: "", output_usd: "", tags: [] as string[] };
+const emptyRoute = { provider_id: "", upstream_model: "", priority: "0", input_usd: "", output_usd: "", ratio: "1", tags: [] as string[] };
 
-/** UI works in USD / 1M tokens; the API stores credits / 1M tokens (×1,000,000). */
+/** Official list prices: UI in USD / 1M tokens; API stores micro-USD / 1M tokens (×1,000,000). */
 const usdToCredits = (v: string) => Math.round(Number(v || 0) * 1_000_000);
 const creditsToUsdStr = (c: number) => String(c / 1_000_000);
 
@@ -91,6 +91,7 @@ export default function ModelsAdmin() {
       priority: Number(f.priority) || 0,
       input_price: usdToCredits(f.input_usd),
       output_price: usdToCredits(f.output_usd),
+      ratio_bp: Math.max(1, Math.round(Number(f.ratio || 1) * 10_000)),
       tags: f.tags,
     };
     const ok = await run(() => (rEdit.id ? api(`/admin/routes/${rEdit.id}`, { method: "PATCH", body }) : api(`/admin/models/${rEdit.model}/routes`, { body })));
@@ -101,7 +102,7 @@ export default function ModelsAdmin() {
     <>
       <PageHeader
         title="動態模型映射"
-        description="對外暴露的 Hub 模型 → 後端實際模型。每個 Hub 模型可設定多條路由，搭配策略決定派送順序；價格以 USD / 1M tokens 輸入，系統自動換算點數。"
+        description="對外暴露的 Hub 模型 → 後端實際模型。每個 Hub 模型可設定多條路由，搭配策略決定派送順序；價格填各家官方牌價（USD / 1M tokens），系統以「倍率 × 費用基數」換算成 ISC（見「ISC 計價」）。"
         actions={<Button onClick={() => setMEdit({ mode: "new", f: { ...emptyModel } })}>新增模型</Button>}
       />
       <ErrorNote error={error} />
@@ -153,9 +154,9 @@ export default function ModelsAdmin() {
                   <tr>
                     <th className="py-1">優先序</th>
                     <th>供應商 / 上游模型</th>
-                    <th>輸入 $/1M</th>
-                    <th>輸出 $/1M</th>
-                    <th>點/1K 入·出</th>
+                    <th>官方 輸入 $/1M</th>
+                    <th>官方 輸出 $/1M</th>
+                    <th>倍率</th>
                     <th>標籤</th>
                     <th>啟用</th>
                     <th />
@@ -170,9 +171,7 @@ export default function ModelsAdmin() {
                       </td>
                       <td className="tabular-nums">{creditsToUsdStr(r.input_price)}</td>
                       <td className="tabular-nums">{creditsToUsdStr(r.output_price)}</td>
-                      <td className="tabular-nums text-xs text-muted">
-                        {fmtNumber(r.input_price / 1000)} · {fmtNumber(r.output_price / 1000)}
-                      </td>
+                      <td className="tabular-nums text-xs text-muted">×{r.ratio_bp / 10_000}</td>
                       <td className="text-xs">{r.tags.join(", ")}</td>
                       <td>
                         <Toggle checked={r.enabled} onChange={(v) => run(() => api(`/admin/routes/${r.id}`, { method: "PATCH", body: { enabled: v } }))} />
@@ -191,6 +190,7 @@ export default function ModelsAdmin() {
                                 priority: String(r.priority),
                                 input_usd: creditsToUsdStr(r.input_price),
                                 output_usd: creditsToUsdStr(r.output_price),
+                                ratio: String(r.ratio_bp / 10_000),
                                 tags: r.tags,
                               },
                             })
@@ -292,13 +292,16 @@ export default function ModelsAdmin() {
                 <Label hint="小 = 優先">優先序</Label>
                 <Input inputMode="numeric" value={rEdit.f.priority} onChange={(e) => setREdit({ ...rEdit, f: { ...rEdit.f, priority: e.target.value } })} />
               </div>
-              <div />
               <div>
-                <Label hint="USD / 1M tokens">輸入售價</Label>
+                <Label hint="預設 1，可加成或折扣">倍率</Label>
+                <Input inputMode="decimal" value={rEdit.f.ratio} onChange={(e) => setREdit({ ...rEdit, f: { ...rEdit.f, ratio: e.target.value } })} />
+              </div>
+              <div>
+                <Label hint="官方牌價 USD / 1M tokens">輸入價</Label>
                 <Input inputMode="decimal" value={rEdit.f.input_usd} onChange={(e) => setREdit({ ...rEdit, f: { ...rEdit.f, input_usd: e.target.value } })} />
               </div>
               <div>
-                <Label hint="USD / 1M tokens">輸出售價</Label>
+                <Label hint="官方牌價 USD / 1M tokens">輸出價</Label>
                 <Input inputMode="decimal" value={rEdit.f.output_usd} onChange={(e) => setREdit({ ...rEdit, f: { ...rEdit.f, output_usd: e.target.value } })} />
               </div>
             </div>

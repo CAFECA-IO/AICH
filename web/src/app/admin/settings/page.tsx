@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, ErrorNote, Input, Label, PageHeader, Select, Table, Textarea, Toggle } from "@/components/ui";
 import { api } from "@/lib/api";
-import { fmtNumber } from "@/lib/format";
+import { currency, fmtNumber, MICRO } from "@/lib/format";
 import type { Plan } from "@/lib/types";
 
 interface Guardrails {
@@ -54,7 +54,7 @@ export default function SettingsAdmin() {
 
   return (
     <>
-      <PageHeader title="方案與風控設定" />
+      <PageHeader title="方案與風控設定" description="ISC 費用基數請到「ISC 計價」頁設定。" />
       <div className="mb-4 space-y-2">
         <ErrorNote error={error} />
         {msg && <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success">{msg}</div>}
@@ -92,7 +92,7 @@ export default function SettingsAdmin() {
         <Card>
           <h2 className="mb-1 font-semibold">回應快取</h2>
           <p className="mb-4 text-sm text-muted">
-            完全相同的非串流請求（temperature=0，或帶 X-Hub-Cache: true）直接回傳快取，不扣點。快取以用戶為範圍隔離；啟用零數據留存的用戶不快取。
+            完全相同的非串流請求（temperature=0，或帶 X-Hub-Cache: true）直接回傳快取，不收費。快取以用戶為範圍隔離；啟用零數據留存的用戶不快取。
           </p>
           <div className="space-y-3">
             <Toggle checked={cache.enabled} onChange={(v) => setCache({ ...cache, enabled: v })} label="啟用快取" />
@@ -106,15 +106,15 @@ export default function SettingsAdmin() {
       </div>
 
       <h2 className="mt-8 mb-3 font-semibold">訂閱方案</h2>
-      <Table head={["方案", "月費 (USD)", "每月點數", "API", "模型等級", "預設 RPM", "預設 TPM", "路由優先級", "BYOK", "用戶數", ""]}>
+      <Table head={["方案", `月費 (${currency()})`, `每月額度 (${currency()})`, "API", "模型等級", "預設 RPM", "預設 TPM", "路由優先級", "BYOK", "用戶數", ""]}>
         {plans.map((p) => (
           <tr key={p.id}>
             <td className="px-3 py-2 font-medium">{p.name}</td>
             <td className="px-3 py-2">
-              <Input className="w-24" inputMode="decimal" value={p.monthly_price_cents / 100} onChange={(e) => setPlan(p.id, { monthly_price_cents: Math.round(Number(e.target.value) * 100) })} />
+              <Input className="w-24" inputMode="decimal" value={p.monthly_fee / MICRO} onChange={(e) => setPlan(p.id, { monthly_fee: Math.round(Number(e.target.value) * MICRO) })} />
             </td>
             <td className="px-3 py-2">
-              <Input className="w-32" inputMode="numeric" value={p.monthly_credits} onChange={(e) => setPlan(p.id, { monthly_credits: Number(e.target.value) })} />
+              <Input className="w-28" inputMode="decimal" value={p.monthly_credits / MICRO} onChange={(e) => setPlan(p.id, { monthly_credits: Math.round(Number(e.target.value) * MICRO) })} />
             </td>
             <td className="px-3 py-2">
               <Toggle checked={p.allow_api} onChange={(v) => setPlan(p.id, { allow_api: v })} />
@@ -148,7 +148,7 @@ export default function SettingsAdmin() {
                       api(`/admin/plans/${p.id}`, {
                         method: "PATCH",
                         body: {
-                          monthly_price_cents: p.monthly_price_cents,
+                          monthly_fee: p.monthly_fee,
                           monthly_credits: p.monthly_credits,
                           allow_api: p.allow_api,
                           allowed_tiers: p.allowed_tiers,

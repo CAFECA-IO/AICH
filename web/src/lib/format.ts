@@ -1,5 +1,49 @@
-/** 1 credit = USD 0.000001 */
-export const CREDITS_PER_USD = 1_000_000;
+/** All money amounts from the gateway are integer micro-ISC: 1 ISC = 1,000,000 units. */
+export const MICRO = 1_000_000;
+
+let currencySymbol = "ISC";
+/** Set by BillingProvider once /api/billing is loaded (the symbol is configurable by admins). */
+export function setCurrencySymbol(c: string) {
+  currencySymbol = c || "ISC";
+}
+export function currency(): string {
+  return currencySymbol;
+}
+
+/** micro-ISC → "1,234.5678 ISC" (up to 6 decimals, trailing zeros trimmed). */
+export function fmtIsc(micro: number | string | null | undefined, withUnit = true): string {
+  const v = Number(micro ?? 0) / MICRO;
+  const abs = Math.abs(v);
+  const digits = abs === 0 ? 0 : abs >= 1000 ? 2 : abs >= 1 ? 4 : 6;
+  const s = v.toLocaleString("en-US", { maximumFractionDigits: digits });
+  return withUnit ? `${s} ${currencySymbol}` : s;
+}
+
+/** micro-ISC → compact "12.3K ISC" for tight spaces. */
+export function fmtIscCompact(micro: number | string | null | undefined): string {
+  const v = Number(micro ?? 0) / MICRO;
+  const s = Math.abs(v) >= 10_000
+    ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v)
+    : v.toLocaleString("en-US", { maximumFractionDigits: Math.abs(v) >= 1 ? 2 : 4 });
+  return `${s} ${currencySymbol}`;
+}
+
+/** ISC amount (decimal string from an input) → integer micro-ISC; undefined when blank/invalid. */
+export function iscToMicro(v: string): number | undefined {
+  if (v.trim() === "") return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.round(n * MICRO) : undefined;
+}
+
+/** micro-ISC → plain decimal string for editing in an input. */
+export function microToIscInput(micro: number | null | undefined): string {
+  return micro === null || micro === undefined ? "" : String(micro / MICRO);
+}
+
+/** Plan fee (micro-ISC) → "9.99 ISC" or "免費". */
+export function fmtFee(micro: number): string {
+  return micro === 0 ? "免費" : fmtIsc(micro);
+}
 
 export function fmtNumber(n: number | string | null | undefined): string {
   const v = typeof n === "string" ? Number(n) : (n ?? 0);
@@ -10,15 +54,6 @@ export function fmtNumber(n: number | string | null | undefined): string {
 export function fmtCompact(n: number | string | null | undefined): string {
   const v = typeof n === "string" ? Number(n) : (n ?? 0);
   return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v || 0);
-}
-
-export function creditsToUsd(credits: number | string | null | undefined): string {
-  const v = Number(credits ?? 0) / CREDITS_PER_USD;
-  return `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: v < 1 ? 4 : 2 })}`;
-}
-
-export function fmtPrice(cents: number): string {
-  return cents === 0 ? "Free" : `$${(cents / 100).toFixed(2)}`;
 }
 
 export function fmtDate(iso: string | null | undefined): string {
