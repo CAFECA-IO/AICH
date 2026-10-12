@@ -1,0 +1,58 @@
+# AICH local / single-node deployment.
+#   cp .env.sample .env   # then fill in secrets
+#   docker compose up -d --build
+# Web UI: http://localhost:3000   Gateway (OpenAI-compatible): http://localhost:8080/v1
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aich
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aich}
+      POSTGRES_DB: aich
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aich"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  gateway:
+    build: ./gateway
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://aich:${POSTGRES_PASSWORD:-aich}@postgres:5432/aich
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8080/v1}
+    environment:
+      GATEWAY_URL: http://gateway:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+volumes:
+  pgdata:

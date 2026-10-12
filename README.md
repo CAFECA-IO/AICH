@@ -1,0 +1,96 @@
+# AICH — AI Computing Hub
+
+**AI 算力轉接與模型路由平台。** 一把金鑰、一套 OpenAI 相容 API，即可使用 OpenAI、Anthropic、Google Gemini、DeepSeek、Mistral 等所有主流模型；平台負責智能路由、自動備援、金鑰池管理與統一的點數計費。
+
+```text
+[Web UI / 第三方 App / OpenAI SDK]
+              │  OpenAI-compatible  (/v1/chat/completions, SSE)
+              ▼
+   ┌──────────────────────────┐
+   │   AICH Gateway (Rust)    │  鑑權 · RPM/TPM 限流 · Guardrails · 快取
+   │   Smart Routing Engine   │  failover / cost / latency / intent
+   │   Key Pool · Circuit Br. │  金鑰輪替 · 冷卻 · 斷路器 · 預算斷路
+   │   Credits · Async Logs   │  扣點 · 帳本 · 非同步日誌
+   └────────────┬─────────────┘
+        ┌───────┼──────────┬───────────┐
+        ▼       ▼          ▼           ▼
+     OpenAI  Anthropic   Gemini   DeepSeek / Mistral / 任何 OpenAI 相容服務
+```
+
+## 專案結構
+
+| 路徑 | 說明 |
+| --- | --- |
+| `gateway/` | Rust（axum + tokio + sqlx）高效能 API Gateway 與路由引擎，含資料庫 migrations |
+| `web/` | Next.js 16 前台與後台：聊天 WebUI、開發者控制台、管理後台 |
+| `docs/` | 產品規劃、架構、API、路由、計費、安全、路線圖文件 |
+| `docker-compose.yml` | 單機部署：Postgres + Redis + Gateway + Web |
+
+## 快速開始（Docker）
+
+```bash
+cp .env.sample .env
+# 填入 AICH_MASTER_KEY（openssl rand -hex 32）、AICH_JWT_SECRET（openssl rand -base64 48）、管理員帳密
+docker compose up -d --build
+```
+
+- Web UI：<http://localhost:3000>（以 `.env` 的管理員帳號登入 → 管理後台 → 供應商與金鑰池，貼上各家 API Key）
+- OpenAI 相容 API：`http://localhost:8080/v1`
+
+不需要任何上游金鑰也能試用：內建 `mock` 供應商提供 `hub-mock`（回聲）與 `hub-mock-failover`（展示自動備援）兩個模型。
+
+## 本機開發
+
+需求：Rust（stable）、Node.js 22、PostgreSQL 16、Redis 7（選用，未設定時退回記憶體）。
+
+```bash
+# Gateway
+cd gateway
+export DATABASE_URL=postgres://aich:aich@localhost:5432/aich
+export AICH_MASTER_KEY=$(openssl rand -hex 32) AICH_JWT_SECRET=$(openssl rand -base64 48)
+export AICH_ADMIN_EMAIL=admin@aich.local AICH_ADMIN_PASSWORD=admin12345
+cargo run                      # 啟動時自動執行 migrations 並建立管理員
+
+# Web
+cd web
+cp .env.sample .env.local      # GATEWAY_URL=http://localhost:8080
+npm install && npm run dev     # http://localhost:3000
+```
+
+## 使用方式
+
+```python
+from openai import OpenAI
+client = OpenAI(base_url="http://localhost:8080/v1", api_key="sk-hub-...")
+client.chat.completions.create(model="hub-auto", messages=[{"role": "user", "content": "Hello"}])
+```
+
+- `hub-auto`：意圖路由（程式碼 / 長文本 / 推理 / 視覺 / 簡單任務）
+- `hub-auto-cheap`：成本優先；`hub-auto-fast`：延遲優先
+- `hub-gpt-4o`、`hub-claude-sonnet`、`hub-gemini-pro` …：固定模型 + 跨供應商備援
+- 標頭 `X-Hub-Strategy` / `X-Hub-Intent` / `X-Hub-Cache` 可逐請求覆寫行為，回應標頭會告訴你實際路由結果。詳見 [docs/api.md](docs/api.md)。
+
+## 測試
+
+```bash
+cd gateway && cargo test                 # 單元測試：轉換器、SSE、路由、斷路器、金鑰池、計費…
+./scripts/e2e.sh                         # 對執行中的 gateway 跑端對端測試（mock 供應商）
+python3 scripts/fake_upstreams.py 9100   # 模擬 OpenAI/Anthropic/Gemini 線路格式，用於驗證 adapter
+cd web && npm run lint && npm run typecheck && npm run build
+```
+
+CI（`.github/workflows/test.yaml`）會執行上述全部檢查。
+
+## 文件
+
+- [產品規劃 PRD](docs/prd.md)
+- [系統架構](docs/architecture.md)
+- [API 參考](docs/api.md)
+- [智能路由引擎](docs/routing.md)
+- [點數與計費](docs/billing.md)
+- [安全、風控與合規](docs/security.md)
+- [開發路線圖](docs/roadmap.md)
+
+## License
+
+MIT

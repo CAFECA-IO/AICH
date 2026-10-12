@@ -12,31 +12,74 @@ on:
       - main
 
 jobs:
-  # Your job configurations here
-  # Label of the container job
-  backend-unit-tests:
-    # Containers must run in Linux based operating systems
+  gateway:
+    name: Gateway (Rust) — fmt, clippy, unit tests, e2e
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
-    container: node:20-slim
-
-    steps:
-      - name: Set up openssl
-        run: apt-get update -y && apt-get install -y openssl
-      # Downloads a copy of the code in your repository before running CI tests
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      # Performs a clean installation of all dependencies in the `package.json` file
-      # For more information, see https://docs.npmjs.com/cli/ci.html
-      - name: Install dependencies
-        run: npm i
-
-      - name: Run unit tests & integration tests
-        run: npm run test
+    defaults:
+      run:
+        working-directory: gateway
+    services:
+      postgres:
+        image: postgres:16-alpine
         env:
-          # The database URL to connect to the PostgreSQL database
-          DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+          POSTGRES_USER: aich
+          POSTGRES_PASSWORD: aich
+          POSTGRES_DB: aich
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U aich" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://aich:aich@localhost:5432/aich
+      REDIS_URL: redis://localhost:6379
+      AICH_MASTER_KEY: "0000000000000000000000000000000000000000000000000000000000000001"
+      AICH_JWT_SECRET: ci-secret-ci-secret-ci-secret-ci-secret
+      AICH_ADMIN_EMAIL: admin@aich.local
+      AICH_ADMIN_PASSWORD: admin12345
+      AICH_BIND: 127.0.0.1:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: gateway
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Unit tests
+        run: cargo test
+      - name: Build
+        run: cargo build
+      - name: End-to-end (mock providers)
+        run: |
+          sudo apt-get install -y jq >/dev/null
+          ./target/debug/aich-gateway > gateway.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/health && break; sleep 1; done
+          GW=http://127.0.0.1:8080 ./scripts/e2e.sh || (cat gateway.log; exit 1)
 
-      - name: Build next.js service
+  web:
+    name: Web (Next.js) — lint, typecheck, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
         run: npm run build

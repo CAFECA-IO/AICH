@@ -1,0 +1,20 @@
+# Rust
+/gateway/target/
+
+# Node / Next.js
+node_modules/
+/web/.next/
+/web/out/
+/web/next-env.d.ts
+*.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.sample
+*.pem
+
+# misc
+.DS_Store
+coverage/
+*.log
