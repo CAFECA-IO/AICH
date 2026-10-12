@@ -1,14 +1,13 @@
 //! Cryptographic helpers: provider-key envelope encryption, API key hashing,
 //! password hashing and session tokens.
 
-use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::aead::rand_core::RngCore;
+use aes_gcm::aead::{Aead, KeyInit, OsRng};
 use aes_gcm::{Aes256Gcm, Nonce};
 use argon2::password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString};
 use argon2::Argon2;
 use base64::engine::general_purpose::STANDARD as B64;
 use base64::Engine;
-use rand::distributions::Alphanumeric;
-use rand::{Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
@@ -20,7 +19,7 @@ pub const API_KEY_PREFIX: &str = "sk-hub-";
 pub fn encrypt_secret(master: &[u8; 32], plaintext: &str) -> String {
     let cipher = Aes256Gcm::new_from_slice(master).expect("32-byte key");
     let mut nonce = [0u8; 12];
-    rand::thread_rng().fill_bytes(&mut nonce);
+    OsRng.fill_bytes(&mut nonce);
     let ct = cipher
         .encrypt(Nonce::from_slice(&nonce), plaintext.as_bytes())
         .expect("encryption cannot fail");
@@ -53,13 +52,31 @@ pub fn sha256_hex(input: &str) -> String {
     hex::encode(Sha256::digest(input.as_bytes()))
 }
 
+/// Cryptographically secure random bytes from the OS.
+pub fn random_bytes(n: usize) -> Vec<u8> {
+    let mut b = vec![0u8; n];
+    OsRng.fill_bytes(&mut b);
+    b
+}
+
+/// Uniform random `[A-Za-z0-9]` string (rejection sampling, no modulo bias).
+pub fn random_alphanumeric(len: usize) -> String {
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let mut out = String::with_capacity(len);
+    while out.len() < len {
+        for b in random_bytes(len) {
+            // 248 = 62 * 4: values >= 248 would skew the distribution.
+            if b < 248 && out.len() < len {
+                out.push(ALPHABET[(b % 62) as usize] as char);
+            }
+        }
+    }
+    out
+}
+
 /// Returns (full_key, display_prefix, hash).
 pub fn generate_api_key() -> (String, String, String) {
-    let body: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(40)
-        .map(char::from)
-        .collect();
+    let body = random_alphanumeric(40);
     let key = format!("{API_KEY_PREFIX}{body}");
     let prefix = format!("{}…{}", &key[..11], &key[key.len() - 4..]);
     let hash = sha256_hex(&key);
@@ -67,7 +84,7 @@ pub fn generate_api_key() -> (String, String, String) {
 }
 
 pub fn hash_password(password: &str) -> anyhow::Result<String> {
-    let salt = SaltString::generate(&mut rand::rngs::OsRng);
+    let salt = SaltString::generate(&mut OsRng);
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
         .map(|h| h.to_string())
@@ -131,6 +148,17 @@ mod tests {
         assert!(enc.starts_with("v1:"));
         assert_eq!(decrypt_secret(&key, &enc).unwrap(), "sk-test-123");
         assert!(decrypt_secret(&[8u8; 32], &enc).is_err());
+    }
+
+    #[test]
+    fn random_alphanumeric_is_uniform_charset() {
+        let s = random_alphanumeric(4000);
+        assert_eq!(s.len(), 4000);
+        assert!(s.bytes().all(|b| b.is_ascii_alphanumeric()));
+        // all 62 symbols should appear in 4000 draws
+        let distinct: std::collections::HashSet<u8> = s.bytes().collect();
+        assert_eq!(distinct.len(), 62);
+        assert_ne!(random_alphanumeric(40), random_alphanumeric(40));
     }
 
     #[test]
