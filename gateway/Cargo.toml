@@ -24,7 +24,7 @@ rand = "0.8"
 aes-gcm = "0.10"
 base64 = "0.22"
 argon2 = "0.5"
-jsonwebtoken = "9"
+jsonwebtoken = { version = "10.4", default-features = false, features = ["rust_crypto"] }
 thiserror = "2"
 anyhow = "1"
 tracing = "0.1"
