@@ -44,7 +44,7 @@ jobs:
       AICH_CAFECA_WALLET: http://127.0.0.1:9100   # fake wallet from scripts/fake_upstreams.py
       AICH_CAFECA_SITE_ORIGINS: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -74,7 +74,7 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
