@@ -99,6 +99,23 @@ function portFree(port, host) {
   });
 }
 
+/**
+ * Locate cargo. Process managers (PM2, systemd, cron) often start with a minimal PATH that does not
+ * include rustup's ~/.cargo/bin, so fall back to $CARGO, $CARGO_HOME/bin and ~/.cargo/bin.
+ */
+function findCargo() {
+  if (env.CARGO && has(env.CARGO)) return env.CARGO;
+  if (has("cargo")) return "cargo";
+  const exe = IS_WIN ? "cargo.exe" : "cargo";
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  for (const dir of [env.CARGO_HOME && path.join(env.CARGO_HOME, "bin"), home && path.join(home, ".cargo", "bin"), "/usr/local/cargo/bin"]) {
+    if (!dir) continue;
+    const p = path.join(dir, exe);
+    if (fs.existsSync(p) && has(p)) return p;
+  }
+  return null;
+}
+
 /** Ask the OS for a free loopback port. */
 function freePort() {
   return new Promise((resolve, reject) => {
@@ -230,9 +247,21 @@ if (!databaseUrl) {
 // 2. Gateway
 const gwBin = path.join(GATEWAY, "target", "release", IS_WIN ? "aich-gateway.exe" : "aich-gateway");
 if (build) {
-  if (!has("cargo")) die("cargo not found. Install Rust from https://rustup.rs (or run with --no-build after building the gateway).");
-  log("building gateway (cargo build --release)…");
-  run("cargo", ["build", "--release", "--locked"], { cwd: GATEWAY });
+  const cargo = findCargo();
+  if (!cargo) {
+    die(
+      [
+        "cargo not found (PATH and ~/.cargo/bin checked).",
+        "  • Rust not installed: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
+        "  • Installed elsewhere / running under PM2 or systemd: set CARGO=/path/to/cargo (or CARGO_HOME) in .env",
+        "  • Or build the gateway once by hand and start with: npm run swarm -- --no-build",
+      ].join("\n"),
+    );
+  }
+  log(`building gateway (cargo build --release)…${cargo === "cargo" ? "" : dim(` using ${cargo}`)}`);
+  // rustup's cargo proxy needs its bin dir on PATH to find rustc etc.
+  const cargoEnv = { ...process.env, PATH: [path.dirname(cargo), process.env.PATH].filter(Boolean).join(path.delimiter) };
+  run(cargo, ["build", "--release", "--locked"], { cwd: GATEWAY, env: cargo === "cargo" ? process.env : cargoEnv });
 }
 if (!fs.existsSync(gwBin)) die(`gateway binary missing: ${gwBin} (run without --no-build)`);
 
