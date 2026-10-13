@@ -4,13 +4,15 @@
 //   http://localhost:10016        Web UI (chat, console, admin)
 //   http://localhost:10016/v1     OpenAI-compatible API (proxied to the gateway)
 //
-// Steps: .env secrets → Postgres/Redis (docker compose, unless DATABASE_URL is set)
-//        → cargo build --release → gateway on 127.0.0.1:10017 → next build (when sources changed)
-//        → Next.js standalone server on 0.0.0.0:10016. Ctrl+C stops gateway and web;
-//        the database containers keep running (stop them with `npm run swarm:down`).
+// 10016 is the only fixed port. The gateway, Postgres and Redis listen on random free ports bound to
+// 127.0.0.1 (picked by the OS at start), so they are never reachable from outside and never collide.
 //
-// Environment (shell or .env): SWARM_PORT=10016  SWARM_HOST=0.0.0.0  SWARM_GATEWAY_PORT=10017
-//   SWARM_PG_PORT=10018  SWARM_REDIS_PORT=10019  SWARM_PUBLIC_URL=http://localhost:10016
+// Steps: .env secrets → Postgres/Redis (docker compose, unless DATABASE_URL is set)
+//        → cargo build --release → gateway on 127.0.0.1:<random> → next build (when sources changed)
+//        → Next.js standalone server on 0.0.0.0:10016. Ctrl+C (or closing the terminal) stops gateway
+//        and web; the database containers keep running (stop them with `npm run swarm:down`).
+//
+// Environment (shell or .env): SWARM_PORT=10016  SWARM_HOST=0.0.0.0  SWARM_PUBLIC_URL=http://localhost:10016
 //   DATABASE_URL / REDIS_URL (use your own services instead of docker)
 // Flags: --no-build (reuse existing builds)   --down (stop the database containers)
 
@@ -25,6 +27,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB = path.join(ROOT, "web");
 const GATEWAY = path.join(ROOT, "gateway");
 const ENV_FILE = path.join(ROOT, ".env");
+const PID_FILE = path.join(ROOT, ".swarm.pid");
 const COMPOSE = ["compose", "-f", path.join(ROOT, "docker-compose.yml"), "-f", path.join(ROOT, "scripts", "swarm.compose.yml")];
 const args = new Set(process.argv.slice(2));
 const IS_WIN = process.platform === "win32";
@@ -96,6 +99,50 @@ function portFree(port, host) {
   });
 }
 
+/** Ask the OS for a free loopback port. */
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.once("error", reject);
+    srv.listen(0, "127.0.0.1", () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+function alive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Stop gateway/web processes left behind by a previous swarm that was killed without cleanup. */
+function reapStale() {
+  let prev;
+  try {
+    prev = JSON.parse(fs.readFileSync(PID_FILE, "utf8"));
+  } catch {
+    return;
+  }
+  const commandOf = (pid) => (IS_WIN ? "" : (spawnSync("ps", ["-p", String(pid), "-o", "command="], { encoding: "utf8" }).stdout ?? ""));
+  if (prev.swarm && prev.swarm !== process.pid && alive(prev.swarm) && (IS_WIN || /swarm\.mjs/.test(commandOf(prev.swarm)))) {
+    die(`npm run swarm is already running (pid ${prev.swarm}). Stop it first (Ctrl+C in its terminal, or kill ${prev.swarm}).`);
+  }
+  for (const pid of prev.children ?? []) {
+    if (!alive(pid)) continue;
+    // Next.js renames its process to "next-server (vX)".
+    if (/aich-gateway|next-server|standalone[\\/]server\.js/.test(commandOf(pid))) {
+      log(`stopping leftover process from a previous run (pid ${pid})`);
+      process.kill(pid, "SIGTERM");
+    }
+  }
+  fs.rmSync(PID_FILE, { force: true });
+}
+
 async function waitFor(url, ms, child) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
@@ -142,16 +189,14 @@ Object.assign(env, fileVars, process.env);
 
 const PORT = Number(env.SWARM_PORT || 10016);
 const HOST = env.SWARM_HOST || "0.0.0.0";
-const GW_PORT = Number(env.SWARM_GATEWAY_PORT || 10017);
 const PUBLIC_URL = (env.SWARM_PUBLIC_URL || `http://localhost:${PORT}`).replace(/\/$/, "");
 const API_BASE = `${PUBLIC_URL}/v1`;
 const build = !args.has("--no-build");
 
-for (const [p, h, what] of [
-  [PORT, HOST, "web (SWARM_PORT)"],
-  [GW_PORT, "127.0.0.1", "gateway (SWARM_GATEWAY_PORT)"],
-]) {
-  if (!(await portFree(p, h))) die(`port ${p} for ${what} is already in use`);
+reapStale();
+if (!(await portFree(PORT, HOST))) {
+  await new Promise((r) => setTimeout(r, 1500)); // a reaped leftover may still be releasing it
+  if (!(await portFree(PORT, HOST))) die(`port ${PORT} is already in use (set SWARM_PORT to use another port)`);
 }
 
 // 1. Database + Redis
@@ -164,13 +209,18 @@ if (!databaseUrl) {
   if (!has("docker", ["info"])) {
     die("DATABASE_URL is not set and the Docker daemon is not running. Start Docker (Desktop), or set DATABASE_URL in .env.");
   }
-  const pgPort = env.SWARM_PG_PORT || "10018";
-  const redisPort = env.SWARM_REDIS_PORT || "10019";
-  log(`starting postgres (127.0.0.1:${pgPort}) and redis (127.0.0.1:${redisPort}) with docker compose…`);
-  run("docker", [...COMPOSE, "up", "-d", "--wait", "postgres", "redis"], {
-    cwd: ROOT,
-    env: { ...env, SWARM_PG_PORT: pgPort, SWARM_REDIS_PORT: redisPort },
-  });
+  log("starting postgres and redis with docker compose…");
+  run("docker", [...COMPOSE, "up", "-d", "--wait", "postgres", "redis"], { cwd: ROOT, env });
+  // Docker published them on random 127.0.0.1 ports (scripts/swarm.compose.yml); look them up.
+  const published = (service, port) => {
+    const r = spawnSync("docker", [...COMPOSE, "port", service, String(port)], { cwd: ROOT, env, encoding: "utf8", shell: IS_WIN });
+    const m = (r.stdout ?? "").trim().match(/:(\d+)$/m);
+    if (!m) die(`could not find the published port of ${service}: ${(r.stderr ?? "").trim()}`);
+    return m[1];
+  };
+  const pgPort = published("postgres", 5432);
+  const redisPort = published("redis", 6379);
+  log(dim(`postgres 127.0.0.1:${pgPort}, redis 127.0.0.1:${redisPort} (internal)`));
   databaseUrl = `postgres://aich:${encodeURIComponent(env.POSTGRES_PASSWORD || "aich")}@127.0.0.1:${pgPort}/aich`;
   redisUrl = redisUrl || `redis://127.0.0.1:${redisPort}`;
 } else {
@@ -251,8 +301,18 @@ function shutdown(code = 0) {
   force.unref();
   Promise.all(children.map((ch) => (ch.exitCode !== null ? null : new Promise((r) => ch.once("exit", r))))).then(() => process.exit(code));
 }
-process.on("SIGINT", () => shutdown(0));
-process.on("SIGTERM", () => shutdown(0));
+for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(sig, () => shutdown(0));
+process.on("exit", () => {
+  for (const ch of children) if (ch.exitCode === null) ch.kill("SIGKILL");
+  try {
+    const cur = JSON.parse(fs.readFileSync(PID_FILE, "utf8"));
+    if (cur.swarm === process.pid) fs.rmSync(PID_FILE, { force: true });
+  } catch {
+    /* already gone */
+  }
+});
+const savePids = () =>
+  fs.writeFileSync(PID_FILE, JSON.stringify({ swarm: process.pid, children: children.map((ch) => ch.pid).filter(Boolean) }));
 
 const siteOrigins = [
   ...(env.AICH_CAFECA_SITE_ORIGINS || "").split(","),
@@ -264,7 +324,8 @@ const siteOrigins = [
   .filter((s, i, a) => s && a.indexOf(s) === i)
   .join(",");
 
-log(`starting gateway on 127.0.0.1:${GW_PORT}…`);
+const GW_PORT = await freePort();
+log(`starting gateway on 127.0.0.1:${GW_PORT} (internal)…`);
 const gateway = start("gateway", magenta, gwBin, [], {
   cwd: GATEWAY,
   env: {
@@ -275,6 +336,7 @@ const gateway = start("gateway", magenta, gwBin, [], {
     AICH_CAFECA_SITE_ORIGINS: siteOrigins,
   },
 });
+savePids();
 if (!(await waitFor(`http://127.0.0.1:${GW_PORT}/health`, 90_000, gateway))) {
   log(red("gateway did not become healthy"));
   shutdown(1);
@@ -291,6 +353,7 @@ if (!(await waitFor(`http://127.0.0.1:${GW_PORT}/health`, 90_000, gateway))) {
       GATEWAY_URL: `http://127.0.0.1:${GW_PORT}`,
     },
   });
+  savePids();
   if (await waitFor(`http://127.0.0.1:${PORT}/gw/health`, 60_000, web)) {
     console.log(
       [

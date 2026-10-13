@@ -15,6 +15,7 @@ node_modules/
 *.pem
 
 # misc
+.swarm.pid
 .DS_Store
 coverage/
 *.log

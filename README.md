@@ -47,10 +47,11 @@ npm run swarm          # 首次會自動產生 .env 密鑰、啟動 Postgres/Red
 npm run swarm:down     # 停止 swarm 啟動的 Postgres/Redis 容器
 ```
 
-- Web UI：<http://localhost:10016>；OpenAI 相容 API：`http://localhost:10016/v1`（Web 代理至內部 Gateway `127.0.0.1:10017`）
-- 需求：Node.js 22+、Rust（cargo）、Docker（只用來跑 Postgres `127.0.0.1:10018` 與 Redis `127.0.0.1:10019`）。已有資料庫時在 `.env` 設定 `DATABASE_URL`（與選用的 `REDIS_URL`）即可不用 Docker
+- Web UI：<http://localhost:10016>；OpenAI 相容 API：`http://localhost:10016/v1`。**對外只用 10016**：Gateway、Postgres、Redis 每次啟動由系統挑選空閒埠，只綁 `127.0.0.1`，外部連不到也不會跟其他服務撞埠
+- 需求：Node.js 22+、Rust（cargo）、Docker（只用來跑 Postgres 與 Redis）。已有資料庫時在 `.env` 設定 `DATABASE_URL`（與選用的 `REDIS_URL`）即可不用 Docker
 - 原始碼沒變時會略過 Web 重新編譯；`npm run swarm -- --no-build` 直接沿用既有編譯結果
-- 可調整：`SWARM_PORT`、`SWARM_HOST`、`SWARM_GATEWAY_PORT`、`SWARM_PG_PORT`、`SWARM_REDIS_PORT`；從其他網址存取（例如區網 IP 或網域）時設定 `SWARM_PUBLIC_URL=https://hub.example.com`，它會成為文件中的 API 位址並加入 CAFECA 登入允許來源
+- 終端機被直接關閉時也會一併停止 Gateway 與 Web；若上次執行殘留程序，下次啟動會自動清掉
+- 可調整：`SWARM_PORT`、`SWARM_HOST`；從其他網址存取（例如區網 IP 或網域）時設定 `SWARM_PUBLIC_URL=https://hub.example.com`，它會成為文件中的 API 位址並加入 CAFECA 登入允許來源
 
 ## 本機開發
 
