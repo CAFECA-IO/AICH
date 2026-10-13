@@ -266,8 +266,13 @@ if (build) {
 if (!fs.existsSync(gwBin)) die(`gateway binary missing: ${gwBin} (run without --no-build)`);
 
 // 3. Web
-const standaloneDir = path.join(WEB, ".next", "standalone");
-const serverJs = path.join(standaloneDir, "server.js");
+const standaloneRoot = path.join(WEB, ".next", "standalone");
+// Normally .next/standalone/server.js; if Next inferred a parent dir as the workspace root (e.g. an
+// old build before outputFileTracingRoot was pinned) it is nested as .next/standalone/web/server.js.
+const findServer = () =>
+  [standaloneRoot, path.join(standaloneRoot, path.basename(WEB))].find((d) => fs.existsSync(path.join(d, "server.js")));
+let standaloneDir = findServer() ?? standaloneRoot;
+let serverJs = path.join(standaloneDir, "server.js");
 if (build) {
   const lock = path.join(WEB, "package-lock.json");
   const installed = path.join(WEB, "node_modules", ".package-lock.json");
@@ -281,9 +286,13 @@ if (build) {
     sources: newestMtime(["src", "public", "package-lock.json", "package.json", "next.config.ts"].map((p) => path.join(WEB, p))),
   });
   const prev = fs.existsSync(stampFile) ? fs.readFileSync(stampFile, "utf8") : "";
-  if (prev !== stamp || !fs.existsSync(serverJs)) {
+  if (prev !== stamp || !findServer()) {
     log(`building web (next build, API base ${API_BASE})…`);
+    fs.rmSync(standaloneRoot, { recursive: true, force: true }); // never pick up a stale server.js
     run("npm", ["run", "build"], { cwd: WEB, env: { ...process.env, NEXT_PUBLIC_API_BASE_URL: API_BASE, NEXT_TELEMETRY_DISABLED: "1" } });
+    standaloneDir = findServer();
+    if (!standaloneDir) die(`next build finished but no server.js was found under ${standaloneRoot} (is output: "standalone" set in web/next.config.ts?)`);
+    serverJs = path.join(standaloneDir, "server.js");
     // standalone output needs the static assets next to server.js (same as web/Dockerfile)
     fs.cpSync(path.join(WEB, ".next", "static"), path.join(standaloneDir, ".next", "static"), { recursive: true });
     fs.cpSync(path.join(WEB, "public"), path.join(standaloneDir, "public"), { recursive: true });
@@ -292,7 +301,7 @@ if (build) {
     log("web build is up to date");
   }
 }
-if (!fs.existsSync(serverJs)) die(`web build missing: ${serverJs} (run without --no-build)`);
+if (!fs.existsSync(serverJs)) die(`web build missing: ${serverJs}${build ? "" : " (run without --no-build)"}`);
 
 // 4. Run both, prefixing their output
 const children = [];
