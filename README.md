@@ -51,6 +51,7 @@ npm run swarm:down     # 停止 swarm 啟動的 Postgres/Redis 容器
 - 需求：Node.js 22+、Rust（cargo）、Docker（只用來跑 Postgres 與 Redis）。已有資料庫時在 `.env` 設定 `DATABASE_URL`（與選用的 `REDIS_URL`）即可不用 Docker
 - 原始碼沒變時會略過 Web 重新編譯；`npm run swarm -- --no-build` 直接沿用既有編譯結果
 - 終端機被直接關閉時也會一併停止 Gateway 與 Web；若上次執行殘留程序，下次啟動會自動清掉
+- 以 PM2 常駐：`pm2 start ecosystem.config.cjs && pm2 save`（PM2 不會載入 shell profile，設定檔已把 `~/.cargo/bin` 加進 PATH；swarm 本身也會自動尋找 `~/.cargo/bin/cargo`，或用 `CARGO=/path/to/cargo` 指定）
 - 可調整：`SWARM_PORT`、`SWARM_HOST`；從其他網址存取（例如區網 IP 或網域）時設定 `SWARM_PUBLIC_URL=https://hub.example.com`，它會成為文件中的 API 位址並加入 CAFECA 登入允許來源
 
 ## 本機開發
