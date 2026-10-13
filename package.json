@@ -1,0 +1,13 @@
+{
+  "name": "aich",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AICH — AI Computing Hub. `npm run swarm` runs gateway + web from source on one port (10016).",
+  "scripts": {
+    "swarm": "node scripts/swarm.mjs",
+    "swarm:down": "node scripts/swarm.mjs --down"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

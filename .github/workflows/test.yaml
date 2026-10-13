@@ -86,3 +86,5 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Check swarm launcher
+        run: node --check ../scripts/swarm.mjs
