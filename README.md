@@ -38,6 +38,20 @@ docker compose up -d --build
 
 不需要任何上游金鑰也能試用：內建 `mock` 供應商提供 `hub-mock`（回聲）與 `hub-mock-failover`（展示自動備援）兩個模型。
 
+## 一鍵啟動（npm run swarm）
+
+從原始碼編譯並啟動整套服務，**只對外開一個埠 10016**：
+
+```bash
+npm run swarm          # 首次會自動產生 .env 密鑰、啟動 Postgres/Redis、編譯 Gateway 與 Web
+npm run swarm:down     # 停止 swarm 啟動的 Postgres/Redis 容器
+```
+
+- Web UI：<http://localhost:10016>；OpenAI 相容 API：`http://localhost:10016/v1`（Web 代理至內部 Gateway `127.0.0.1:10017`）
+- 需求：Node.js 22+、Rust（cargo）、Docker（只用來跑 Postgres `127.0.0.1:10018` 與 Redis `127.0.0.1:10019`）。已有資料庫時在 `.env` 設定 `DATABASE_URL`（與選用的 `REDIS_URL`）即可不用 Docker
+- 原始碼沒變時會略過 Web 重新編譯；`npm run swarm -- --no-build` 直接沿用既有編譯結果
+- 可調整：`SWARM_PORT`、`SWARM_HOST`、`SWARM_GATEWAY_PORT`、`SWARM_PG_PORT`、`SWARM_REDIS_PORT`；從其他網址存取（例如區網 IP 或網域）時設定 `SWARM_PUBLIC_URL=https://hub.example.com`，它會成為文件中的 API 位址並加入 CAFECA 登入允許來源
+
 ## 本機開發
 
 需求：Rust（stable）、Node.js 22、PostgreSQL 16、Redis 7（選用，未設定時退回記憶體）。

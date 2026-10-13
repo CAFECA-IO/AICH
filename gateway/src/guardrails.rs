@@ -1,13 +1,13 @@
 //! Optional input guardrails: blocked terms and prompt-injection heuristics.
 //! Modes: `off`, `flag` (allow but mark the request), `block` (reject with 400).
 
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 use crate::catalog::GuardrailSettings;
 use crate::types::ChatRequest;
 
-static INJECTION_RE: Lazy<Regex> = Lazy::new(|| {
+static INJECTION_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"(?i)(ignore\s+(all\s+)?(the\s+)?(previous|prior|above)\s+(instructions|prompts?|rules)|disregard\s+(your|the)\s+(system\s+prompt|instructions)|reveal\s+(your|the)\s+(system\s+prompt|hidden\s+instructions)|you\s+are\s+now\s+(dan|in\s+developer\s+mode)|忽略(之前|以上|先前)的?(所有)?(指示|指令|規則|规则)|洩漏|泄露系統提示|顯示你的系統提示)",
     )

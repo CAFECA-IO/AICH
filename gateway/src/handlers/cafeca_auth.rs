@@ -11,7 +11,6 @@ use axum::extract::State;
 use axum::Json;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD as B64U;
 use base64::Engine;
-use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use uuid::Uuid;
@@ -46,9 +45,7 @@ pub struct VerifyBody {
 }
 
 fn random_b64u(n: usize) -> String {
-    let mut b = vec![0u8; n];
-    rand::thread_rng().fill_bytes(&mut b);
-    B64U.encode(b)
+    B64U.encode(crate::crypto::random_bytes(n))
 }
 
 fn cafeca(st: &AppState) -> ApiResult<&crate::cafeca::Cafeca> {

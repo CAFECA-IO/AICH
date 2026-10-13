@@ -2,15 +2,15 @@
 //! It runs on every request, so it is a heuristic (keywords + structure), not an LLM call.
 //! Intents map to route tags: code | long_context | reasoning | vision | simple | general.
 
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 use crate::tokens;
 use crate::types::ChatRequest;
 
 pub const LONG_CONTEXT_TOKENS: u32 = 24_000;
 
-static CODE_RE: Lazy<Regex> = Lazy::new(|| {
+static CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"(?ix)
         ```|
@@ -23,7 +23,7 @@ static CODE_RE: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 
-static REASONING_RE: Lazy<Regex> = Lazy::new(|| {
+static REASONING_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"(?ix)
         \b(prove|proof|derive|step[-\s]by[-\s]step|reason|analy[sz]e|evaluate|compare|trade-?offs?|strategy|plan|calculate|equation|theorem|probability|optimi[sz]e)\b|
@@ -32,7 +32,7 @@ static REASONING_RE: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 
-static SIMPLE_RE: Lazy<Regex> = Lazy::new(|| {
+static SIMPLE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"(?ix)
         \b(summari[sz]e|tl;?dr|translate|classify|categori[sz]e|extract|rewrite|paraphrase|fix\s+grammar|spell|sentiment|keywords?)\b|
