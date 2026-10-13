@@ -1,3 +1,5 @@
+# Dependency updates — at most one PR per ecosystem per update type.
+# Security advisories still open their own PRs immediately (they ignore `groups`).
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -8,17 +10,22 @@ updates:
       time: "09:00"
       timezone: "Asia/Taipei"
     target-branch: "develop"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
-      typescript-core:
-        patterns: ["typescript", "@types/*"]
-        update-types: ["minor", "patch", "major"]
-      dev-minor-patch:
-        dependency-type: "development"
+      web-minor-patch:
+        patterns: ["*"]
         update-types: ["minor", "patch"]
-      runtime-minor-patch:
-        dependency-type: "production"
-        update-types: ["minor", "patch"]
+      web-major:
+        patterns: ["*"]
+        update-types: ["major"]
+    ignore:
+      # eslint-config-next / eslint-plugin-react do not support ESLint 10 yet.
+      - dependency-name: "eslint"
+        versions: [">=10"]
+      # Types follow the Node runtime in web/Dockerfile (Node 22 LTS); bump together, by hand.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "cargo"
     directory: "/gateway"
     schedule:
@@ -27,17 +34,38 @@ updates:
       time: "09:00"
       timezone: "Asia/Taipei"
     target-branch: "develop"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
       cargo-minor-patch:
+        patterns: ["*"]
         update-types: ["minor", "patch"]
+      cargo-major:
+        patterns: ["*"]
+        update-types: ["major"]
+    ignore:
+      # aes-gcm 0.11 (aead 0.6) drops the OsRng re-export and deprecates the slice APIs;
+      # upgrade the RustCrypto crates together once argon2 0.6 is stable.
+      - dependency-name: "aes-gcm"
+        versions: [">=0.11"]
+
   - package-ecosystem: "docker"
     directories: ["/gateway", "/web"]
     schedule:
       interval: "monthly"
     target-branch: "develop"
+    groups:
+      docker-images:
+        patterns: ["*"]
+    ignore:
+      # Stay on the Node LTS line; non-LTS majors (23, 25, 26…) are skipped.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
     target-branch: "develop"
+    groups:
+      actions:
+        patterns: ["*"]
